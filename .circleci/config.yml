@@ -1,0 +1,58 @@
+version: 2.1
+# reusable environment for all jobs
+executors:
+  main-executor:
+    working_directory: ~/sdk-component-adapter
+    docker:
+      - image: circleci/node:12.7.0
+
+# reusable command for all jobs
+commands:
+  checkout_from_workspace:
+    description: 'To checkout and attach the workspace'
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/sdk-component-adapter
+
+# define jobs
+jobs:
+  install:
+    executor: main-executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm i
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths: node_modules
+      - persist_to_workspace:
+          root: .
+          paths: node_modules
+
+  build:
+    executor: main-executor
+    steps:
+      - checkout_from_workspace
+      - run:
+          name: Build
+          command: npm run build
+      - persist_to_workspace:
+          root: .
+          paths: dist
+
+# execute the jobs in a orderly manner
+workflows:
+  setup_test_release:
+    jobs:
+      - install
+      - build:
+          requires:
+            - install
+          filters:
+            branches:
+              only: master
