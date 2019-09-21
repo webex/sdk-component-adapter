@@ -34,6 +34,19 @@ jobs:
           root: .
           paths: node_modules
 
+  test:
+    executor: main-executor
+    steps:
+      - checkout_from_workspace
+      - run:
+          name: Linting
+          command: npm run test:eslint
+      - run:
+          name: Unit Test Coverage
+          command: npm run test:coverage
+      - store_test_results:
+          path: test_results
+
   build:
     executor: main-executor
     steps:
@@ -50,9 +63,12 @@ workflows:
   setup_test_release:
     jobs:
       - install
-      - build:
+      - test:
           requires:
             - install
+      - build:
+          requires:
+            - test
           filters:
             branches:
               only: master
