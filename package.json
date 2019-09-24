@@ -6,6 +6,9 @@
     "clear": "rm package-lock.json && rm -rf node_modules",
     "prettier": "prettier \"src/**/!(static)/**/*.*(js|jsx)\"",
     "prettier:write": "prettier \"src/**/!(static)/**/*.*(js|jsx)\" --write",
+    "release": "semantic-release",
+    "release:debug": "semantic-release --debug",
+    "release:dry-run": "semantic-release --dry-run",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -27,14 +30,20 @@
   "devDependencies": {
     "@babel/core": "^7.6.0",
     "@babel/preset-env": "^7.6.0",
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
+    "@semantic-release/changelog": "^3.0.4",
+    "@semantic-release/git": "^7.0.16",
     "@webex/eslint-config-base": "^0.8.0",
     "babel-eslint": "^10.0.3",
+    "conventional-changelog-angular": "^5.0.3",
     "eslint": "^6.3.0",
     "eslint-config-prettier": "^6.2.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-mocha": "^6.1.0",
     "eslint-plugin-prettier": "^3.1.0",
+    "husky": "^3.0.5",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
     "prettier": "^1.18.2",
@@ -43,7 +52,8 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-resolve": "^5.2.0"
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "semantic-release": "^15.13.24"
   },
   "babel": {
     "presets": [
