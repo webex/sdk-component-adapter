@@ -58,6 +58,14 @@ jobs:
           root: .
           paths: dist
 
+  release:
+    executor: main-executor
+    steps:
+      - checkout_from_workspace
+      - run:
+          name: Release
+          command: npm run release
+
 # execute the jobs in a orderly manner
 workflows:
   setup_test_release:
@@ -69,6 +77,12 @@ workflows:
       - build:
           requires:
             - test
+          filters:
+            branches:
+              only: master
+      - release:
+          requires:
+            - build
           filters:
             branches:
               only: master
