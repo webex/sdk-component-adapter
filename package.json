@@ -1,12 +1,12 @@
 {
   "name": "@webex/sdk-component-adapter",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "build": "rollup -c",
     "clear": "rm package-lock.json && rm -rf node_modules",
     "prettier": "prettier \"src/**/!(static)/**/*.*(js|jsx)\"",
     "prettier:write": "prettier \"src/**/!(static)/**/*.*(js|jsx)\" --write",
-    "release": "semantic-release --allow-same-version",
+    "release": "semantic-release",
     "release:debug": "semantic-release --debug",
     "release:dry-run": "semantic-release --dry-run",
     "test": "jest",
