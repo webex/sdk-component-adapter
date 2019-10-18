@@ -25,6 +25,8 @@
   "author": "devsupport@webex.com",
   "license": "MIT",
   "dependencies": {
+    "@webex/components": "^1.18.1",
+    "rxjs": "^6.5.3",
     "webex": "^1.79.0"
   },
   "devDependencies": {
@@ -47,6 +49,8 @@
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
     "prettier": "^1.18.2",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
