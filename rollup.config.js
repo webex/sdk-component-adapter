@@ -13,6 +13,9 @@ const output = (name, format) => ({
     bufferutil: 'bufferutil',
     'utf-8-validate': 'utf8Validate',
     'spawn-sync': 'spawnSync',
+    react: 'React',
+    'react-dom': 'ReactDOM',
+    'prop-types': 'PropTypes',
   },
 });
 
@@ -28,7 +31,9 @@ export default [
       resolve({
         preferBuiltins: true,
       }),
-      babel(),
+      babel({
+        runtimeHelpers: true,
+      }),
       commonJS(),
       json(),
       builtins(),
@@ -40,7 +45,7 @@ export default [
       // Use default for everything else
       warn(warning);
     },
-    external: ['bufferutil', 'utf-8-validate', 'spawn-sync'],
+    external: ['bufferutil', 'utf-8-validate', 'spawn-sync', 'react', 'react-dom', 'prop-types'],
     context: 'null',
   },
 ];
