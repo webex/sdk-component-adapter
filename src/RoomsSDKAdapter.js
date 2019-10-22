@@ -1,4 +1,5 @@
 import {Observable} from 'rxjs';
+import {publish, refCount} from 'rxjs/operators';
 import {RoomsAdapter} from '@webex/components';
 
 export const ROOM_UPDATED_EVENT = 'updated';
@@ -12,6 +13,12 @@ export const ROOM_UPDATED_EVENT = 'updated';
  * @extends {RoomsAdapter}
  */
 export default class RoomsSDKAdapter extends RoomsAdapter {
+  constructor(datasource) {
+    super(datasource);
+
+    this.getRoomObservables = {};
+  }
+
   /**
    * Fetches the room data from the sdk and returns in the shape required by adapter.
    *
@@ -37,26 +44,37 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * @memberof RoomsSDKAdapter
    */
   getRoom(ID) {
-    return Observable.create((observer) => {
-      // Start listening for room changes
-      this.datasource.rooms.listen();
-      this.datasource.rooms.on(ROOM_UPDATED_EVENT, () => {
-        // Room has updates, fetch and send
+    if (!(ID in this.getRoomObservables)) {
+      const source = Observable.create((observer) => {
+        // Start listening for room changes
+        this.datasource.rooms.listen();
+        this.datasource.rooms.on(ROOM_UPDATED_EVENT, () => {
+          // Room has updates, fetch and send
+          this.fetchRoom(ID)
+            .then((room) => observer.next(room))
+            .catch((error) => observer.error(error));
+        });
+
+        // Get our initial room from the SDK
         this.fetchRoom(ID)
           .then((room) => observer.next(room))
           .catch((error) => observer.error(error));
+
+        return () => {
+          // Cleanup when subscription count is 0
+          this.datasource.rooms.stopListening();
+          this.datasource.rooms.off(ROOM_UPDATED_EVENT);
+          delete this.getRoomObservables[ID];
+        };
       });
 
-      // Get our initial room from the SDK
-      this.fetchRoom(ID)
-        .then((room) => observer.next(room))
-        .catch((error) => observer.error(error));
+      // Convert to a multicast observable
+      this.getRoomObservables[ID] = source.pipe(
+        publish(),
+        refCount()
+      );
+    }
 
-      return () => {
-        // Cleanup when unsubscribing
-        this.datasource.rooms.stopListening();
-        this.datasource.rooms.off(ROOM_UPDATED_EVENT);
-      };
-    });
+    return this.getRoomObservables[ID];
   }
 }
