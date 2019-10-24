@@ -1,1 +1,3 @@
-export {default as WebexSDKAdapter} from './WebexSDKAdapter';
+import WebexSDKAdapter from './WebexSDKAdapter';
+
+export default WebexSDKAdapter;
