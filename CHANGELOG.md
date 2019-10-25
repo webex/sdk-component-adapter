@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/webex/sdk-component-adapter/compare/v1.2.0...v1.2.1) (2019-10-25)
+
+
+### Bug Fixes
+
+* **release:** define paths to export the modules properly ([1db8231](https://github.com/webex/sdk-component-adapter/commit/1db8231))
+
 # [1.2.0](https://github.com/webex/sdk-component-adapter/compare/v1.1.1...v1.2.0) (2019-10-25)
 
 
