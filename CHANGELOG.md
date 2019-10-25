@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/webex/sdk-component-adapter/compare/v1.1.0...v1.1.1) (2019-10-25)
+
+
+### Bug Fixes
+
+* **WebexAdapter:** export default ([118aa23](https://github.com/webex/sdk-component-adapter/commit/118aa23))
+
 # 1.0.0 (2019-09-26)
 
 
