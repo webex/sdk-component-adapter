@@ -1,6 +1,8 @@
 {
   "name": "@webex/sdk-component-adapter",
   "version": "1.2.0",
+  "main": "dist/webexSDKComponentAdapter.cjs.js",
+  "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
     "build": "rollup -c",
     "clear": "rm package-lock.json && rm -rf node_modules",
