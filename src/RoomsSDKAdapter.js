@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs';
 import {publish, refCount} from 'rxjs/operators';
-import {RoomsAdapter} from '@webex/components';
+import {RoomsAdapter} from '@webex/component-adapter-interfaces';
 
 export const ROOM_UPDATED_EVENT = 'updated';
 
