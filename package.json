@@ -26,7 +26,7 @@
   "author": "devsupport@webex.com",
   "license": "MIT",
   "dependencies": {
-    "@webex/components": "^1.18.1",
+    "@webex/component-adapter-interfaces": "^1.2.1",
     "rxjs": "^6.5.3"
   },
   "devDependencies": {
