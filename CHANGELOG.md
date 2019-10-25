@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/webex/sdk-component-adapter/compare/v1.1.1...v1.2.0) (2019-10-25)
+
+
+### Features
+
+* **RoomsSdkAdapter:** import RoomsAdapter interface properly ([51a619a](https://github.com/webex/sdk-component-adapter/commit/51a619a))
+
 ## [1.1.1](https://github.com/webex/sdk-component-adapter/compare/v1.1.0...v1.1.1) (2019-10-25)
 
 
