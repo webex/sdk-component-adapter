@@ -45,7 +45,7 @@ import '@webex/components/dist/webexComponents.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {WebexSDKAdapter} from '@webex/sdk-component-adapter';
+import WebexSDKAdapter from '@webex/sdk-component-adapter';
 import {WebexAvatar} from '@webex/components';
 
 const adapter = new WebexSDKAdapter();
