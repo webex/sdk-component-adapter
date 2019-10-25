@@ -9,6 +9,7 @@
     "release": "semantic-release",
     "release:debug": "semantic-release --debug",
     "release:dry-run": "semantic-release --dry-run",
+    "start": "NODE_ENV=development nodemon scripts/start.js --exec babel-node",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -26,14 +27,15 @@
   "license": "MIT",
   "dependencies": {
     "@webex/components": "^1.18.1",
-    "rxjs": "^6.5.3",
-    "webex": "^1.79.0"
+    "rxjs": "^6.5.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.0",
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
     "@babel/plugin-transform-regenerator": "^7.4.5",
     "@babel/plugin-transform-runtime": "^7.6.2",
-    "@babel/preset-env": "^7.6.0",
+    "@babel/preset-env": "^7.6.3",
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
     "@semantic-release/changelog": "^3.0.4",
@@ -41,6 +43,7 @@
     "@webex/eslint-config-base": "^0.8.0",
     "babel-eslint": "^10.0.3",
     "conventional-changelog-angular": "^5.0.3",
+    "dotenv": "^8.2.0",
     "eslint": "^6.4.0",
     "eslint-config-prettier": "^6.2.0",
     "eslint-plugin-import": "^2.18.2",
@@ -50,16 +53,19 @@
     "husky": "^3.0.5",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
+    "nodemon": "^1.19.4",
     "prettier": "^1.18.2",
-    "react": "^16.10.2",
-    "react-dom": "^16.10.2",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "semantic-release": "^15.13.24"
+    "semantic-release": "^15.13.24",
+    "webex": "^1.79.0"
+  },
+  "peerDependencies": {
+    "webex": "^1.79.0"
   },
   "babel": {
     "plugins": [
