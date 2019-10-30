@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/webex/sdk-component-adapter/compare/v1.2.1...v1.2.2) (2019-10-30)
+
+
+### Bug Fixes
+
+* **package:** install meetings adapter interface ([2a477cf](https://github.com/webex/sdk-component-adapter/commit/2a477cfd74c2b86e6fdccbb17e00090193bb1ee6))
+
 ## [1.2.1](https://github.com/webex/sdk-component-adapter/compare/v1.2.0...v1.2.1) (2019-10-25)
 
 
