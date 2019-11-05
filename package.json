@@ -13,6 +13,8 @@
     "release:dry-run": "semantic-release --dry-run",
     "start": "NODE_ENV=development nodemon scripts/start.js --exec babel-node",
     "test": "jest",
+    "test:integration": "jest \"^(?=.*integration.test.js).*\"",
+    "test:unit": "jest \"^(?=.*.test.js)(?!.*integration).*\"",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:eslint": "eslint src/"
