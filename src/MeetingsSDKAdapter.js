@@ -1,6 +1,6 @@
+import {MeetingsAdapter} from '@webex/component-adapter-interfaces';
 import {Observable} from 'rxjs';
 import {publish, refCount} from 'rxjs/operators';
-import {MeetingsAdapter} from '@webex/components';
 
 export const ROOM_UPDATED_EVENT = 'updated';
 
@@ -15,50 +15,22 @@ export const ROOM_UPDATED_EVENT = 'updated';
 export default class MeetingsSDKAdapter extends MeetingsAdapter {
   constructor(datasource) {
     super(datasource);
-    this.datasource = datasource;
+    this.meetingsObservables = {};
+    this.meetingControls = {};
+  }
 
+  connect() {
     // Check if the meetings is registred
-    if (!datasource.meeting.registered) {
-      datasource.meetings.register();
+    if (!this.datasource.meeting.registered) {
+      this.datasource.meetings.register();
     }
 
     this.registerEvents();
-    this.syncMeetins();
+    this.syncMeetings();
   }
 
-  syncMeetins() {
+  syncMeetings() {
     this.datasource.meetings.syncMeetings();
-  }
-
-  registerMeetingListner(meeting) {
-    // all the meeting related event can be here because meeting:added gets triggred
-    // irrespective of remote of local create
-
-    meeting.on('media:ready', (media) => {
-      // {type, stream}
-    });
-
-    meeting.on('meeting:stoppedSharingLocal', () => {});
-    meeting.on('meeting:startedSharingLocal', () => {});
-    meeting.on('media:stopped', (media) => {});
-
-    meeting.members.on('members:update', (delta) => {
-      const {full} = delta;
-    });
-
-    meeting.members.on('members:content:update', (payload) => {});
-
-    meeting.on('meeting:ringing', () => {});
-    meeting.on('move-update-media', () => {});
-    meeting.on('meeting:locked', () => {});
-    meeting.on('meeting:unlocked', () => {});
-    meeting.on('meeting:actionsUpdate', () => {});
-    meeting.on('meeting:self:lobbyWaiting', () => {});
-    meeting.on('meeting:self:guestAdmitted', () => {});
-    meeting.on('meeting:reconnectionStarting', () => {});
-    meeting.on('meeting:reconnectionSuccess', () => {});
-    meeting.on('meeting:reconnectionFailure', () => {});
-    meeting.on('meeting:self:mutedByOthers', () => {});
   }
 
   meetingAdded(meetingInstance) {
@@ -69,12 +41,44 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       meeting.acknowledge(type);
     }
 
-    this.registerMeetingListner(meeting);
+    // TODO: check if its correct
+    this.createObservable(meeting.id, meetingInstance);
+
+    this.registerMeetingsListener(meeting);
+  }
+
+  meetingRemoved(meetingInstance) {
+    this.meetingsObservables[meetingInstance.id].complet();
+    // TODO: check how to unsubscribe and delete
+    delete this.meetingsObservables[meetingInstance.id];
   }
 
   registerEvents() {
     this.datasource.meetings.on('meeting:added', this.meetingAdded);
     this.datasource.meetings.on('meeting:removed', this.meetingRemoved);
+  }
+
+  generateMeetingObject(meeting) {
+    return {
+      id: meeting.Id,
+    };
+  }
+
+  createObservable(ID, meeting) {
+    const source = Observable.create((observer) => {
+      observer.next(meeting).catch((error) => observer.error(error));
+
+      return () => {
+        // Cleanup when subscription count is 0
+        delete this.meetingsObservables[ID];
+      };
+    });
+
+    // Convert to a multicast observable
+    this.meetingsObservables[ID] = source.pipe(
+      publish(),
+      refCount()
+    );
   }
 
   /**
@@ -85,13 +89,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @memberof MeetingsSDKAdapter
    */
   getMeeting(ID) {
-    return {
-      ID,
-      title: '',
-      startTime: '', // Valid date-time string
-      endTime: '', // Valid date-time string
-    };
-  }
+    const meeting = this.datasource.meetings.getMeetingByType('id', ID);
 
-  setLocalAudioMuted() {}
+    if (!(ID in this.meetingsObservables)) {
+      this.createObservable(ID, meeting);
+    }
+
+    // This will be just ID which will be the correlation ID
+    return this.meetingsObservables[ID];
+    // return this.generateMeetingObject(meeting);
+  }
 }
