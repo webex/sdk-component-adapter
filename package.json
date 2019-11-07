@@ -64,7 +64,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "semantic-release": "^15.13.24",
-    "webex": "^1.79.0"
+    "webex": "^1.80.43"
   },
   "peerDependencies": {
     "webex": "^1.79.0"
