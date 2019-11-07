@@ -45,10 +45,15 @@ import '@webex/components/dist/webexComponents.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Webex from 'webex';
 import WebexSDKAdapter from '@webex/sdk-component-adapter';
 import {WebexAvatar} from '@webex/components';
 
-const adapter = new WebexSDKAdapter();
+const webex = new Webex({
+  credentials: <YOUR WEBEX ACCESS_TOKEN>,
+});
+
+const adapter = new WebexSDKAdapter(webex);
 
 ReactDOM.render(
   <WebexDataProvider adapter={adapter} >
