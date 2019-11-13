@@ -1,21 +1,14 @@
 import {isObservable} from 'rxjs';
 
-import RoomsSDKAdapter, {ROOM_UPDATED_EVENT} from './RoomsSDKAdapter';
-import createMockSDK from './__mocks__/sdk';
+import RoomsSDKAdapter from './RoomsSDKAdapter';
+import createMockSDK, {mockSDKRoom} from './__mocks__/sdk';
 
 describe('Rooms SDK Adapter', () => {
-  let roomsSDKAdapter;
-  let mockSDK, mockSDKRoom;
+  let mockSDK, roomsSDKAdapter;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
     roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
-
-    mockSDKRoom = {
-      id: 'abc',
-      type: 'group',
-      title: 'mock room',
-    };
   });
 
   describe('getRoom() functionality', () => {
@@ -24,8 +17,6 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('returns a room in a proper shape', (done) => {
-      mockSDK.rooms.get = jest.fn(() => Promise.resolve(mockSDKRoom));
-
       roomsSDKAdapter.getRoom('id').subscribe((room) => {
         expect(room).toEqual(
           expect.objectContaining({
@@ -39,21 +30,17 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('listens to room events when subscribing', (done) => {
-      mockSDK.rooms.get = jest.fn(() => Promise.resolve(mockSDKRoom));
-
       roomsSDKAdapter.getRoom('id').subscribe(() => {
-        expect(mockSDK.rooms.on).toHaveBeenCalledWith(ROOM_UPDATED_EVENT, expect.any(Function));
+        expect(mockSDK.rooms.listen).toHaveBeenCalled();
         done();
       });
     });
 
     test('stops listening to events when unsubscribing', () => {
-      mockSDK.rooms.get = jest.fn(() => Promise.resolve(mockSDKRoom));
-
       const subscription = roomsSDKAdapter.getRoom('id').subscribe();
 
       subscription.unsubscribe();
-      expect(mockSDK.rooms.off).toHaveBeenCalledWith(ROOM_UPDATED_EVENT);
+      expect(mockSDK.rooms.stopListening).toHaveBeenCalled();
     });
 
     test('throws a proper error message', (done) => {
