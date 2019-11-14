@@ -34,7 +34,11 @@ export default [
       babel({
         runtimeHelpers: true,
       }),
-      commonJS(),
+      commonJS({
+        // TODO: Remove workaround once fixed in SDK
+        // explicitly specify unresolvable named exports
+        namedExports: {'@webex/common': ['deconstructHydraId']},
+      }),
       json(),
       builtins(),
     ],
