@@ -94,7 +94,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
         // Is the room change event for our subscribed room?
         filter((event) => event.data.id === ID),
         // Event data doesn't have the room data in it, so we need to fetch manually
-        flatMap(() => room$)
+        flatMap(() => from(this.fetchRoom(ID)))
       );
 
       // The observable flow for fetching room data, then listening for websocket events about room changes.
