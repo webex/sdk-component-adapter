@@ -1,3 +1,17 @@
+# [1.3.0](https://github.com/webex/sdk-component-adapter/compare/v1.2.2...v1.3.0) (2019-11-15)
+
+
+### Bug Fixes
+
+* **rollup:** define custom export for @webex/common module ([d3f5c03](https://github.com/webex/sdk-component-adapter/commit/d3f5c03aa25533af10abe6de95b47fe971e280e1))
+* **package:** install latest @webex/common dependency ([56dde5b](https://github.com/webex/sdk-component-adapter/commit/56dde5b64aca5a5f102cec6c860a09331c652533))
+* **package:** update webex to version 1.80.43 ([0500f55](https://github.com/webex/sdk-component-adapter/commit/0500f55d4c8522c10d8eec7613636679f345b5a3))
+
+
+### Features
+
+* **PeopleSdkAdapter:** implement adapter ([9739bca](https://github.com/webex/sdk-component-adapter/commit/9739bca1a8983f3f835e92c9327f2b1a2f648103))
+
 ## [1.2.2](https://github.com/webex/sdk-component-adapter/compare/v1.2.1...v1.2.2) (2019-10-30)
 
 
