@@ -1,3 +1,11 @@
+## [1.3.1](https://github.com/webex/sdk-component-adapter/compare/v1.3.0...v1.3.1) (2019-11-15)
+
+
+### Bug Fixes
+
+* **package:** add @webex/test-users ([0bd4572](https://github.com/webex/sdk-component-adapter/commit/0bd457268ed214eaf15f8e96f3b95572ca59b000))
+* **RoomsSdkAdapter:** fetch room every update ([c99b145](https://github.com/webex/sdk-component-adapter/commit/c99b145848d1c0fd978af9ecb10823281cd49fce))
+
 # [1.3.0](https://github.com/webex/sdk-component-adapter/compare/v1.2.2...v1.3.0) (2019-11-15)
 
 
