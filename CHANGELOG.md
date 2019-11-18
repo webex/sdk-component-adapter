@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/webex/sdk-component-adapter/compare/v1.3.1...v1.4.0) (2019-11-18)
+
+
+### Features
+
+* **WebexAdapter:** implement connect/disconnect methods ([fc31be2](https://github.com/webex/sdk-component-adapter/commit/fc31be2621776084d87c695ecf6ea4ae7a30270c))
+
 ## [1.3.1](https://github.com/webex/sdk-component-adapter/compare/v1.3.0...v1.3.1) (2019-11-15)
 
 
