@@ -53,9 +53,6 @@ export async function createIntegrationTestUser() {
 
   user.sdk = createIntegrationSdkInstance(user.token);
 
-  await user.sdk.internal.device.register();
-  await user.sdk.internal.mercury.connect();
-
   return user;
 }
 
@@ -66,9 +63,6 @@ export async function createIntegrationTestUser() {
  * @returns {Promise}
  */
 export async function removeIntegrationTestUser(user) {
-  await user.sdk.internal.mercury.disconnect();
-  await user.sdk.internal.device.unregister();
-
   return removeTestUser({
     ...user,
     conversationServiceUrl: URL_CONVO_SERVICE_INTEGRATION,
