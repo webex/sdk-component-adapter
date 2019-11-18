@@ -12,5 +12,22 @@ export default class WebexSDKAdapter {
   constructor(sdk) {
     this.peopleAdapter = new PeopleSDKAdapter(sdk);
     this.roomsAdapter = new RoomsSDKAdapter(sdk);
+    this.sdk = sdk;
+  }
+
+  /**
+   * Connect to Webex services so SDK can listen for data updates.
+   */
+  async connect() {
+    await this.sdk.internal.device.register();
+    await this.sdk.internal.mercury.connect();
+  }
+
+  /**
+   * Disconnect from Webex services, closing any connections SDK may have opened.
+   */
+  async disconnect() {
+    await this.sdk.internal.mercury.disconnect();
+    await this.sdk.internal.device.unregister();
   }
 }
