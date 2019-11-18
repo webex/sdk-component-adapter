@@ -1,8 +1,9 @@
 import {createIntegrationTestUser, removeIntegrationTestUser} from './testHelper';
-import RoomsSDKAdapter from './RoomsSDKAdapter';
+
+import WebexSDKAdapter from './';
 
 describe('Rooms SDK Adapter', () => {
-  let roomsSDKAdapter, subscription, user;
+  let createdRoom, getRoom$, webexSDKAdapter, subscription, user;
 
   // Since these are integration tests with live data,
   // increase the async "idle" timeout so jest doesn't error early.
@@ -10,33 +11,40 @@ describe('Rooms SDK Adapter', () => {
 
   beforeAll(async () => {
     user = await createIntegrationTestUser();
-  });
-
-  beforeEach(() => {
-    roomsSDKAdapter = new RoomsSDKAdapter(user.sdk);
+    webexSDKAdapter = new WebexSDKAdapter(user.sdk);
+    await webexSDKAdapter.connect();
   });
 
   afterAll(async () => {
-    // This is done after unsubscribing, but since unsubscribe can't be async, manually call it.
-    await user.sdk.rooms.stopListening();
-
     try {
       await removeIntegrationTestUser(user);
+      await webexSDKAdapter.disconnect();
     } catch (reason) {
       // eslint-disable-next-line no-console
-      console.warn('Failed to delete test user for Room SDK Adapter integration tests', reason);
+      console.warn('Failed to delete test user for Room SDK Adapter integration tests.', reason);
     }
   });
 
   describe('getRoom() returns', () => {
-    afterEach(() => {
-      subscription.unsubscribe();
+    beforeEach(async () => {
+      createdRoom = await user.sdk.rooms.create({title: 'Webex Teams Test Room'});
+      getRoom$ = webexSDKAdapter.roomsAdapter.getRoom(createdRoom.id);
+    });
+
+    afterEach(async () => {
+      try {
+        await user.sdk.rooms.remove(createdRoom.id);
+        subscription.unsubscribe();
+        getRoom$ = null;
+        createdRoom = null;
+      } catch (reason) {
+        // eslint-disable-next-line no-console
+        console.warn(`Failed to delete a room "${createdRoom.id}" in Room SDK Adapter integration tests.`, reason);
+      }
     });
 
     test('a room in a proper shape', async (done) => {
-      const createdRoom = await user.sdk.rooms.create({title: 'Webex Teams Test Room'});
-
-      subscription = roomsSDKAdapter.getRoom(createdRoom.id).subscribe((room) => {
+      subscription = getRoom$.subscribe((room) => {
         expect(room).toMatchObject({
           ID: createdRoom.id,
           title: createdRoom.title,
@@ -46,11 +54,10 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('an updated room title after subscribing', async (done) => {
-      const createdRoom = await user.sdk.rooms.create({title: 'Webex Teams Test Room'});
       let hasUpdated = false;
       const updatedTitle = 'Updated Test Title';
 
-      subscription = roomsSDKAdapter.getRoom(createdRoom.id).subscribe(async (room) => {
+      subscription = getRoom$.subscribe(async (room) => {
         // The first subscription event will be the current state of the room.
         if (!hasUpdated) {
           // Update the room title so we get another subscription event.
@@ -65,11 +72,9 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('support for multiple subscriptions', async (done) => {
-      const createdRoom = await user.sdk.rooms.create({title: 'Webex Teams Test Room'});
+      subscription = getRoom$.subscribe();
 
-      subscription = roomsSDKAdapter.getRoom(createdRoom.id).subscribe();
-
-      const secondSubscription = roomsSDKAdapter.getRoom(createdRoom.id).subscribe((room) => {
+      const secondSubscription = getRoom$.subscribe((room) => {
         expect(room).toMatchObject({
           ID: createdRoom.id,
           title: createdRoom.title,
