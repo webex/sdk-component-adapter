@@ -43,7 +43,12 @@ jobs:
           command: npm run test:eslint
       - run:
           name: Unit Test Coverage
-          command: npm run test:coverage
+          command: npm run test:unit -- --coverage
+      - store_test_results:
+          path: test_results
+      - run:
+          name: Integration Test Coverage
+          command: npm run test:integration -- --coverage
       - store_test_results:
           path: test_results
 
