@@ -1,3 +1,6 @@
+import {from} from 'rxjs';
+import {delayWhen, skip} from 'rxjs/operators';
+
 import {createIntegrationTestUser, removeIntegrationTestUser} from './testHelper';
 
 import WebexSDKAdapter from './';
@@ -54,21 +57,17 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('an updated room title after subscribing', async (done) => {
-      let hasUpdated = false;
       const updatedTitle = 'Updated Test Title';
 
-      subscription = getRoom$.subscribe(async (room) => {
-        // The first subscription event will be the current state of the room.
-        if (!hasUpdated) {
-          // Update the room title so we get another subscription event.
-          await user.sdk.rooms.update({id: room.ID, title: updatedTitle});
-          hasUpdated = true;
-        } else {
-          // Once we've updated the title, the next event should include the updated title.
+      subscription = getRoom$
+        .pipe(
+          delayWhen(() => from(user.sdk.rooms.update({id: createdRoom.id, title: updatedTitle}))),
+          skip(1)
+        )
+        .subscribe((room) => {
           expect(room.title).toBe(updatedTitle);
           done();
-        }
-      });
+        });
     });
 
     test('support for multiple subscriptions', async (done) => {
