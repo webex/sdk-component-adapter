@@ -46,7 +46,7 @@ describe('Rooms SDK Adapter', () => {
       }
     });
 
-    test('a room in a proper shape', async (done) => {
+    test('a room in a proper shape', (done) => {
       subscription = getRoom$.subscribe((room) => {
         expect(room).toMatchObject({
           ID: createdRoom.id,
@@ -56,7 +56,7 @@ describe('Rooms SDK Adapter', () => {
       });
     });
 
-    test('an updated room title after subscribing', async (done) => {
+    test('an updated room title after subscribing', (done) => {
       const updatedTitle = 'Updated Test Title';
 
       subscription = getRoom$
@@ -70,7 +70,7 @@ describe('Rooms SDK Adapter', () => {
         });
     });
 
-    test('support for multiple subscriptions', async (done) => {
+    test('support for multiple subscriptions', (done) => {
       subscription = getRoom$.subscribe();
 
       const secondSubscription = getRoom$.subscribe((room) => {
