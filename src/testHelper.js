@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import {createTestUser, removeTestUser} from '@webex/test-users';
 import Webex from 'webex';
+import {constructHydraId} from '@webex/common';
 
 // Used to get WEBEX_CLIENT_ID & WEBEX_CLIENT_SECRET for test user creation access
 dotenv.config();
@@ -67,4 +68,14 @@ export async function removeIntegrationTestUser(user) {
     ...user,
     conversationServiceUrl: URL_CONVO_SERVICE_INTEGRATION,
   });
+}
+
+/**
+ * Constructs a Hydra ID for a given UUID.
+ *
+ * @param {String} UUID Person UUID
+ * @returns {string}
+ */
+export function getPersonHydraID(UUID) {
+  return constructHydraId('PEOPLE', UUID);
 }
