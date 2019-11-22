@@ -59,8 +59,10 @@
     "husky": "^3.0.5",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
+    "jest-puppeteer": "^4.3.0",
     "nodemon": "^1.19.4",
     "prettier": "^1.18.2",
+    "puppeteer": "^2.0.0",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -83,6 +85,7 @@
     ]
   },
   "jest": {
+    "preset": "jest-puppeteer",
     "reporters": [
       "default",
       "jest-junit"
