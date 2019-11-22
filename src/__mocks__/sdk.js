@@ -15,7 +15,16 @@ export const mockSDKPerson = {
 };
 
 export const mockSDKMeeting = {
-  id: 'id',
+  ID: 'id',
+  title: 'meeting sdk ',
+  startTime: '1:00',
+  endTime: '2:00',
+  localVideo: 'localVideo',
+  localAudio: 'localAudio',
+  localShare: 'localShare',
+  remoteVideo: 'remoteVideo',
+  remoteAudio: 'remoteAudio',
+  remoteShare: 'remoteShare',
 };
 
 /**

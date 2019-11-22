@@ -1,14 +1,11 @@
 import {MeetingsAdapter} from '@webex/component-adapter-interfaces';
 import {Observable} from 'rxjs';
-import {publish, refCount} from 'rxjs/operators';
-
-export const ROOM_UPDATED_EVENT = 'updated';
+import {publishReplay, refCount} from 'rxjs/operators';
 
 /**
  * The `MeetingsSDKAdapter` is an implementation of the `MeetingsAdapter` interface.
  * This adapter utilizes the Webex JS SDK to create and join webex meetings.
  *
- * @export
  * @class MeetingsSDKAdapter
  * @extends {MeetingsAdapter}
  */
@@ -16,69 +13,41 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   constructor(datasource) {
     super(datasource);
     this.meetingsObservables = {};
-    this.meetingControls = {};
   }
 
-  connect() {
+  async connect() {
     // Check if the meetings is registred
     if (!this.datasource.meeting.registered) {
       this.datasource.meetings.register();
     }
 
     this.registerEvents();
-    this.syncMeetings();
+    await this.datasource.meetings.syncMeetings();
   }
 
-  syncMeetings() {
-    this.datasource.meetings.syncMeetings();
+  async disconnect() {
+    await this.datasource.meetings.unregister();
   }
 
-  meetingAdded(meetingInstance) {
-    const {type, meeting} = meetingInstance;
+  fetchMeeting(ID) {
+    const meeting = this.datasource.meetings.getMeetingByType('id', ID);
 
-    if (type === 'INCOMING') {
-      // The meeting get acknowleged but we dont have to show any UI indication
-      meeting.acknowledge(type);
+    if (meeting) {
+      return {
+        ID: meeting.Id,
+        title: meeting.title,
+        startTime: meeting.startTime,
+        endTime: meeting.endTime,
+        localVideo: meeting.localVideo,
+        localAudio: meeting.remoteVideo,
+        localShare: meeting.localShare,
+        remoteVideo: meeting.remoteVideo,
+        remoteAudio: meeting.remoteAudio,
+        remoteShare: meeting.remoteShare,
+      };
     }
 
-    // TODO: check if its correct
-    this.createObservable(meeting.id, meetingInstance);
-
-    this.registerMeetingsListener(meeting);
-  }
-
-  meetingRemoved(meetingInstance) {
-    this.meetingsObservables[meetingInstance.id].complet();
-    // TODO: check how to unsubscribe and delete
-    delete this.meetingsObservables[meetingInstance.id];
-  }
-
-  registerEvents() {
-    this.datasource.meetings.on('meeting:added', this.meetingAdded);
-    this.datasource.meetings.on('meeting:removed', this.meetingRemoved);
-  }
-
-  generateMeetingObject(meeting) {
-    return {
-      id: meeting.Id,
-    };
-  }
-
-  createObservable(ID, meeting) {
-    const source = Observable.create((observer) => {
-      observer.next(meeting).catch((error) => observer.error(error));
-
-      return () => {
-        // Cleanup when subscription count is 0
-        delete this.meetingsObservables[ID];
-      };
-    });
-
-    // Convert to a multicast observable
-    this.meetingsObservables[ID] = source.pipe(
-      publish(),
-      refCount()
-    );
+    return null;
   }
 
   /**
@@ -89,14 +58,32 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @memberof MeetingsSDKAdapter
    */
   getMeeting(ID) {
-    const meeting = this.datasource.meetings.getMeetingByType('id', ID);
+    const meeting = this.fetchMeeting(ID);
 
     if (!(ID in this.meetingsObservables)) {
-      this.createObservable(ID, meeting);
+      const source = Observable.create((observer) => {
+        if (meeting) {
+          observer.next(meeting);
+        } else {
+          observer.error(new Error('No meeting object'));
+        }
+
+        observer.complete();
+
+        return () => {
+          // Cleanup when subscription count is 0
+          delete this.meetingsObservables[ID];
+        };
+      });
+
+      // Convert to a multicast observable
+      this.meetingsObservables[ID] = source.pipe(
+        publishReplay(1),
+        refCount()
+      );
     }
 
     // This will be just ID which will be the correlation ID
     return this.meetingsObservables[ID];
-    // return this.generateMeetingObject(meeting);
   }
 }

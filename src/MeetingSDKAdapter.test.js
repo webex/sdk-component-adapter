@@ -11,7 +11,7 @@ describe('Meetings SDK Adapter', () => {
     meetingSDKAdapter = new MeetingSDKAdapter(mockSDK);
   });
 
-  describe('getMeeting() functionality', () => {
+  describe('getMeeting()', () => {
     test('returns an observable', () => {
       expect(isObservable(meetingSDKAdapter.getMeeting())).toBeTruthy();
     });
@@ -20,19 +20,20 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.getMeeting('id').subscribe((meeting) => {
         expect(meeting).toEqual(
           expect.objectContaining({
-            id: mockSDKMeeting.id,
+            ID: mockSDKMeeting.id,
+            title: mockSDKMeeting.title,
+            startTime: mockSDKMeeting.startTime,
+            endTime: mockSDKMeeting.endTime,
+            localVideo: mockSDKMeeting.localVideo,
+            localAudio: mockSDKMeeting.remoteVideo,
+            localShare: mockSDKMeeting.localShare,
+            remoteVideo: mockSDKMeeting.remoteVideo,
+            remoteAudio: mockSDKMeeting.remoteAudio,
+            remoteShare: mockSDKMeeting.remoteShare,
           })
         );
         done();
       });
-    });
-
-    test('listens to meeting events when subscribing', async (done) => {
-      await meetingSDKAdapter.connect();
-      expect(mockSDK.meetings.on.calls[0][0]).toEqual('meeting:added');
-      expect(mockSDK.meetings.register).toHaveBeenCalled();
-      expect(mockSDK.meetings.syncMeeting).toHaveBeenCalled();
-      done();
     });
   });
 
