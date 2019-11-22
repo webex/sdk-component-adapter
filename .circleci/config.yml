@@ -1,10 +1,13 @@
 version: 2.1
+
 # reusable environment for all jobs
 executors:
   main-executor:
     working_directory: ~/sdk-component-adapter
     docker:
-      - image: circleci/node:12.7.0
+      - image: circleci/node:12.7.0-browsers
+        environment:
+          NODE_ENV: development # Only needed if puppeteer is in `devDependencies`
 
 # reusable command for all jobs
 commands:
