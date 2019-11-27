@@ -6,7 +6,9 @@
     "jest": true,
     "node": true
   },
-  "globals": {},
+  "globals": {
+    "document": true
+  },
   "rules": {
     "arrow-body-style": [
       "error",
