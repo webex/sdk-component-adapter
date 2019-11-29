@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <main>
+      <table style="width:100%">
+        <tr>
+          <th>
+            Meeting Sample
+          </th>
+        </tr>
+        <td>
+          <form id="dialer">
+            <fieldset>
+              <legend>Dialer</legend>
+              <input
+                id="invitee"
+                name="invitee"
+                placeholder="Person ID or Email Address or SIP URI or Room ID"
+                type="text"
+              />
+              <input title="dial" type="submit" value="dial" />
+            </fieldset>
+          </form>
+          <div style="display: flex; justify-content: space-between;">
+            <div>
+              <h2>Local Stream:</h2>
+              <video style="width:25rem" id="self-view" muted autoplay playsinline></video>
+            </div>
+            <div>
+              <h2>Remote Stream:</h2>
+              <audio id="remote-view-audio" autoplay playsinline></audio>
+              <video style="width:25rem" id="remote-view-video" autoplay playsinline></video>
+            </div>
+          </div>
+        </td>
+      </table>
+    </main>
+  </body>
+</html>

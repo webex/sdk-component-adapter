@@ -2,7 +2,8 @@ import puppeteer from 'puppeteer';
 
 describe('Jest-Puppeteer', () => {
   test('work properly', async () => {
-    const url = 'http://localhost:4444/';
+    jest.setTimeout(50000);
+    const url = 'http://localhost:1234/';
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
@@ -10,7 +11,7 @@ describe('Jest-Puppeteer', () => {
 
     const bodyHTML = await page.evaluate(() => document.body.innerHTML);
 
-    expect(bodyHTML).toContain('Hello World!');
+    expect(bodyHTML).toContain('Meeting Sample');
     browser.close();
   });
 });
