@@ -22,3 +22,5 @@ const webexSDKAdapter = new WebexSDKAdapter(webex);
 
 // --------------------------------------------------------------------------------
 // Add your test/development code here
+
+export default webexSDKAdapter;
