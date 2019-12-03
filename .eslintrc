@@ -1,7 +1,7 @@
 {
   "parser": "babel-eslint",
   "extends": ["@webex/eslint-config-base", "plugin:prettier/recommended"],
-  "plugins": ["import", "prettier"],
+  "plugins": ["import", "prettier", "jest"],
   "env": {
     "jest": true,
     "node": true
@@ -30,6 +30,7 @@
     "import/no-unresolved": 2,
     "import/prefer-default-export": 0,
     "import/no-named-as-default": 0,
+    "jest/prefer-hooks-on-top": "error",
     "no-confusing-arrow": ["error"],
     "no-param-reassign": [
       "error",
