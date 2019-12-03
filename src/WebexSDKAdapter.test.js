@@ -10,11 +10,11 @@ describe('Webex SDK Adapter', () => {
     webexSDKAdapter = new WebexSDKAdapter(mockSDK);
   });
 
-  test('has a rooms adapter instance', () => {
-    expect(webexSDKAdapter.roomsAdapter).toBeInstanceOf(RoomsSDKAdapter);
-  });
-
   afterEach(() => {
     webexSDKAdapter = null;
+  });
+
+  test('has a rooms adapter instance', () => {
+    expect(webexSDKAdapter.roomsAdapter).toBeInstanceOf(RoomsSDKAdapter);
   });
 });
