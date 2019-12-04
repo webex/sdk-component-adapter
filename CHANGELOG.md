@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/webex/sdk-component-adapter/compare/v1.4.0...v1.4.1) (2019-12-04)
+
+
+### Bug Fixes
+
+* **package:** add eslint-plugin-jest ([5a8a52a](https://github.com/webex/sdk-component-adapter/commit/5a8a52aca0630703d6ea0082d1de10d90ee7ee2d))
+
 # [1.4.0](https://github.com/webex/sdk-component-adapter/compare/v1.3.1...v1.4.0) (2019-11-18)
 
 
