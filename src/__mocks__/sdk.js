@@ -55,6 +55,7 @@ export default function createMockSDK() {
       get: jest.fn(() => Promise.resolve(mockSDKPerson)),
     },
     meetings: {
+      create: jest.fn(() => Promise.resolve(mockSDKMeeting)),
       getMeetingByType: jest.fn((_, ID) => (ID === 'meetingID' ? mockSDKMeeting : undefined)),
     },
   };

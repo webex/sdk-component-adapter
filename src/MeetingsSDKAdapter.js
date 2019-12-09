@@ -109,19 +109,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(target) {
     return from(this.datasource.meetings.create(target)).pipe(
-      map(({id, destination, sipuri}) => {
-        this.meetings[id] = {
-          ID: id,
-          title: destination || sipuri,
-          localVideo: null,
-          localAudio: null,
-          localShare: null,
-          remoteStream: null,
-          remoteShare: null,
-        };
+      map(
+        ({id, destination, sipuri}) => {
+          this.meetings[id] = {
+            ID: id,
+            title: destination || sipuri,
+            localVideo: null,
+            localAudio: null,
+            localShare: null,
+            remoteStream: null,
+            remoteShare: null,
+          };
 
-        return this.meetings[id];
-      })
+          return this.meetings[id];
+        },
+        (error) => {
+          // eslint-disable-next-line no-console
+          console.error(`Unable to create a meeting with "${target}"`, error);
+        }
+      )
     );
   }
 
