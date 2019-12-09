@@ -1,10 +1,11 @@
 import * as rxjs from 'rxjs';
+import {flatMap} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
 import createMockSDK from './__mocks__/sdk';
 
 describe('Meetings SDK Adapter', () => {
-  let meetingSDKAdapter, mockSDK, meetingID, meeting;
+  let meetingSDKAdapter, mockSDK, meetingID, meeting, target;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
@@ -20,6 +21,7 @@ describe('Meetings SDK Adapter', () => {
       remoteStream: null,
       title: 'my meeting',
     };
+    target = 'target';
   });
 
   afterEach(() => {
@@ -28,6 +30,7 @@ describe('Meetings SDK Adapter', () => {
     mockSDK = null;
     meetingSDKAdapter = null;
     meetingID = null;
+    target = null;
   });
 
   describe('attachMedia()', () => {
@@ -59,16 +62,45 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('getMeeting()', () => {
-    test('returns a meeting in a proper shape', (done) => {
-      meetingSDKAdapter.getMeeting(meetingID).subscribe((getMeeting) => {
-        expect(getMeeting).toMatchObject(meeting);
+  describe('createMeeting()', () => {
+    test('returns a new meeting in a proper shape', (done) => {
+      meetingSDKAdapter.createMeeting(target).subscribe((newMeeting) => {
+        expect(newMeeting).toMatchObject(meeting);
         done();
       });
     });
 
+    test('throws error on failed meeting push request', (done) => {
+      const wrongTarget = 'wrongTarget';
+      const errorMessage = `Unable to create a meeting "${wrongTarget}"`;
+
+      meetingSDKAdapter.datasource.meetings.create = jest.fn(() => Promise.reject(errorMessage));
+      meetingSDKAdapter.createMeeting(target).subscribe(
+        () => {},
+        (error) => {
+          expect(error).toBe(errorMessage);
+          done();
+        }
+      );
+    });
+  });
+
+  describe('getMeeting()', () => {
+    test('returns a meeting in a proper shape', (done) => {
+      meetingSDKAdapter
+        .createMeeting(target)
+        .pipe(flatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
+        .subscribe((getMeeting) => {
+          expect(getMeeting).toMatchObject(meeting);
+          done();
+        });
+    });
+
     test('stops listening to events when unsubscribing', () => {
-      const subscription = meetingSDKAdapter.getMeeting(meetingID).subscribe();
+      const subscription = meetingSDKAdapter
+        .createMeeting(target)
+        .pipe(flatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
+        .subscribe();
 
       subscription.unsubscribe();
       expect(meetingSDKAdapter.getMeetingObservables).toEqual({});
@@ -78,13 +110,16 @@ describe('Meetings SDK Adapter', () => {
       meetingID = 'invalid meetingID';
       const errorMessage = `Could not find meeting with ID "${meetingID}"`;
 
-      meetingSDKAdapter.getMeeting(meetingID).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe(errorMessage);
-          done();
-        }
-      );
+      meetingSDKAdapter
+        .createMeeting(target)
+        .pipe(flatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
+        .subscribe(
+          () => {},
+          (error) => {
+            expect(error.message).toBe(errorMessage);
+            done();
+          }
+        );
     });
   });
 });
