@@ -31,7 +31,7 @@
   "license": "MIT",
   "dependencies": {
     "@webex/common": "^1.80.43",
-    "@webex/component-adapter-interfaces": "^1.6.0",
+    "@webex/component-adapter-interfaces": "^1.7.0",
     "rxjs": "^6.5.3"
   },
   "devDependencies": {
