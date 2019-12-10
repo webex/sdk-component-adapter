@@ -1,8 +1,9 @@
-import {MeetingsAdapter} from '@webex/component-adapter-interfaces';
+import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
 import {concat, from, fromEvent, Observable} from 'rxjs';
 import {filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
+const JOIN_CONTROL = 'join-meeting';
 const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
@@ -20,6 +21,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     super(datasource);
     this.getMeetingObservables = {};
     this.meetings = {};
+
+    this.meetingControls[JOIN_CONTROL] = {
+      ID: JOIN_CONTROL,
+      action: this.joinMeeting.bind(this),
+      display: this.joinControl.bind(this),
+    };
   }
 
   /**
@@ -165,6 +172,26 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // eslint-disable-next-line no-console
         console.error(`Unable to join meeting "${ID}"`, error);
       });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a meeting control.
+   *
+   * @returns {Observable.<MeetingControlDisplay>}
+   * @memberof MeetingJSONAdapter
+   * @private
+   */
+  joinControl() {
+    return Observable.create((observer) => {
+      observer.next({
+        ID: JOIN_CONTROL,
+        text: 'Join meeting',
+        tooltip: 'Join meeting',
+        state: MeetingControlState.ACTIVE,
+      });
+
+      observer.complete();
+    });
   }
 
   /**
