@@ -22,6 +22,7 @@ export const mockSDKMeeting = {
   register: jest.fn(() => Promise.resolve()),
   syncMeetings: jest.fn(() => Promise.resolve()),
   unregister: jest.fn(() => Promise.resolve()),
+  join: jest.fn(() => Promise.resolve()),
 };
 
 /**

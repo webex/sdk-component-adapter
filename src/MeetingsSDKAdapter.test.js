@@ -17,8 +17,8 @@ describe('Meetings SDK Adapter', () => {
       localAudio: null,
       localShare: null,
       localVideo: null,
-      remoteShare: null,
       remoteStream: null,
+      remoteShare: null,
       title: 'my meeting',
     };
     target = 'target';
@@ -47,6 +47,30 @@ describe('Meetings SDK Adapter', () => {
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         localAudio: 'localAudio',
         localVideo: 'localVideo',
+      });
+    });
+
+    test('sets `remoteAudio`, if the event type is `remoteAudio`', () => {
+      const event = {
+        type: 'remoteAudio',
+        stream: 'remoteAudio',
+      };
+
+      meetingSDKAdapter.attachMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        remoteAudio: 'remoteAudio',
+      });
+    });
+
+    test('sets `remoteVideo`, if the event type is `remoteVideo`', () => {
+      const event = {
+        type: 'remoteVideo',
+        stream: 'remoteVideo',
+      };
+
+      meetingSDKAdapter.attachMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        remoteVideo: 'remoteVideo',
       });
     });
 
