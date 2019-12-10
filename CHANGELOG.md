@@ -1,3 +1,17 @@
+# [1.6.0](https://github.com/webex/sdk-component-adapter/compare/v1.5.0...v1.6.0) (2019-12-10)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** fix default meeting shape ([02f3361](https://github.com/webex/sdk-component-adapter/commit/02f33619bc458614d637ea8626e01b5d23878f96))
+* **MeetingSdkAdapter:** leave attachMedia default case empty ([1f554c7](https://github.com/webex/sdk-component-adapter/commit/1f554c79fc866dc7c47e5088404e5d3ded73a0ec))
+* **package:** upgrade @webex/component-adapter-interfaces to 1.7.0 ([914e9ab](https://github.com/webex/sdk-component-adapter/commit/914e9ab9dd645855b4a0d7f2aa6fa03ecadabf0f))
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement joinMeeting method ([3542ff4](https://github.com/webex/sdk-component-adapter/commit/3542ff471ad8e99e4fd28acc9471427041b91d59))
+
 # [1.5.0](https://github.com/webex/sdk-component-adapter/compare/v1.4.1...v1.5.0) (2019-12-10)
 
 
