@@ -125,7 +125,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             localVideo: null,
             localAudio: null,
             localShare: null,
-            remoteStream: null,
+            remoteAudio: null,
+            remoteVideo: null,
             remoteShare: null,
           };
 

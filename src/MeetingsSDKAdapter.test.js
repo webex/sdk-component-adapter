@@ -17,7 +17,8 @@ describe('Meetings SDK Adapter', () => {
       localAudio: null,
       localShare: null,
       localVideo: null,
-      remoteStream: null,
+      remoteAudio: null,
+      remoteVideo: null,
       remoteShare: null,
       title: 'my meeting',
     };
