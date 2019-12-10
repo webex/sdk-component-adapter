@@ -103,7 +103,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         this.meetings[ID] = {...meeting, remoteVideo: stream};
         break;
       default:
-        this.meetings[ID] = {...meeting};
         break;
     }
   }
