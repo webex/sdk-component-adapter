@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/webex/sdk-component-adapter/compare/v1.6.0...v1.7.0) (2019-12-10)
+
+
+### Features
+
+* **MeetingSdkAdapter:** add joinMeeting control meeting ([ae19cc1](https://github.com/webex/sdk-component-adapter/commit/ae19cc12fad05f8d837d23a09486784077749fcf))
+
 # [1.6.0](https://github.com/webex/sdk-component-adapter/compare/v1.5.0...v1.6.0) (2019-12-10)
 
 
