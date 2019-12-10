@@ -2,8 +2,11 @@ import {MeetingsAdapter} from '@webex/component-adapter-interfaces';
 import {concat, from, fromEvent, Observable} from 'rxjs';
 import {filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
 
-const MEDIA_TYPE_LOCAL = 'local';
 const EVENT_MEDIA_READY = 'media:ready';
+const MEDIA_TYPE_LOCAL = 'local';
+const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
+const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
+const MEDIA_EVENT_TYPES = [MEDIA_TYPE_LOCAL, MEDIA_TYPE_REMOTE_AUDIO, MEDIA_TYPE_REMOTE_VIDEO];
 
 /**
  * The `MeetingsSDKAdapter` is an implementation of the `MeetingsAdapter` interface.
@@ -63,7 +66,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             localStream,
             mediaSettings,
           })
-          .then()
           .catch((error) => {
             // eslint-disable-next-line no-console
             console.error(`Unable to add local media to meeting "${ID}"`, error);
@@ -93,6 +95,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           localAudio: stream.getAudioTracks()[0],
           localVideo: stream.getVideoTracks()[0],
         };
+        break;
+      case MEDIA_TYPE_REMOTE_AUDIO:
+        this.meetings[ID] = {...meeting, remoteAudio: stream};
+        break;
+      case MEDIA_TYPE_REMOTE_VIDEO:
+        this.meetings[ID] = {...meeting, remoteVideo: stream};
         break;
       default:
         this.meetings[ID] = {...meeting};
@@ -144,6 +152,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Attempts to join the meeting of the given meeting ID.
+   * If the meeting is successfully joined, a ready event is dispatched.
+   *
+   * @param {string} ID ID of the meeting to join
+   * @memberof MeetingsSDKAdapter
+   */
+  joinMeeting(ID) {
+    this.fetchMeeting(ID)
+      .join()
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to join meeting "${ID}"`, error);
+      });
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -166,7 +190,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       // Listen to attach mediaStream source objects to the existing meeting
       const meetingWithReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
-        filter((event) => event.type === MEDIA_TYPE_LOCAL),
+        filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
         map((event) => this.attachMedia(ID, event)),
         map(() => this.meetings[ID])
       );
