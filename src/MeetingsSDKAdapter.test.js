@@ -110,6 +110,20 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('joinControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.joinControl().subscribe((dataDisplay) => {
+        expect(dataDisplay).toMatchObject({
+          ID: 'join-meeting',
+          text: 'Join meeting',
+          tooltip: 'Join meeting',
+          state: 'active',
+        });
+        done();
+      });
+    });
+  });
+
   describe('getMeeting()', () => {
     test('returns a meeting in a proper shape', (done) => {
       meetingSDKAdapter
