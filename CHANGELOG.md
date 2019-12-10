@@ -1,3 +1,17 @@
+# [1.5.0](https://github.com/webex/sdk-component-adapter/compare/v1.4.1...v1.5.0) (2019-12-10)
+
+
+### Bug Fixes
+
+* **package:** update  @webex/component-adapter-interfaces to 1.6.0 ([27e5d5f](https://github.com/webex/sdk-component-adapter/commit/27e5d5f389b8db6644e7714f77ef2edb470b726b))
+
+
+### Features
+
+* **WebexSdkAdapter:** connect/disconnect meeting adapter ([c30f213](https://github.com/webex/sdk-component-adapter/commit/c30f2138397d9a2252c71570bb2c5682f816b4d9))
+* **MeetingsSdkAdapter:** implement adapter ([9b326cf](https://github.com/webex/sdk-component-adapter/commit/9b326cfc3c3ad396f23177a662e1a14ebfcf9ea7))
+* **MeetingAdapter:** implement createMeeting method ([f0de9b8](https://github.com/webex/sdk-component-adapter/commit/f0de9b8e5d2b1a6924d2f57351dc95343a944e19))
+
 ## [1.4.1](https://github.com/webex/sdk-component-adapter/compare/v1.4.0...v1.4.1) (2019-12-04)
 
 
