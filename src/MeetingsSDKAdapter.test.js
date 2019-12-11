@@ -36,6 +36,10 @@ describe('Meetings SDK Adapter', () => {
 
   describe('attachMedia()', () => {
     test('sets `localAudio` and `localVideo`, if the event type is `local`', () => {
+      const mockMediaStreamInstance = {
+        getAudioTrack: () => [],
+        getVideoTrack: () => [],
+      };
       const event = {
         type: 'local',
         stream: {
@@ -44,10 +48,12 @@ describe('Meetings SDK Adapter', () => {
         },
       };
 
+      global.MediaStream = jest.fn(() => mockMediaStreamInstance);
+
       meetingSDKAdapter.attachMedia(meetingID, event);
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
-        localAudio: 'localAudio',
-        localVideo: 'localVideo',
+        localAudio: mockMediaStreamInstance,
+        localVideo: mockMediaStreamInstance,
       });
     });
 
