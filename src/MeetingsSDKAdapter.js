@@ -1,9 +1,12 @@
 import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
-import {concat, from, fromEvent, Observable} from 'rxjs';
-import {filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
+import {from, fromEvent, Observable} from 'rxjs';
+import {filter, finalize, map, merge, publishReplay, refCount} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
+const EVENT_MEDIA_LOCAL_MUTE = 'media:mute';
 const JOIN_CONTROL = 'join-meeting';
+const MEDIA_TYPE_LOCAL_MUTE_AUDIO = 'localMuteAudio';
+const MEDIA_TYPE_LOCAL_MUTE_VIDEO = 'localMuteVideo';
 const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
@@ -195,6 +198,48 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Attempts to mute the microphone of the given meeting ID.
+   * If the microphone is successfully muted, an audio mute event is dispatched.
+   *
+   * @param {string} ID ID of the meeting to mute audio
+   * @memberof MeetingsSDKAdapter
+   */
+  muteAudioMeeting(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    sdkMeeting
+      .muteAudio()
+      .then(() => {
+        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {type: MEDIA_TYPE_LOCAL_MUTE_AUDIO});
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to mute audio for meeting "${ID}"`, error);
+      });
+  }
+
+  /**
+   * Attempts to mute the camera of the given meeting ID.
+   * If the camera is successfully muted, a video mute event is dispatched.
+   *
+   * @param {string} ID ID of the meeting to mute video
+   * @memberof MeetingsSDKAdapter
+   */
+  muteVideoMeeting(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    sdkMeeting
+      .muteVideo()
+      .then(() => {
+        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {type: MEDIA_TYPE_LOCAL_MUTE_VIDEO});
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to mute video for meeting "${ID}"`, error);
+      });
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -204,7 +249,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   getMeeting(ID) {
     if (!(ID in this.getMeetingObservables)) {
       const sdkMeeting = this.fetchMeeting(ID);
-
       const getMeeting$ = Observable.create((observer) => {
         if (this.meetings[ID]) {
           observer.next(this.meetings[ID]);
@@ -222,7 +266,16 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         map(() => this.meetings[ID])
       );
 
-      const getMeetingWithEvents$ = concat(getMeeting$, meetingWithReadyEvent$).pipe(
+      // Listen to mute event to return the meeting object
+      const meetingWithLocalMuteEvents$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_MUTE).pipe(
+        map(() => this.meetings[ID])
+      );
+
+      // Merge all event observables to update the existing meeting object simultaneously
+      const meetingsWithEvents$ = merge(meetingWithReadyEvent$, meetingWithLocalMuteEvents$);
+
+      const getMeetingWithEvents$ = getMeeting$.pipe(
+        meetingsWithEvents$,
         finalize(() => {
           // clean up
           delete this.meetings[ID];
