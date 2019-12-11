@@ -6,7 +6,9 @@
     "jest": true,
     "node": true
   },
-  "globals": {},
+  "globals": {
+    "MediaStream": true
+  },
   "rules": {
     "arrow-body-style": [
       "error",
