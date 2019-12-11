@@ -18,6 +18,7 @@ export const mockSDKMeeting = {
   id: 'meetingID',
   sipuri: 'my meeting',
   addMedia: jest.fn(() => Promise.resolve()),
+  emit: jest.fn(() => Promise.resolve()),
   getMediaStreams: jest.fn(() => Promise.resolve(['localStream', 'localShare'])),
   register: jest.fn(() => Promise.resolve()),
   syncMeetings: jest.fn(() => Promise.resolve()),

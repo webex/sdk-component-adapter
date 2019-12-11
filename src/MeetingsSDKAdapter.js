@@ -1,12 +1,12 @@
 import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
-import {from, fromEvent, Observable} from 'rxjs';
+import {concat, from, fromEvent, Observable} from 'rxjs';
 import {filter, finalize, map, merge, publishReplay, refCount} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
-const EVENT_MEDIA_LOCAL_MUTE = 'media:mute';
+const EVENT_MEDIA_LOCAL_MUTE = 'adapter:media:local:mute';
 const JOIN_CONTROL = 'join-meeting';
-const MEDIA_TYPE_LOCAL_MUTE_AUDIO = 'localMuteAudio';
-const MEDIA_TYPE_LOCAL_MUTE_VIDEO = 'localMuteVideo';
+const MUTE_AUDIO_CONTROL = 'mute-audio';
+const MUTE_VIDEO_CONTROL = 'mute-video';
 const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
@@ -29,6 +29,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: JOIN_CONTROL,
       action: this.joinMeeting.bind(this),
       display: this.joinControl.bind(this),
+    };
+
+    this.meetingControls[MUTE_AUDIO_CONTROL] = {
+      ID: MUTE_AUDIO_CONTROL,
+      action: this.muteAudioMeeting.bind(this),
+      display: this.muteAudioControl.bind(this),
+    };
+
+    this.meetingControls[MUTE_VIDEO_CONTROL] = {
+      ID: MUTE_VIDEO_CONTROL,
+      action: this.muteVideoMeeting.bind(this),
+      display: this.muteVideoControl.bind(this),
     };
   }
 
@@ -210,12 +222,48 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     sdkMeeting
       .muteAudio()
       .then(() => {
-        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {type: MEDIA_TYPE_LOCAL_MUTE_AUDIO});
+        // Due to SDK limitation around promises, we need to emit a custom event for audio mute action
+        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {control: MUTE_AUDIO_CONTROL});
       })
       .catch((error) => {
         // eslint-disable-next-line no-console
         console.error(`Unable to mute audio for meeting "${ID}"`, error);
       });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a mute meeting audio control.
+   *
+   * @param {string} ID ID of the meeting to mute audio
+   * @returns {Observable.<MeetingControlDisplay>}
+   * @memberof MeetingJSONAdapter
+   */
+  muteAudioControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const muted = {
+      ID: MUTE_AUDIO_CONTROL,
+      icon: 'microphone',
+      tooltip: 'Mute',
+      state: MeetingControlState.ACTIVE,
+      text: null,
+    };
+
+    const getDisplayData$ = Observable.create((observer) => {
+      if (sdkMeeting) {
+        observer.next(muted);
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to mute audio on`));
+      }
+
+      observer.complete();
+    });
+
+    const muteEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_MUTE).pipe(
+      filter((event) => event.control === MUTE_AUDIO_CONTROL),
+      map(() => ({...muted, state: MeetingControlState.INACTIVE}))
+    );
+
+    return concat(getDisplayData$, muteEvent$);
   }
 
   /**
@@ -231,12 +279,48 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     sdkMeeting
       .muteVideo()
       .then(() => {
-        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {type: MEDIA_TYPE_LOCAL_MUTE_VIDEO});
+        // Due to SDK limitation around promises, we need to emit a custom event for video mute action
+        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {control: MUTE_VIDEO_CONTROL});
       })
       .catch((error) => {
         // eslint-disable-next-line no-console
         console.error(`Unable to mute video for meeting "${ID}"`, error);
       });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a mute meeting video control.
+   *
+   * @param {string} ID ID of the meeting to mute video
+   * @returns {Observable.<MeetingControlDisplay>}
+   * @memberof MeetingJSONAdapter
+   */
+  muteVideoControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const muted = {
+      ID: MUTE_VIDEO_CONTROL,
+      icon: 'camera',
+      tooltip: 'Mute',
+      state: MeetingControlState.ACTIVE,
+      text: null,
+    };
+
+    const getDisplayData$ = Observable.create((observer) => {
+      if (sdkMeeting) {
+        observer.next(muted);
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to mute video on`));
+      }
+
+      observer.complete();
+    });
+
+    const muteEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_MUTE).pipe(
+      filter((event) => event.control === MUTE_VIDEO_CONTROL),
+      map(() => ({...muted, state: MeetingControlState.INACTIVE}))
+    );
+
+    return concat(getDisplayData$, muteEvent$);
   }
 
   /**

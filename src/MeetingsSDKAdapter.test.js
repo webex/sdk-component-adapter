@@ -124,6 +124,60 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('muteAudioControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.muteAudioControl(meetingID).subscribe((dataDisplay) => {
+        expect(dataDisplay).toMatchObject({
+          ID: 'mute-audio',
+          icon: 'microphone',
+          tooltip: 'Mute',
+          state: 'active',
+          text: null,
+        });
+        done();
+      });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.fetchMeeting = jest.fn();
+
+      meetingSDKAdapter.muteAudioControl(meetingID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to mute audio on');
+          done();
+        }
+      );
+    });
+  });
+
+  describe('muteVideoControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.muteVideoControl(meetingID).subscribe((dataDisplay) => {
+        expect(dataDisplay).toMatchObject({
+          ID: 'mute-video',
+          icon: 'camera',
+          tooltip: 'Mute',
+          state: 'active',
+          text: null,
+        });
+        done();
+      });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.fetchMeeting = jest.fn();
+
+      meetingSDKAdapter.muteVideoControl(meetingID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to mute video on');
+          done();
+        }
+      );
+    });
+  });
+
   describe('getMeeting()', () => {
     test('returns a meeting in a proper shape', (done) => {
       meetingSDKAdapter
