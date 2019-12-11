@@ -114,8 +114,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       case MEDIA_TYPE_LOCAL:
         this.meetings[ID] = {
           ...meeting,
-          localAudio: stream.getAudioTracks()[0],
-          localVideo: stream.getVideoTracks()[0],
+          localAudio: new MediaStream(stream.getAudioTracks()),
+          localVideo: new MediaStream(stream.getVideoTracks()),
         };
         break;
       case MEDIA_TYPE_REMOTE_AUDIO:
