@@ -1,3 +1,16 @@
+# [1.8.0](https://github.com/webex/sdk-component-adapter/compare/v1.7.0...v1.8.0) (2019-12-12)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** convert local tracks to streams ([e793690](https://github.com/webex/sdk-component-adapter/commit/e793690e337547df40de03c9d6afff663cb165a1))
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement audio & video mute functionalities ([5edd0cd](https://github.com/webex/sdk-component-adapter/commit/5edd0cdefce8e50319e9a23f9c054e5750fb1815))
+* **MeetingSdkAdapter:** implement mute audio & video contorl methods ([44d965f](https://github.com/webex/sdk-component-adapter/commit/44d965fc8e377e74fa44ac4242fdd1a12624b080))
+
 # [1.7.0](https://github.com/webex/sdk-component-adapter/compare/v1.6.0...v1.7.0) (2019-12-10)
 
 
