@@ -21,11 +21,13 @@ export const mockSDKMeeting = {
   emit: jest.fn(() => Promise.resolve()),
   getMediaStreams: jest.fn(() => Promise.resolve(['localStream', 'localShare'])),
   muteAudio: jest.fn(() => Promise.resolve()),
+  muteVideo: jest.fn(() => Promise.resolve()),
   register: jest.fn(() => Promise.resolve()),
   syncMeetings: jest.fn(() => Promise.resolve()),
   unregister: jest.fn(() => Promise.resolve()),
   join: jest.fn(() => Promise.resolve()),
   unmuteAudio: jest.fn(() => Promise.resolve()),
+  unmuteVideo: jest.fn(() => Promise.resolve()),
 };
 
 /**

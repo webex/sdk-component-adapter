@@ -216,14 +216,15 @@ describe('Meetings SDK Adapter', () => {
       );
     });
   });
-  describe('muteVideoControl()', () => {
+
+  describe('videoControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingSDKAdapter.muteVideoControl(meetingID).subscribe((dataDisplay) => {
+      meetingSDKAdapter.videoControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
-          ID: 'mute-video',
+          ID: 'video',
           icon: 'camera',
-          tooltip: 'Mute',
-          state: 'active',
+          tooltip: 'Stop video',
+          state: 'inactive',
           text: null,
         });
         done();
@@ -233,12 +234,62 @@ describe('Meetings SDK Adapter', () => {
     test('throws errors if sdk meeting object is not defined', (done) => {
       meetingSDKAdapter.fetchMeeting = jest.fn();
 
-      meetingSDKAdapter.muteVideoControl(meetingID).subscribe(
+      meetingSDKAdapter.videoControl(meetingID).subscribe(
         () => {},
         (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to mute video on');
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add video control');
           done();
         }
+      );
+    });
+  });
+
+  describe('handleLocalVideo()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.meetings[meetingID] = {
+        ...meeting,
+        localVideo: {
+          getVideoTracks: jest.fn(() => [{enabled: true}]),
+        },
+      };
+    });
+
+    test('mutes video if the the video track is enabled', () => {
+      meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
+    });
+
+    test('emits the custom event after muting the video track', () => {
+      meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'video',
+        state: true,
+      });
+    });
+
+    test('unmutes video if the the video track is disabled', () => {
+      meetingSDKAdapter.meetings[meetingID].localVideo.getVideoTracks = jest.fn(() => [{enabled: false}]);
+      meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
+    });
+
+    test('emits the custom event after unmuting the video track', () => {
+      meetingSDKAdapter.meetings[meetingID].localVideo.getVideoTracks = jest.fn(() => [{enabled: false}]);
+      meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'video',
+        state: false,
+      });
+    });
+
+    test('throws error if video control is not handled properly', async () => {
+      mockSDKMeeting.muteVideo = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
+
+      expect(global.console.error).toHaveBeenCalledWith(
+        `Unable to update local video settings for meeting "meetingID"`,
+        undefined
       );
     });
   });

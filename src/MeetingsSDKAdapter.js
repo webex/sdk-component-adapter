@@ -6,7 +6,7 @@ const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const JOIN_CONTROL = 'join-meeting';
 const AUDIO_CONTROL = 'audio';
-const MUTE_VIDEO_CONTROL = 'mute-video';
+const VIDEO_CONTROL = 'video';
 const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
@@ -37,10 +37,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       display: this.audioControl.bind(this),
     };
 
-    this.meetingControls[MUTE_VIDEO_CONTROL] = {
-      ID: MUTE_VIDEO_CONTROL,
-      action: this.muteVideoMeeting.bind(this),
-      display: this.muteVideoControl.bind(this),
+    this.meetingControls[VIDEO_CONTROL] = {
+      ID: VIDEO_CONTROL,
+      action: this.handleLocalVideo.bind(this),
+      display: this.videoControl.bind(this),
     };
   }
 
@@ -286,17 +286,30 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute video
    * @memberof MeetingsSDKAdapter
    */
-  async muteVideoMeeting(ID) {
+  async handleLocalVideo(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      await sdkMeeting.muteVideo();
+      let videoEnabled = this.meetings[ID].localVideo.getVideoTracks()[0].enabled;
 
-      // Due to SDK limitation around promises, we need to emit a custom event for video mute action
-      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {control: MUTE_VIDEO_CONTROL});
+      if (videoEnabled) {
+        await sdkMeeting.muteVideo();
+      } else {
+        await sdkMeeting.unmuteVideo();
+      }
+
+      // re-assign the variable after the mute/unmute actions
+      videoEnabled = this.meetings[ID].localVideo.getVideoTracks()[0].enabled;
+
+      // Due to SDK limitation around local media updates,
+      // we need to emit a custom event for video mute updates
+      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
+        control: VIDEO_CONTROL,
+        state: videoEnabled,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(`Unable to mute video for meeting "${ID}"`, error);
+      console.error(`Unable to update local video settings for meeting "${ID}"`, error);
     }
   }
 
@@ -307,32 +320,39 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable.<MeetingControlDisplay>}
    * @memberof MeetingJSONAdapter
    */
-  muteVideoControl(ID) {
+  videoControl(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
-      ID: MUTE_VIDEO_CONTROL,
-      icon: 'camera',
-      tooltip: 'Mute',
+      ID: VIDEO_CONTROL,
+      icon: 'camera-muted',
+      tooltip: 'Start video',
       state: MeetingControlState.ACTIVE,
+      text: null,
+    };
+    const unmuted = {
+      ID: VIDEO_CONTROL,
+      icon: 'camera',
+      tooltip: 'Stop video',
+      state: MeetingControlState.INACTIVE,
       text: null,
     };
 
     const getDisplayData$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(muted);
+        observer.next(unmuted);
       } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to mute video on`));
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add video control`));
       }
 
       observer.complete();
     });
 
-    const muteEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
-      filter((event) => event.control === MUTE_VIDEO_CONTROL),
-      map(() => ({...muted, state: MeetingControlState.INACTIVE}))
+    const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
+      filter((event) => event.control === VIDEO_CONTROL),
+      map(({state}) => (state ? unmuted : muted))
     );
 
-    return concat(getDisplayData$, muteEvent$);
+    return concat(getDisplayData$, localMediaUpdateEvent$);
   }
 
   /**
@@ -356,19 +376,19 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       });
 
       // Listen to attach mediaStream source objects to the existing meeting
-      const meetingWithReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
+      const meetingWithMediaReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
         filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
         map((event) => this.attachMedia(ID, event)),
         map(() => this.meetings[ID])
       );
 
-      // Listen to mute event to return the meeting object
-      const meetingWithLocalMuteEvents$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
+      // Listen to update event to return the meeting object
+      const meetingWithLocalUpdateEvents$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
         map(() => this.meetings[ID])
       );
 
       // Merge all event observables to update the existing meeting object simultaneously
-      const meetingsWithEvents$ = merge(meetingWithReadyEvent$, meetingWithLocalMuteEvents$);
+      const meetingsWithEvents$ = merge(meetingWithMediaReadyEvent$, meetingWithLocalUpdateEvents$);
 
       const getMeetingWithEvents$ = getMeeting$.pipe(
         meetingsWithEvents$,
