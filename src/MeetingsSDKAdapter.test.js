@@ -140,14 +140,14 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('muteAudioControl()', () => {
+  describe('audioControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingSDKAdapter.muteAudioControl(meetingID).subscribe((dataDisplay) => {
+      meetingSDKAdapter.audioControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
-          ID: 'mute-audio',
-          icon: 'microphone',
+          ID: 'audio',
+          icon: 'microphone-muted',
           tooltip: 'Mute',
-          state: 'active',
+          state: 'inactive',
           text: null,
         });
         done();
@@ -157,16 +157,65 @@ describe('Meetings SDK Adapter', () => {
     test('throws errors if sdk meeting object is not defined', (done) => {
       meetingSDKAdapter.fetchMeeting = jest.fn();
 
-      meetingSDKAdapter.muteAudioControl(meetingID).subscribe(
+      meetingSDKAdapter.audioControl(meetingID).subscribe(
         () => {},
         (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to mute audio on');
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add audio control');
           done();
         }
       );
     });
   });
 
+  describe('handleLocalAudio()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.meetings[meetingID] = {
+        ...meeting,
+        localAudio: {
+          getAudioTracks: jest.fn(() => [{enabled: true}]),
+        },
+      };
+    });
+
+    test('mutes audio if the the audio track is enabled', () => {
+      meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
+    });
+
+    test('emits the custom event after muting the audio track', () => {
+      meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'audio',
+        state: true,
+      });
+    });
+
+    test('unmutes audio if the the audio track is disabled', () => {
+      meetingSDKAdapter.meetings[meetingID].localAudio.getAudioTracks = jest.fn(() => [{enabled: false}]);
+      meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(mockSDKMeeting.unmuteAudio).toHaveBeenCalled();
+    });
+
+    test('emits the custom event after unmuting the audio track', () => {
+      meetingSDKAdapter.meetings[meetingID].localAudio.getAudioTracks = jest.fn(() => [{enabled: false}]);
+      meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'audio',
+        state: false,
+      });
+    });
+
+    test('throws error if audio control is not handled properly', async () => {
+      mockSDKMeeting.muteAudio = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
+
+      expect(global.console.error).toHaveBeenCalledWith(
+        'Unable to update local audio settings for meeting "meetingID"',
+        undefined
+      );
+    });
+  });
   describe('muteVideoControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingSDKAdapter.muteVideoControl(meetingID).subscribe((dataDisplay) => {
