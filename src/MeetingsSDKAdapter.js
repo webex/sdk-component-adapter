@@ -66,7 +66,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    *
    * @param {string} ID  ID to retrieve the SDK meeting object to add the local media to
    */
-  addLocalMedia(ID) {
+  async addLocalMedia(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
 
     // default media setting
@@ -79,24 +79,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       sendShare: false,
     };
 
-    sdkMeeting
-      .getMediaStreams(mediaSettings)
-      .then(([localStream, localShare]) => {
-        sdkMeeting
-          .addMedia({
-            localShare,
-            localStream,
-            mediaSettings,
-          })
-          .catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error(`Unable to add local media to meeting "${ID}"`, error);
-          });
-      })
-      .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to get local media streams for meeting ${ID}`, error);
+    try {
+      const [localStream, localShare] = await sdkMeeting.getMediaStreams(mediaSettings);
+
+      await sdkMeeting.addMedia({
+        localShare,
+        localStream,
+        mediaSettings,
       });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to add local media to meeting "${ID}"`, error);
+    }
   }
 
   /**
@@ -216,19 +210,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute audio
    * @memberof MeetingsSDKAdapter
    */
-  muteAudioMeeting(ID) {
+  async muteAudioMeeting(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
 
-    sdkMeeting
-      .muteAudio()
-      .then(() => {
-        // Due to SDK limitation around promises, we need to emit a custom event for audio mute action
-        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {control: MUTE_AUDIO_CONTROL});
-      })
-      .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to mute audio for meeting "${ID}"`, error);
-      });
+    try {
+      await sdkMeeting.muteAudio();
+
+      // Due to SDK limitation around promises, we need to emit a custom event for audio mute action
+      sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {control: MUTE_AUDIO_CONTROL});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to mute audio for meeting "${ID}"`, error);
+    }
   }
 
   /**
@@ -273,19 +266,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute video
    * @memberof MeetingsSDKAdapter
    */
-  muteVideoMeeting(ID) {
+  async muteVideoMeeting(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
 
-    sdkMeeting
-      .muteVideo()
-      .then(() => {
-        // Due to SDK limitation around promises, we need to emit a custom event for video mute action
-        sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {control: MUTE_VIDEO_CONTROL});
-      })
-      .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to mute video for meeting "${ID}"`, error);
-      });
+    try {
+      await sdkMeeting.muteVideo();
+
+      // Due to SDK limitation around promises, we need to emit a custom event for video mute action
+      sdkMeeting.emit(EVENT_MEDIA_LOCAL_MUTE, {control: MUTE_VIDEO_CONTROL});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to mute video for meeting "${ID}"`, error);
+    }
   }
 
   /**
