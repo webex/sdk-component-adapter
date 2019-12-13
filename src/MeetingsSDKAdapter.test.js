@@ -2,7 +2,7 @@ import * as rxjs from 'rxjs';
 import {flatMap} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
-import createMockSDK from './__mocks__/sdk';
+import createMockSDK, {mockSDKMeeting} from './__mocks__/sdk';
 
 describe('Meetings SDK Adapter', () => {
   let meetingSDKAdapter, mockSDK, meetingID, meeting, target;
@@ -32,6 +32,16 @@ describe('Meetings SDK Adapter', () => {
     meetingSDKAdapter = null;
     meetingID = null;
     target = null;
+  });
+
+  describe('addLocalMedia()', () => {
+    test('throws errors if the local media is not added to the meeting successfully', async () => {
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      await meetingSDKAdapter.addLocalMedia(meetingID);
+
+      expect(global.console.error).toHaveBeenCalledWith('Unable to add local media to meeting "meetingID"', undefined);
+    });
   });
 
   describe('attachMedia()', () => {
