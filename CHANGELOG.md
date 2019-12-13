@@ -1,3 +1,15 @@
+# [1.10.0](https://github.com/webex/sdk-component-adapter/compare/v1.9.0...v1.10.0) (2019-12-13)
+
+
+### Bug Fixes
+
+* **JestPuppeteer:** install and configure dependencies ([a66aa87](https://github.com/webex/sdk-component-adapter/commit/a66aa87dd356be49849686d84b5459d173041322))
+
+
+### Features
+
+* **eslint:** add document as a global term ([30d1e9e](https://github.com/webex/sdk-component-adapter/commit/30d1e9e4f4e70e09433c9d8ed5090fc10bcdae88))
+
 # [1.9.0](https://github.com/webex/sdk-component-adapter/compare/v1.8.0...v1.9.0) (2019-12-13)
 
 
