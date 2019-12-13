@@ -1,3 +1,12 @@
+# [1.9.0](https://github.com/webex/sdk-component-adapter/compare/v1.8.0...v1.9.0) (2019-12-13)
+
+
+### Features
+
+* **MeetingSdkAdapter:** convert promises to async/await ([31b233c](https://github.com/webex/sdk-component-adapter/commit/31b233cec3f01174525bc5c64c7b1407b9218634))
+* **MeetingSdkAdapter:** implement audio control handler ([6cf9949](https://github.com/webex/sdk-component-adapter/commit/6cf9949de1ba921e159474a3ec5b219f4c5f5182))
+* **MeetingSdkAdapter:** implement video control handler ([155fc6b](https://github.com/webex/sdk-component-adapter/commit/155fc6bcbcab42a7490f7473067a29b35264823b))
+
 # [1.8.0](https://github.com/webex/sdk-component-adapter/compare/v1.7.0...v1.8.0) (2019-12-12)
 
 
