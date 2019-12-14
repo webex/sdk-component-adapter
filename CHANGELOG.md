@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/webex/sdk-component-adapter/compare/v1.11.0...v1.12.0) (2019-12-14)
+
+
+### Features
+
+* **PeopleSdkAdapter:** implement getMe ([6709838](https://github.com/webex/sdk-component-adapter/commit/67098382705afbc0af1dd9c2dcf2c2fd2f1ae1d9))
+
 # [1.11.0](https://github.com/webex/sdk-component-adapter/compare/v1.10.0...v1.11.0) (2019-12-14)
 
 
