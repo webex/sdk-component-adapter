@@ -171,37 +171,47 @@ describe('Meetings SDK Adapter', () => {
     beforeEach(() => {
       meetingSDKAdapter.meetings[meetingID] = {
         ...meeting,
-        localAudio: {
-          getAudioTracks: jest.fn(() => [{enabled: true}]),
-        },
+        localAudio: {},
       };
     });
 
-    test('mutes audio if the the audio track is enabled', () => {
-      meetingSDKAdapter.handleLocalAudio(meetingID);
+    test('mutes audio if the the audio track is enabled', async () => {
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
       expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
     });
 
-    test('emits the custom event after muting the audio track', () => {
-      meetingSDKAdapter.handleLocalAudio(meetingID);
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'audio',
-        state: true,
-      });
+    test('localAudio property should be null once the audio track is muted', async () => {
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(meetingSDKAdapter.meetings[meetingID].localAudio).toBeNull();
     });
 
-    test('unmutes audio if the the audio track is disabled', () => {
-      meetingSDKAdapter.meetings[meetingID].localAudio.getAudioTracks = jest.fn(() => [{enabled: false}]);
-      meetingSDKAdapter.handleLocalAudio(meetingID);
-      expect(mockSDKMeeting.unmuteAudio).toHaveBeenCalled();
-    });
-
-    test('emits the custom event after unmuting the audio track', () => {
-      meetingSDKAdapter.meetings[meetingID].localAudio.getAudioTracks = jest.fn(() => [{enabled: false}]);
-      meetingSDKAdapter.handleLocalAudio(meetingID);
+    test('emits the custom event after muting the audio track', async () => {
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'audio',
         state: false,
+      });
+    });
+
+    test('unmutes audio if the the audio track is disabled', async () => {
+      meetingSDKAdapter.meetings[meetingID].localAudio = null;
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(mockSDKMeeting.unmuteAudio).toHaveBeenCalled();
+    });
+
+    test('localAudio property should be defined once the audio track is unmuted', async () => {
+      meetingSDKAdapter.meetings[meetingID].localAudio = null;
+      meetingSDKAdapter.meetings[meetingID].disabledLocalAudio = {};
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(meetingSDKAdapter.meetings[meetingID].localAudio).toEqual({});
+    });
+
+    test('emits the custom event after unmuting the audio track', async () => {
+      meetingSDKAdapter.meetings[meetingID].localAudio = null;
+      await meetingSDKAdapter.handleLocalAudio(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'audio',
+        state: true,
       });
     });
 
