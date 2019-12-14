@@ -214,16 +214,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      let audioEnabled = this.meetings[ID].localAudio.getAudioTracks()[0].enabled;
+      let audioEnabled = this.meetings[ID].localAudio !== null;
 
       if (audioEnabled) {
         await sdkMeeting.muteAudio();
+        // Store the current local audio stream to avoid an extra request call
+        this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
+        this.meetings[ID].localAudio = null;
+        audioEnabled = false;
       } else {
         await sdkMeeting.unmuteAudio();
+        // Retrieve the stored local audio stream
+        this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
+        this.meetings[ID].disabledLocalAudio = null;
+        audioEnabled = true;
       }
-
-      // re-assign the variable after the mute/unmute actions
-      audioEnabled = this.meetings[ID].localAudio.getAudioTracks()[0].enabled;
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for audio mute updates
