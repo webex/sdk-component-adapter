@@ -54,6 +54,18 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
   }
 
   /**
+   * Returns an observable that emits person data of the access token bearer.
+   *
+   * @public
+   * @returns {Observable.<Person>}
+   * @memberof PeopleSDKAdapter
+   */
+  getMe() {
+    // person ID must be retrieved in order to invoke `getPerson` method properly.
+    return from(this.datasource.people.get('me')).pipe(flatMap(({id}) => this.getPerson(id)));
+  }
+
+  /**
    * Returns an observable that emits person data of the given ID.
    *
    * @public
