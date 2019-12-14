@@ -280,7 +280,7 @@ describe('Meetings SDK Adapter', () => {
       });
     });
 
-    test('unmutes video if the the video track is disabled', async () => {
+    test('unmutes video if the video track is disabled', async () => {
       meetingSDKAdapter.meetings[meetingID].localVideo = null;
       await meetingSDKAdapter.handleLocalVideo(meetingID);
       expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
