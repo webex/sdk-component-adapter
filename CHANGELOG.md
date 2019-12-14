@@ -1,3 +1,16 @@
+# [1.11.0](https://github.com/webex/sdk-component-adapter/compare/v1.10.0...v1.11.0) (2019-12-14)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapterTest:** delete extra the ([83a562e](https://github.com/webex/sdk-component-adapter/commit/83a562e1a521891f43170c584d4de89e7d0fe548))
+
+
+### Features
+
+* **MeetingSdkAdapter:** update localAudio after mute/unmute actions ([b707b28](https://github.com/webex/sdk-component-adapter/commit/b707b28daf131a9b4417e44967813cace754ac06))
+* **MeetingSdkAdapter:** update localVideo after mute/unmute actions ([dede1cb](https://github.com/webex/sdk-component-adapter/commit/dede1cb548d204774a02a040be818db6fd1b8d62))
+
 # [1.10.0](https://github.com/webex/sdk-component-adapter/compare/v1.9.0...v1.10.0) (2019-12-13)
 
 
