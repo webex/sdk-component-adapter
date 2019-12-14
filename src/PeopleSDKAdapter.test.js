@@ -12,6 +12,24 @@ describe('People SDK Adapter', () => {
     personID = 'personID';
   });
 
+  describe('getMe()', () => {
+    test('returns a person in a proper shape', (done) => {
+      peopleSDKAdapter.getMe().subscribe((person) => {
+        expect(person).toMatchObject({
+          ID: 'id',
+          emails: ['email@cisco.com'],
+          displayName: 'Webex Components',
+          firstName: 'Webex',
+          lastName: 'Components',
+          avatar: 'avatar',
+          orgID: 'orgID',
+          status: 'ACTIVE',
+        });
+        done();
+      });
+    });
+  });
+
   describe('getPerson()', () => {
     test('returns an observable', () => {
       expect(isObservable(peopleSDKAdapter.getPerson(personID))).toBeTruthy();
