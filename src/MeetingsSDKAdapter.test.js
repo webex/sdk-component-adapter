@@ -258,37 +258,47 @@ describe('Meetings SDK Adapter', () => {
     beforeEach(() => {
       meetingSDKAdapter.meetings[meetingID] = {
         ...meeting,
-        localVideo: {
-          getVideoTracks: jest.fn(() => [{enabled: true}]),
-        },
+        localVideo: {},
       };
     });
 
-    test('mutes video if the the video track is enabled', () => {
-      meetingSDKAdapter.handleLocalVideo(meetingID);
+    test('mutes video if the the video track is enabled', async () => {
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
       expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
     });
 
-    test('emits the custom event after muting the video track', () => {
-      meetingSDKAdapter.handleLocalVideo(meetingID);
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'video',
-        state: true,
-      });
+    test('localVideo property should be null once the video track is muted', async () => {
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(meetingSDKAdapter.meetings[meetingID].localVideo).toBeNull();
     });
 
-    test('unmutes video if the the video track is disabled', () => {
-      meetingSDKAdapter.meetings[meetingID].localVideo.getVideoTracks = jest.fn(() => [{enabled: false}]);
-      meetingSDKAdapter.handleLocalVideo(meetingID);
-      expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
-    });
-
-    test('emits the custom event after unmuting the video track', () => {
-      meetingSDKAdapter.meetings[meetingID].localVideo.getVideoTracks = jest.fn(() => [{enabled: false}]);
-      meetingSDKAdapter.handleLocalVideo(meetingID);
+    test('emits the custom event after muting the video track', async () => {
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'video',
         state: false,
+      });
+    });
+
+    test('unmutes video if the the video track is disabled', async () => {
+      meetingSDKAdapter.meetings[meetingID].localVideo = null;
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
+    });
+
+    test('localVideo property should be defined once the video track is unmuted', async () => {
+      meetingSDKAdapter.meetings[meetingID].localVideo = null;
+      meetingSDKAdapter.meetings[meetingID].disabledLocalVideo = {};
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(meetingSDKAdapter.meetings[meetingID].localVideo).toEqual({});
+    });
+
+    test('emits the custom event after unmuting the video track', async () => {
+      meetingSDKAdapter.meetings[meetingID].localVideo = null;
+      await meetingSDKAdapter.handleLocalVideo(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'video',
+        state: true,
       });
     });
 
