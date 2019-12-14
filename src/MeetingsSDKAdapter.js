@@ -295,16 +295,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      let videoEnabled = this.meetings[ID].localVideo.getVideoTracks()[0].enabled;
+      let videoEnabled = this.meetings[ID].localVideo !== null;
 
       if (videoEnabled) {
         await sdkMeeting.muteVideo();
+        // Store the current local video stream to avoid an extra request call
+        this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo;
+        this.meetings[ID].localVideo = null;
+        videoEnabled = false;
       } else {
         await sdkMeeting.unmuteVideo();
+        // Retrieve the stored local video stream
+        this.meetings[ID].localVideo = this.meetings[ID].disabledLocalVideo;
+        this.meetings[ID].disabledLocalVideo = null;
+        videoEnabled = true;
       }
-
-      // re-assign the variable after the mute/unmute actions
-      videoEnabled = this.meetings[ID].localVideo.getVideoTracks()[0].enabled;
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for video mute updates
