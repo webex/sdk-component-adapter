@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/webex/sdk-component-adapter/compare/v1.12.0...v1.13.0) (2019-12-16)
+
+
+### Features
+
+* **CircleCi:** separate integration test job from unit test job ([3db4aec](https://github.com/webex/sdk-component-adapter/commit/3db4aecfb6d9bad4583dceee07c644a2f6d483bd))
+
 # [1.12.0](https://github.com/webex/sdk-component-adapter/compare/v1.11.0...v1.12.0) (2019-12-14)
 
 
