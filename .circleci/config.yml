@@ -37,7 +37,7 @@ jobs:
           root: .
           paths: node_modules
 
-  test:
+  unit-test:
     executor: main-executor
     steps:
       - checkout_from_workspace
@@ -46,7 +46,17 @@ jobs:
           command: npm run test:eslint
       - run:
           name: Unit Test Coverage
-          command: npm run test:coverage
+          command: npm run test:unit -- --coverage
+      - store_test_results:
+          path: test_results
+
+  integration-test:
+    executor: main-executor
+    steps:
+      - checkout_from_workspace
+      - run:
+          name: Integration Test Coverage
+          command: npm run test:integration -- --coverage
       - store_test_results:
           path: test_results
 
@@ -74,12 +84,15 @@ workflows:
   setup_test_release:
     jobs:
       - install
-      - test:
+      - unit-test:
           requires:
             - install
+      - integration-test:
+          requires:
+            - unit-test
       - build:
           requires:
-            - test
+            - integration-test
           filters:
             branches:
               only: master
