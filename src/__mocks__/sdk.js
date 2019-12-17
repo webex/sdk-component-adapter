@@ -52,7 +52,7 @@ export default function createMockSDK() {
         off: jest.fn(),
       },
       presence: {
-        get: jest.fn(),
+        get: jest.fn(() => Promise.resolve({status: 'active'})),
         subscribe: jest.fn(() => Promise.resolve({responses: [{status: {status: 'active'}}]})),
         unsubscribe: jest.fn(() => Promise.resolve()),
       },
