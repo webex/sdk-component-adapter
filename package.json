@@ -31,7 +31,7 @@
   "author": "devsupport@webex.com",
   "license": "MIT",
   "dependencies": {
-    "@webex/common": "^1.80.43",
+    "@webex/common": "1.80.43",
     "@webex/component-adapter-interfaces": "^1.7.0",
     "rxjs": "^6.5.3"
   },
@@ -72,10 +72,10 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "semantic-release": "^15.13.24",
-    "webex": "^1.80.43"
+    "webex": "1.80.43"
   },
   "peerDependencies": {
-    "webex": "^1.80.43"
+    "webex": "1.80.43"
   },
   "babel": {
     "plugins": [
