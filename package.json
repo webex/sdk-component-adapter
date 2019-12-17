@@ -39,7 +39,6 @@
     "@babel/cli": "^7.6.4",
     "@babel/core": "^7.6.4",
     "@babel/node": "^7.6.3",
-    "@babel/plugin-transform-regenerator": "^7.4.5",
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/preset-env": "^7.6.3",
     "@commitlint/cli": "^8.2.0",
@@ -80,7 +79,6 @@
   },
   "babel": {
     "plugins": [
-      "@babel/plugin-transform-regenerator",
       "@babel/plugin-transform-runtime"
     ],
     "presets": [
