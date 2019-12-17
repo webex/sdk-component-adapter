@@ -8,9 +8,9 @@ describe('Jest-Puppeteer', () => {
 
     await page.goto(url);
 
-    const bodyHTML = await page.evaluate(() => document.body.innerHTML);
+    const h1 = await page.evaluate(() => document.getElementById('page-title').textContent);
 
-    expect(bodyHTML).toContain('Hello World!');
+    expect(h1.trim()).toEqual('Meeting Integration Tests Sample');
     browser.close();
   });
 });
