@@ -20,5 +20,6 @@ const webex = new Webex({
 // eslint-disable-next-line no-unused-vars
 const webexSDKAdapter = new WebexSDKAdapter(webex);
 
+export default webexSDKAdapter;
 // --------------------------------------------------------------------------------
 // Add your test/development code here
