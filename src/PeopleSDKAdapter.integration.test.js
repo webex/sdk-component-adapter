@@ -28,6 +28,19 @@ describe('People SDK Adapter', () => {
     }
   });
 
+  describe('getMe()', () => {
+    test('returns person data of the access token bearer in a proper shape', (done) => {
+      subscription = webexSDKAdapter.peopleAdapter.getMe().subscribe((person) => {
+        expect(person).toMatchObject({
+          ID: userID,
+          emails: [user.emailAddress],
+          displayName: user.displayName,
+        });
+        done();
+      });
+    });
+  });
+
   describe('getPerson() returns', () => {
     beforeEach(() => {
       getPerson$ = webexSDKAdapter.peopleAdapter.getPerson(userID);

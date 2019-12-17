@@ -1,5 +1,5 @@
 import {concat, from, fromEvent} from 'rxjs';
-import {flatMap, filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
+import {flatMap, filter, finalize, map, publishReplay, refCount, take} from 'rxjs/operators';
 import {deconstructHydraId} from '@webex/common';
 import {PeopleAdapter, PersonStatus} from '@webex/component-adapter-interfaces';
 
@@ -55,14 +55,21 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
 
   /**
    * Returns an observable that emits person data of the access token bearer.
+   * The observable will emit once and then complete.
    *
    * @public
    * @returns {Observable.<Person>}
    * @memberof PeopleSDKAdapter
    */
   getMe() {
-    // person ID must be retrieved in order to invoke `getPerson` method properly.
-    return from(this.datasource.people.get('me')).pipe(flatMap(({id}) => this.getPerson(id)));
+    return from(this.fetchPerson('me')).pipe(
+      flatMap((person) =>
+        from(this.datasource.internal.presence.get([person.id])).pipe(
+          map(({status}) => ({...person, status: this.getStatus(status)}))
+        )
+      ),
+      take(1)
+    );
   }
 
   /**
