@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/webex/sdk-component-adapter/compare/v1.13.0...v1.14.0) (2019-12-17)
+
+
+### Features
+
+* **PeopleSdkAdapter:** getMe() fetches and emits the person data once ([d056f2c](https://github.com/webex/sdk-component-adapter/commit/d056f2c55cc993182c10dda74b1bd219e27e811b))
+
 # [1.13.0](https://github.com/webex/sdk-component-adapter/compare/v1.12.0...v1.13.0) (2019-12-16)
 
 
