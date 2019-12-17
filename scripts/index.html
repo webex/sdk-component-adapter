@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <main>
+      <div style="width:100%">
+        <h1 id="page-title">
+          Meeting Integration Tests Sample
+        </h1>
+        <form id="connector">
+          <fieldset>
+            <legend>JS SDK Connection</legend>
+            <button id="connect">Connect</button>
+            <button id="disconnect">Disconnect</button>
+            <span id="connection-status"> Disconnected ❌ </span>
+          </fieldset>
+        </form>
+        <form id="dialer">
+          <fieldset>
+            <legend>Dialer</legend>
+            <input id="destination" placeholder="Person ID or Email Address or SIP URI or Room ID" type="text" />
+            <button id="create-meeting">Create a Meeting</button>
+            <button id="add-local-media">Add Local Media to the Meeting</button>
+            <button id="join-meeting">Join Meeting</button>
+            <button id="leave-meeting">Leave Meeting</button>
+          </fieldset>
+        </form>
+        <form id="actions">
+          <fieldset>
+            <legend>Actions</legend>
+            <button id="mute-audio">Mute Audio</button>
+            <button id="mute-video">Mute Video</button>
+          </fieldset>
+        </form>
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <h2>Local Stream:</h2>
+            <audio id="local-audio" autoplay playsinline></audio>
+            <video style="width:25rem" id="local-video" autoplay playsinline></video>
+          </div>
+          <h2 id="meeting-title"></h2>
+          <div>
+            <h2>Remote Stream:</h2>
+            <audio id="remote-audio" autoplay playsinline></audio>
+            <video style="width:25rem" id="remote-video" autoplay playsinline></video>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- server.js is your application code -->
+    <script src="puppeteer.server.js"></script>
+  </body>
+</html>
