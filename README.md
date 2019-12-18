@@ -21,6 +21,12 @@
 
 - [Install](#install)
 - [Usage](#usage)
+  - [Setup](#setup)
+    - [Connect](#connect)
+    - [Disconnect](#disconnect)
+  - [Components](#components)
+    - [React Component With Hooks](#react-component-with-hooks)
+    - [React Class Component](#react-class-component)
 - [Contributing](#contributing)
 - [License](#license)
 - [Support](#support)
@@ -34,36 +40,167 @@ npm install --save @webex/components @webex/sdk-component-adapter
 
 ## Usage
 
-### Components
+### Setup
 
-For more information on how to use **Webex Components**, visit [this page](https://github.com/webex/components/blob/master/README.md).
-
-Putting everything together - SDK adapters and components - this is a simple example of how using a component would look like:
+When using the Webex SDK Adapter, it is expected to have a fully authenticated SDK instance passed to it:
 
 ```js
-import '@webex/components/dist/webexComponents.css';
-
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Webex from 'webex';
-import WebexSDKAdapter from '@webex/sdk-component-adapter';
-import {WebexAvatar} from '@webex/components';
-
 const webex = new Webex({
-  credentials: <YOUR WEBEX ACCESS_TOKEN>,
+  credentials: `<YOUR WEBEX ACCESS_TOKEN>`,
+});
+
+const adapter = new WebexSDKAdapter(webex);
+```
+
+#### Connect
+
+The Webex SDK requires different connections to be setup in order for it to be usable.
+Some examples of these connections include device registration and web socket connections.
+
+These connections are handled by the SDK Adapter, but require the `connect` function to be manually called.
+
+```js
+const webex = new Webex({
+  credentials: `<YOUR WEBEX ACCESS_TOKEN>`,
 });
 
 const adapter = new WebexSDKAdapter(webex);
 
-ReactDOM.render(
-  <WebexDataProvider adapter={adapter} >
-    <WebexAvatar personId="XYZ" />,
-  </WebexDataProvider>
-  document.getElementById('root')
-);
+await adapter.connect();
+
+// Adapter is now ready to make requests.
 ```
 
-_Happy Coding!_
+#### Disconnect
+
+When the adapter is no longer going to be used, the `disconnect` function will do the necessary tear-down of all the connections created in the `connect` function:
+
+```js
+await adapter.disconnect();
+
+// Adapter is now disconnected.
+```
+
+### Components
+
+The Webex SDK Adapter is meant to be used with Webex Components.
+
+For more information on how to use **Webex Components**, visit [this page](https://github.com/webex/components/blob/master/README.md).
+
+The following examples display how you can utilize the Webex SDK Adapter along with Webex Components to provide a fully connected component:
+
+#### React Component With Hooks
+
+Utilizing the `useEffect` hook, we can connect our adapter in a deferred event after initial render.
+
+```js
+import '@webex/components/dist/webexComponents.css';
+
+import React, {useEffect, useState} from 'react';
+import Webex from 'webex';
+import WebexSDKAdapter from '@webex/sdk-component-adapter';
+import {WebexAvatar, WebexDataProvider} from '@webex/components';
+
+const webex = new Webex({
+  credentials: `<YOUR_ACCESS_TOKEN>`,
+});
+const adapter = new WebexSDKAdapter(webex);
+
+function App() {
+  const [adapterConnected, setAdapterConnected] = useState(false);
+
+  useEffect(() => {
+    // This is the suggested way to do async hooks.
+    // Ref: https://github.com/facebook/react/issues/14326
+    async function doConnect() {
+      // Wait for the adapter to connect before rendering.
+      await adapter.connect();
+      setAdapterConnected(true);
+    }
+
+    doConnect();
+
+    // On teardown, disconnect the adapter
+    return () => {
+      adapter.disconnect();
+    }
+  }, []);
+
+
+  return (
+    <div className="App">
+      {
+        adapterConnected && (
+          <WebexDataProvider adapter={adapter} >
+            <WebexAvatar personID="<AVATAR_ID>" />
+          </WebexDataProvider>
+        )
+      }
+    </div>
+  );
+}
+
+export default App;
+
+```
+
+#### React Class Component
+
+For traditional React class components, the adapter should connect once the component mounts.
+
+```js
+import '@webex/components/dist/webexComponents.css';
+
+import React, { Component } from 'react'
+import Webex from 'webex';
+import WebexSDKAdapter from '@webex/sdk-component-adapter';
+import {WebexAvatar, WebexDataProvider} from '@webex/components';
+
+const credentials = `<YOUR_ACCESS_TOKEN>`;
+
+const webex = new Webex({
+  credentials,
+});
+
+export default class App extends Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      adapterConnected: false
+    };
+
+    this.adapter = new WebexSDKAdapter(webex);
+  }
+
+  async componentDidMount() {
+    await adapter.connect();
+    // Once adapter connects, set our app state to ready.
+    this.setState({adapterConnected: true});
+  }
+
+  async componentWillUnmount() {
+    // On teardown, disconnect the adapter.
+    await this.adapter.disconnect();
+  }
+
+  render() {
+    return (
+      <div className="App">
+        {
+          this.state.adapterConnected && (
+            <WebexDataProvider adapter={this.adapter} >
+              <WebexAvatar personID="<AVATAR_ID>" />
+            </WebexDataProvider>
+          )
+        }
+      </div>
+    )
+  }
+}
+
+```
 
 ## Contributing
 
