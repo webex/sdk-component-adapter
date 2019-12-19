@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/webex/sdk-component-adapter/compare/v1.14.1...v1.14.2) (2019-12-19)
+
+
+### Bug Fixes
+
+* **WebexAdapter:** activities adapter must be defined ([3b314c1](https://github.com/webex/sdk-component-adapter/commit/3b314c1e48524e125fd197c253de96b3e9bdb5a2))
+
 ## [1.14.1](https://github.com/webex/sdk-component-adapter/compare/v1.14.0...v1.14.1) (2019-12-19)
 
 
