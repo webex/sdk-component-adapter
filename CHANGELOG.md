@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/webex/sdk-component-adapter/compare/v1.14.0...v1.14.1) (2019-12-19)
+
+
+### Bug Fixes
+
+* **package:** set webex packages to 1.80.43 ([54d6f63](https://github.com/webex/sdk-component-adapter/commit/54d6f63b66b9ba3e6f5768d3a4910ba3baf3b930))
+
 # [1.14.0](https://github.com/webex/sdk-component-adapter/compare/v1.13.0...v1.14.0) (2019-12-17)
 
 
