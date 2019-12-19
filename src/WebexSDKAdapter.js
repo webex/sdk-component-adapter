@@ -11,6 +11,7 @@ export default class WebexSDKAdapter {
    * @param {Object} sdk The primary sdk the adapter will be using.
    */
   constructor(sdk) {
+    this.activitiesAdapter = {};
     this.peopleAdapter = new PeopleSDKAdapter(sdk);
     this.roomsAdapter = new RoomsSDKAdapter(sdk);
     this.meetingsAdapter = new MeetingsSDKAdapter(sdk);
