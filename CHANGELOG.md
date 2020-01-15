@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/webex/sdk-component-adapter/compare/v1.15.0...v1.16.0) (2020-01-15)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement exitControl method ([1368f40](https://github.com/webex/sdk-component-adapter/commit/1368f4059ff1bdbb2cbe0f93b7929bf979ebcadd))
+
 # [1.15.0](https://github.com/webex/sdk-component-adapter/compare/v1.14.3...v1.15.0) (2020-01-15)
 
 
