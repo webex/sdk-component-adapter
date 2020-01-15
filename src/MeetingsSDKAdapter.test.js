@@ -103,6 +103,48 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('removeMedia()', () => {
+    test('nullifies `localAudio` and `localVideo`, if the event type is `local`', () => {
+      meetingSDKAdapter.removeMedia(meetingID, {type: 'local'});
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        localAudio: null,
+        localVideo: null,
+      });
+    });
+
+    test('nullifies `remoteAudio`, if the event type is `remoteAudio`', () => {
+      const event = {
+        type: 'remoteAudio',
+      };
+
+      meetingSDKAdapter.removeMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        remoteAudio: null,
+      });
+    });
+
+    test('nullifies `remoteVideo`, if the event type is `remoteVideo`', () => {
+      const event = {
+        type: 'remoteVideo',
+      };
+
+      meetingSDKAdapter.removeMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        remoteVideo: null,
+      });
+    });
+
+    test('returns the same meeting object, if the event type is not declared', () => {
+      meetingSDKAdapter.meetings[meetingID] = meeting;
+      const event = {
+        type: 'NA',
+      };
+
+      meetingSDKAdapter.removeMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject(meeting);
+    });
+  });
+
   describe('createMeeting()', () => {
     test('returns a new meeting in a proper shape', (done) => {
       meetingSDKAdapter.createMeeting(target).subscribe((newMeeting) => {

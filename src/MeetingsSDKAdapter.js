@@ -3,6 +3,7 @@ import {concat, from, fromEvent, Observable} from 'rxjs';
 import {filter, finalize, map, merge, publishReplay, refCount} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
+const EVENT_MEDIA_STOPPED = 'media:stopped';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const JOIN_CONTROL = 'join-meeting';
 const AUDIO_CONTROL = 'audio';
@@ -119,6 +120,35 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Update the meeting object by removing media based on a given event type.
+   *
+   * @param {string} ID  ID of the meeting to fetch
+   * @memberof MeetingsSDKAdapter
+   * @private
+   */
+  removeMedia(ID, {type}) {
+    const meeting = this.meetings[ID];
+
+    switch (type) {
+      case MEDIA_TYPE_LOCAL:
+        this.meetings[ID] = {
+          ...meeting,
+          localAudio: null,
+          localVideo: null,
+        };
+        break;
+      case MEDIA_TYPE_REMOTE_AUDIO:
+        this.meetings[ID] = {...meeting, remoteAudio: null};
+        break;
+      case MEDIA_TYPE_REMOTE_VIDEO:
+        this.meetings[ID] = {...meeting, remoteVideo: null};
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
    * Creates meeting and returns an observable to the new meeting data.
    *
    * @param {string} target destination to start the meeting at
@@ -183,6 +213,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       // eslint-disable-next-line no-console
       console.error(`Unable to join meeting "${ID}"`, error);
     }
+  }
+
+  /**
+   * Attempts to leave the meeting of the given meeting ID.
+   * If the user had left the meeting successfully, a stopped event is dispatched.
+   *
+   * @param {string} ID ID of the meeting to leave from
+   * @memberof MeetingsSDKAdapter
+   */
+  leaveMeeting(ID) {
+    this.fetchMeeting(ID)
+      .leave()
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to leave from the meeting "${ID}"`, error);
+      });
   }
 
   /**
@@ -394,13 +440,24 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         map(() => this.meetings[ID])
       );
 
+      // Listen to remove mediaStream source objects from the existing meeting
+      const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
+        filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
+        map((event) => this.removeMedia(ID, event)),
+        map(() => this.meetings[ID])
+      );
+
       // Listen to update event to return the meeting object
       const meetingWithLocalUpdateEvents$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
         map(() => this.meetings[ID])
       );
 
       // Merge all event observables to update the existing meeting object simultaneously
-      const meetingsWithEvents$ = merge(meetingWithMediaReadyEvent$, meetingWithLocalUpdateEvents$);
+      const meetingsWithEvents$ = merge(
+        meetingWithMediaReadyEvent$,
+        meetingWithMediaStoppedEvent$,
+        meetingWithLocalUpdateEvents$
+      );
 
       const getMeetingWithEvents$ = getMeeting$.pipe(
         meetingsWithEvents$,
