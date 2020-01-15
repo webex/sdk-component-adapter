@@ -35,12 +35,12 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('addLocalMedia()', () => {
-    test('throws errors if the local media is not added to the meeting successfully', async () => {
+    test('throws errors if the local media is not retrieved successfully', async () => {
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
       global.console.error = jest.fn();
       await meetingSDKAdapter.addLocalMedia(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith('Unable to add local media to meeting "meetingID"', undefined);
+      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local stream media "meetingID"', undefined);
     });
   });
 
