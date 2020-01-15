@@ -182,6 +182,20 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('exitControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.exitControl().subscribe((dataDisplay) => {
+        expect(dataDisplay).toMatchObject({
+          ID: 'leave-meeting',
+          icon: 'cancel',
+          tooltip: 'Leave',
+          state: 'active',
+        });
+        done();
+      });
+    });
+  });
+
   describe('audioControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingSDKAdapter.audioControl(meetingID).subscribe((dataDisplay) => {
