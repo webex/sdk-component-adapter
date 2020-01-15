@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/webex/sdk-component-adapter/compare/v1.14.3...v1.15.0) (2020-01-15)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implemenet leaveMeeting and removeMedia methods ([35db245](https://github.com/webex/sdk-component-adapter/commit/35db24581f4c0cfdfc2bda8228f2f607a1c45c7f))
+
 ## [1.14.3](https://github.com/webex/sdk-component-adapter/compare/v1.14.2...v1.14.3) (2020-01-15)
 
 
