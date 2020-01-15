@@ -11,6 +11,14 @@ const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
 const MEDIA_EVENT_TYPES = [MEDIA_TYPE_LOCAL, MEDIA_TYPE_REMOTE_AUDIO, MEDIA_TYPE_REMOTE_VIDEO];
+const DEFAULT_MEDIA_SETTINGS = {
+  receiveVideo: true,
+  receiveAudio: true,
+  receiveShare: false,
+  sendVideo: true,
+  sendAudio: true,
+  sendShare: false,
+};
 
 /**
  * The `MeetingsSDKAdapter` is an implementation of the `MeetingsAdapter` interface.
@@ -69,27 +77,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async addLocalMedia(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
 
-    // default media setting
-    const mediaSettings = {
-      receiveVideo: true,
-      receiveAudio: true,
-      receiveShare: false,
-      sendVideo: true,
-      sendAudio: true,
-      sendShare: false,
-    };
-
     try {
-      const [localStream, localShare] = await sdkMeeting.getMediaStreams(mediaSettings);
+      const [localStream] = await sdkMeeting.getMediaStreams(DEFAULT_MEDIA_SETTINGS);
 
-      await sdkMeeting.addMedia({
-        localShare,
-        localStream,
-        mediaSettings,
-      });
+      // We need to emit a media ready event for retrieving local stream media
+      sdkMeeting.emit(EVENT_MEDIA_READY, {type: MEDIA_TYPE_LOCAL, stream: localStream});
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(`Unable to add local media to meeting "${ID}"`, error);
+      console.error(`Unable to retrieve local stream media "${ID}"`, error);
     }
   }
 
@@ -174,13 +169,20 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to join
    * @memberof MeetingsSDKAdapter
    */
-  joinMeeting(ID) {
-    this.fetchMeeting(ID)
-      .join()
-      .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to join meeting "${ID}"`, error);
-      });
+  async joinMeeting(ID) {
+    try {
+      const sdkMeeting = this.fetchMeeting(ID);
+      const {localAudio, localVideo} = this.meetings[ID];
+      const localStream = new MediaStream([localAudio.getAudioTracks()[0], localVideo.getVideoTracks()[0]]);
+
+      await sdkMeeting.join();
+
+      // SDK requires to join the meeting before adding the local stream media to the meeting
+      await sdkMeeting.addMedia({localStream, DEFAULT_MEDIA_SETTINGS});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to join meeting "${ID}"`, error);
+    }
   }
 
   /**
