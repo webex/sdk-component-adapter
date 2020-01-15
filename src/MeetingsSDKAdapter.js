@@ -6,6 +6,7 @@ const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const JOIN_CONTROL = 'join-meeting';
+const EXIT_CONTROL = 'leave-meeting';
 const AUDIO_CONTROL = 'audio';
 const VIDEO_CONTROL = 'video';
 const MEDIA_TYPE_LOCAL = 'local';
@@ -50,6 +51,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: VIDEO_CONTROL,
       action: this.handleLocalVideo.bind(this),
       display: this.videoControl.bind(this),
+    };
+
+    this.meetingControls[EXIT_CONTROL] = {
+      ID: EXIT_CONTROL,
+      action: this.leaveMeeting.bind(this),
+      display: this.exitControl.bind(this),
     };
   }
 
@@ -244,6 +251,26 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         ID: JOIN_CONTROL,
         text: 'Join meeting',
         tooltip: 'Join meeting',
+        state: MeetingControlState.ACTIVE,
+      });
+
+      observer.complete();
+    });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a meeting control.
+   *
+   * @returns {Observable.<MeetingControlDisplay>}
+   * @memberof MeetingJSONAdapter
+   * @private
+   */
+  exitControl() {
+    return Observable.create((observer) => {
+      observer.next({
+        ID: EXIT_CONTROL,
+        icon: 'cancel',
+        tooltip: 'Leave',
         state: MeetingControlState.ACTIVE,
       });
 
