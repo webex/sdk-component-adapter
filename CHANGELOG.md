@@ -1,3 +1,10 @@
+## [1.14.3](https://github.com/webex/sdk-component-adapter/compare/v1.14.2...v1.14.3) (2020-01-15)
+
+
+### Bug Fixes
+
+* **MeetingAdapter:** sdk addMedia logic is inside join meeting logic ([32c0c51](https://github.com/webex/sdk-component-adapter/commit/32c0c51054a5543cc74308a5682573d8526f7c11))
+
 ## [1.14.2](https://github.com/webex/sdk-component-adapter/compare/v1.14.1...v1.14.2) (2019-12-19)
 
 
