@@ -229,13 +229,19 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to leave from
    * @memberof MeetingsSDKAdapter
    */
-  leaveMeeting(ID) {
-    this.fetchMeeting(ID)
-      .leave()
-      .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to leave from the meeting "${ID}"`, error);
-      });
+  async leaveMeeting(ID) {
+    try {
+      const sdkMeeting = this.fetchMeeting(ID);
+
+      await sdkMeeting.leave();
+
+      // Due to SDK limitations, We need to emit a media stopped event for remote media types
+      sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_REMOTE_AUDIO});
+      sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_REMOTE_VIDEO});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to leave from the meeting "${ID}"`, error);
+    }
   }
 
   /**
