@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/webex/sdk-component-adapter/compare/v1.16.0...v1.16.1) (2020-01-16)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** emit stopped events for remote media ([7539dc2](https://github.com/webex/sdk-component-adapter/commit/7539dc20cc130e631491b02dbe29a3853238d86e))
+
 # [1.16.0](https://github.com/webex/sdk-component-adapter/compare/v1.15.0...v1.16.0) (2020-01-15)
 
 
