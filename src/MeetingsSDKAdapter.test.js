@@ -202,9 +202,8 @@ describe('Meetings SDK Adapter', () => {
         expect(dataDisplay).toMatchObject({
           ID: 'audio',
           icon: 'microphone-muted',
-          tooltip: 'Mute',
-          state: 'inactive',
-          text: null,
+          tooltip: 'Unmute',
+          state: 'active',
         });
         done();
       });
@@ -288,9 +287,9 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.videoControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'video',
-          icon: 'camera',
-          tooltip: 'Stop video',
-          state: 'inactive',
+          icon: 'camera-muted',
+          tooltip: 'Start video',
+          state: 'active',
           text: null,
         });
         done();

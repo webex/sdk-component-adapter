@@ -337,19 +337,17 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       icon: 'microphone-muted',
       tooltip: 'Unmute',
       state: MeetingControlState.ACTIVE,
-      text: null,
     };
     const unmuted = {
       ID: AUDIO_CONTROL,
-      icon: 'microphone-muted',
+      icon: 'microphone',
       tooltip: 'Mute',
       state: MeetingControlState.INACTIVE,
-      text: null,
     };
 
     const getDisplayData$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(unmuted);
+        observer.next(muted);
       } else {
         observer.error(new Error(`Could not find meeting with ID "${ID}" to add audio control`));
       }
@@ -359,7 +357,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === AUDIO_CONTROL),
-      map(({state}) => (state ? unmuted : muted))
+      map(({state}) => (state ? muted : unmuted))
     );
 
     return concat(getDisplayData$, localMediaUpdateEvent$);
@@ -430,7 +428,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const getDisplayData$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(unmuted);
+        observer.next(muted);
       } else {
         observer.error(new Error(`Could not find meeting with ID "${ID}" to add video control`));
       }
@@ -440,7 +438,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === VIDEO_CONTROL),
-      map(({state}) => (state ? unmuted : muted))
+      map(({state}) => (state ? muted : unmuted))
     );
 
     return concat(getDisplayData$, localMediaUpdateEvent$);
