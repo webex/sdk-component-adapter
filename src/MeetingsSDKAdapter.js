@@ -105,14 +105,16 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    */
   attachMedia(ID, {type, stream}) {
-    const meeting = this.meetings[ID];
+    const meeting = {...this.meetings[ID]};
 
     switch (type) {
       case MEDIA_TYPE_LOCAL:
         this.meetings[ID] = {
           ...meeting,
-          localAudio: new MediaStream(stream.getAudioTracks()),
-          localVideo: new MediaStream(stream.getVideoTracks()),
+          // Attach the media streams only if the streams are unmuted
+          // `disableLocalAudio/Video` change inside handle media stream methods
+          localAudio: meeting.disabledLocalAudio ? null : new MediaStream(stream.getAudioTracks()),
+          localVideo: meeting.disabledLocalVideo ? null : new MediaStream(stream.getVideoTracks()),
         };
         break;
       case MEDIA_TYPE_REMOTE_AUDIO:
@@ -134,7 +136,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    */
   removeMedia(ID, {type}) {
-    const meeting = this.meetings[ID];
+    const meeting = {...this.meetings[ID]};
 
     switch (type) {
       case MEDIA_TYPE_LOCAL:
@@ -210,12 +212,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
       const {localAudio, localVideo} = this.meetings[ID];
-      const localStream = new MediaStream([localAudio.getAudioTracks()[0], localVideo.getVideoTracks()[0]]);
+      const [localStream] = await sdkMeeting.getMediaStreams(DEFAULT_MEDIA_SETTINGS);
 
       await sdkMeeting.join();
 
       // SDK requires to join the meeting before adding the local stream media to the meeting
       await sdkMeeting.addMedia({localStream, DEFAULT_MEDIA_SETTINGS});
+
+      // Mute either streams after join if user had muted them before joining
+      if (localAudio === null) {
+        await sdkMeeting.muteAudio();
+      }
+
+      if (localVideo === null) {
+        await sdkMeeting.muteVideo();
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to join meeting "${ID}"`, error);
@@ -295,16 +306,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
+      const isInSession = this.meetings[ID].remoteAudio !== null;
       let audioEnabled = this.meetings[ID].localAudio !== null;
 
       if (audioEnabled) {
-        await sdkMeeting.muteAudio();
+        // Mute the audio only if there is an active meeting
+        if (isInSession) {
+          await sdkMeeting.muteAudio();
+        }
+
         // Store the current local audio stream to avoid an extra request call
         this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
         this.meetings[ID].localAudio = null;
         audioEnabled = false;
       } else {
-        await sdkMeeting.unmuteAudio();
+        // Unmute the audio only if there is an active meeting
+        if (isInSession) {
+          await sdkMeeting.unmuteAudio();
+        }
+
         // Retrieve the stored local audio stream
         this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
         this.meetings[ID].disabledLocalAudio = null;
@@ -376,16 +396,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
+      const isInSession = this.meetings[ID].remoteVideo !== null;
       let videoEnabled = this.meetings[ID].localVideo !== null;
 
       if (videoEnabled) {
-        await sdkMeeting.muteVideo();
+        // Mute the video only if there is an active meeting
+        if (isInSession) {
+          await sdkMeeting.muteVideo();
+        }
+
         // Store the current local video stream to avoid an extra request call
         this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo;
         this.meetings[ID].localVideo = null;
         videoEnabled = false;
       } else {
-        await sdkMeeting.unmuteVideo();
+        // Unmute the video only if there is an active meeting
+        if (isInSession) {
+          await sdkMeeting.unmuteVideo();
+        }
+
         // Retrieve the stored local video stream
         this.meetings[ID].localVideo = this.meetings[ID].disabledLocalVideo;
         this.meetings[ID].disabledLocalVideo = null;
