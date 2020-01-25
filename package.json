@@ -32,8 +32,7 @@
   "license": "MIT",
   "dependencies": {
     "@webex/common": "1.80.43",
-    "@webex/component-adapter-interfaces": "^1.7.0",
-    "rxjs": "^6.5.3"
+    "@webex/component-adapter-interfaces": "^1.7.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.4",
@@ -75,6 +74,7 @@
     "webex": "1.80.43"
   },
   "peerDependencies": {
+    "rxjs": "^6.5.4",
     "webex": "1.80.43"
   },
   "babel": {
