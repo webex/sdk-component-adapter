@@ -1,3 +1,12 @@
+# [1.17.0](https://github.com/webex/sdk-component-adapter/compare/v1.16.1...v1.17.0) (2020-01-25)
+
+
+### Features
+
+* **JestMeetingWebApplication:** implement one ([12236ff](https://github.com/webex/sdk-component-adapter/commit/12236ffe13d9a68d84f0710e08d079d4ae0c0fa1))
+* **package:** install and configure parcel ([67d2dfb](https://github.com/webex/sdk-component-adapter/commit/67d2dfb006339cf97e812463629ba643f4c1b548))
+* **package:** remove babel regenrate plugin ([e960e76](https://github.com/webex/sdk-component-adapter/commit/e960e76d7ba48419ee393160b7d04c6d39203a46))
+
 ## [1.16.1](https://github.com/webex/sdk-component-adapter/compare/v1.16.0...v1.16.1) (2020-01-16)
 
 
