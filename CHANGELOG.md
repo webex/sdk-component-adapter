@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/webex/sdk-component-adapter/compare/v1.17.0...v1.18.0) (2020-01-25)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add the capability to join the meeting muted ([2e1e2c2](https://github.com/webex/sdk-component-adapter/commit/2e1e2c212430cc62ba95b2040ea31d183ebeef48))
+
 # [1.17.0](https://github.com/webex/sdk-component-adapter/compare/v1.16.1...v1.17.0) (2020-01-25)
 
 
