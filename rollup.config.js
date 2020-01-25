@@ -11,11 +11,12 @@ const output = (name, format) => ({
   sourcemap: true,
   globals: {
     bufferutil: 'bufferutil',
-    'utf-8-validate': 'utf8Validate',
-    'spawn-sync': 'spawnSync',
-    react: 'React',
-    'react-dom': 'ReactDOM',
     'prop-types': 'PropTypes',
+    react: 'React',
+    rxjs: 'rxjs',
+    'react-dom': 'ReactDOM',
+    'spawn-sync': 'spawnSync',
+    'utf-8-validate': 'utf8Validate',
   },
 });
 
@@ -49,7 +50,7 @@ export default [
       // Use default for everything else
       warn(warning);
     },
-    external: ['bufferutil', 'utf-8-validate', 'spawn-sync', 'react', 'react-dom', 'prop-types'],
+    external: ['bufferutil', 'prop-types', 'react', 'react-dom', 'rxjs', 'spawn-sync', 'utf-8-validate'],
     context: 'null',
   },
 ];
