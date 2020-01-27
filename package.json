@@ -32,7 +32,7 @@
   "license": "MIT",
   "dependencies": {
     "@webex/common": "1.80.43",
-    "@webex/component-adapter-interfaces": "^1.7.0"
+    "@webex/component-adapter-interfaces": "^1.8.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.4",
