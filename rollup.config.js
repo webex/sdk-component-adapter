@@ -14,6 +14,7 @@ const output = (name, format) => ({
     'prop-types': 'PropTypes',
     react: 'React',
     rxjs: 'rxjs',
+    'rxjs/operators': 'rxjs.operators',
     'react-dom': 'ReactDOM',
     'spawn-sync': 'spawnSync',
     'utf-8-validate': 'utf8Validate',
@@ -50,7 +51,16 @@ export default [
       // Use default for everything else
       warn(warning);
     },
-    external: ['bufferutil', 'prop-types', 'react', 'react-dom', 'rxjs', 'spawn-sync', 'utf-8-validate'],
+    external: [
+      'bufferutil',
+      'prop-types',
+      'react',
+      'react-dom',
+      'rxjs',
+      'rxjs/operators',
+      'spawn-sync',
+      'utf-8-validate',
+    ],
     context: 'null',
   },
 ];
