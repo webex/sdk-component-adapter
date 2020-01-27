@@ -87,12 +87,9 @@ workflows:
       - unit-test:
           requires:
             - install
-      - integration-test:
-          requires:
-            - unit-test
       - build:
           requires:
-            - integration-test
+            - unit-test
           filters:
             branches:
               only: master
