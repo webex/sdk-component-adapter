@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/webex/sdk-component-adapter/compare/v1.18.0...v1.18.1) (2020-01-28)
+
+
+### Bug Fixes
+
+* **rollup:** exclude rxjs/operators from the bundle ([8f24387](https://github.com/webex/sdk-component-adapter/commit/8f2438789a9b71c0758c84adc418a21087ba4cf7))
+
 # [1.18.0](https://github.com/webex/sdk-component-adapter/compare/v1.17.0...v1.18.0) (2020-01-25)
 
 
