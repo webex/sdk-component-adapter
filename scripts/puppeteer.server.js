@@ -19,13 +19,21 @@ function handleVideo() {
 }
 
 function getMeeting() {
-  webexSDKAdapter.meetingsAdapter.getMeeting(MEETING_ID).subscribe((meeting) => {
-    document.getElementById('remote-audio').srcObject = meeting.remoteAudio;
-    document.getElementById('remote-video').srcObject = meeting.remoteVideo;
-    document.getElementById('local-audio').srcObject = meeting.localAudio;
-    document.getElementById('local-video').srcObject = meeting.localVideo;
-    document.getElementById('meeting-title').innerHTML = meeting.title;
-  });
+  webexSDKAdapter.meetingsAdapter.getMeeting(MEETING_ID).subscribe(
+    (meeting) => {
+      // eslint-disable-next-line no-console
+      console.log('Received meeting update: ', meeting);
+
+      document.getElementById('remote-audio').srcObject = meeting.remoteAudio;
+      document.getElementById('remote-video').srcObject = meeting.remoteVideo;
+      document.getElementById('local-audio').srcObject = meeting.localAudio;
+      document.getElementById('local-video').srcObject = meeting.localVideo;
+      document.getElementById('meeting-title').innerHTML = meeting.title;
+    },
+    () => {},
+    // eslint-disable-next-line no-console
+    () => console.log(`Meeting "${MEETING_ID}" has ended.`)
+  );
 }
 
 document.getElementById('connector').addEventListener('click', async (event) => {
@@ -86,7 +94,7 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         await webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].action(MEETING_ID);
         break;
       case 'mute-video':
-        await webexSDKAdapter.meetingsAdapter.handleLocalVideo(MEETING_ID);
+        await webexSDKAdapter.meetingsAdapter.meetingControls['mute-video'].action(MEETING_ID);
         break;
     }
   } catch (error) {
