@@ -1,7 +1,7 @@
 import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
-import {concat, from, fromEvent, merge, Observable} from 'rxjs';
-import {flatMap, filter, map, publishReplay, refCount} from 'rxjs/operators';
+import {concat, from, fromEvent, merge, Observable, Subject} from 'rxjs';
+import {flatMap, filter, map, publishReplay, refCount, takeUntil, tap} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
@@ -132,32 +132,20 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Update the meeting object by removing media based on a given event type.
+   * Update the meeting object by removing all media.
    *
    * @param {string} ID  ID of the meeting to fetch
    * @memberof MeetingsSDKAdapter
    * @private
    */
-  removeMedia(ID, {type}) {
-    const meeting = {...this.meetings[ID]};
-
-    switch (type) {
-      case MEDIA_TYPE_LOCAL:
-        this.meetings[ID] = {
-          ...meeting,
-          localAudio: null,
-          localVideo: null,
-        };
-        break;
-      case MEDIA_TYPE_REMOTE_AUDIO:
-        this.meetings[ID] = {...meeting, remoteAudio: null};
-        break;
-      case MEDIA_TYPE_REMOTE_VIDEO:
-        this.meetings[ID] = {...meeting, remoteVideo: null};
-        break;
-      default:
-        break;
-    }
+  removeMedia(ID) {
+    this.meetings[ID] = {
+      ...this.meetings[ID],
+      localAudio: null,
+      localVideo: null,
+      remoteAudio: null,
+      remoteVideo: null,
+    };
   }
 
   /**
@@ -524,6 +512,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   getMeeting(ID) {
     if (!(ID in this.getMeetingObservables)) {
+      const end$ = new Subject();
       const sdkMeeting = this.fetchMeeting(ID);
       const getMeeting$ = Observable.create((observer) => {
         if (this.meetings[ID]) {
@@ -544,9 +533,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       // Listen to remove mediaStream source objects from the existing meeting
       const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
-        filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
-        map((event) => this.removeMedia(ID, event)),
-        map(() => this.meetings[ID])
+        tap(() => this.removeMedia(ID)),
+        tap(() => end$.next(`Completing meeting ${ID}`))
       );
 
       // Listen to update event to return the meeting object
@@ -566,7 +554,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       // Convert to a multicast observable
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
         publishReplay(1),
-        refCount()
+        refCount(),
+        takeUntil(end$)
       );
     }
 
