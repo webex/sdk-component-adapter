@@ -1,3 +1,10 @@
+## [1.18.2](https://github.com/webex/sdk-component-adapter/compare/v1.18.1...v1.18.2) (2020-01-28)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** remove finalize from getMeeting() ([c335a84](https://github.com/webex/sdk-component-adapter/commit/c335a8459589c48339559dbc9256452bfd798df0))
+
 ## [1.18.1](https://github.com/webex/sdk-component-adapter/compare/v1.18.0...v1.18.1) (2020-01-28)
 
 
