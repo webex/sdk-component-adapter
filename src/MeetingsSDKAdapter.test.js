@@ -243,7 +243,7 @@ describe('Meetings SDK Adapter', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingSDKAdapter.audioControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
-          ID: 'audio',
+          ID: 'mute-audio',
           icon: 'microphone-muted',
           tooltip: 'Mute',
           state: 'inactive',
@@ -302,7 +302,7 @@ describe('Meetings SDK Adapter', () => {
     test('emits the custom event after muting the audio track', async () => {
       await meetingSDKAdapter.handleLocalAudio(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'audio',
+        control: 'mute-audio',
         state: false,
       });
     });
@@ -324,7 +324,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID].localAudio = null;
       await meetingSDKAdapter.handleLocalAudio(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'audio',
+        control: 'mute-audio',
         state: true,
       });
     });
@@ -345,7 +345,7 @@ describe('Meetings SDK Adapter', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingSDKAdapter.videoControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
-          ID: 'video',
+          ID: 'mute-video',
           icon: 'camera',
           tooltip: 'Stop video',
           state: 'inactive',
@@ -404,7 +404,7 @@ describe('Meetings SDK Adapter', () => {
     test('emits the custom event after muting the video track', async () => {
       await meetingSDKAdapter.handleLocalVideo(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'video',
+        control: 'mute-video',
         state: false,
       });
     });
@@ -426,7 +426,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID].localVideo = null;
       await meetingSDKAdapter.handleLocalVideo(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'video',
+        control: 'mute-video',
         state: true,
       });
     });
