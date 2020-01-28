@@ -8,8 +8,8 @@ const EVENT_MEDIA_STOPPED = 'media:stopped';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const JOIN_CONTROL = 'join-meeting';
 const EXIT_CONTROL = 'leave-meeting';
-const AUDIO_CONTROL = 'audio';
-const VIDEO_CONTROL = 'video';
+const AUDIO_CONTROL = 'mute-audio';
+const VIDEO_CONTROL = 'mute-video';
 const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
@@ -491,7 +491,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
     const unmuted = {
       ID: VIDEO_CONTROL,
-      icon: 'camera',
+      icon: 'camera-muted',
       tooltip: 'Stop video',
       state: MeetingControlState.INACTIVE,
       text: null,
