@@ -1,6 +1,6 @@
 import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
-import {concat, from, fromEvent, Observable} from 'rxjs';
-import {filter, finalize, map, merge, publishReplay, refCount} from 'rxjs/operators';
+import {concat, from, fromEvent, merge, Observable} from 'rxjs';
+import {filter, map, publishReplay, refCount} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
@@ -510,7 +510,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       );
 
       // Listen to update event to return the meeting object
-      const meetingWithLocalUpdateEvents$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
+      const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
         map(() => this.meetings[ID])
       );
 
@@ -518,17 +518,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
-        meetingWithLocalUpdateEvents$
+        meetingWithLocalUpdateEvent$
       );
 
-      const getMeetingWithEvents$ = getMeeting$.pipe(
-        meetingsWithEvents$,
-        finalize(() => {
-          // clean up
-          delete this.meetings[ID];
-          delete this.getMeetingObservables[ID];
-        })
-      );
+      const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
 
       // Convert to a multicast observable
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
