@@ -1,6 +1,7 @@
 import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
+import {deconstructHydraId} from '@webex/common';
 import {concat, from, fromEvent, merge, Observable} from 'rxjs';
-import {filter, map, publishReplay, refCount} from 'rxjs/operators';
+import {flatMap, filter, map, publishReplay, refCount} from 'rxjs/operators';
 
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
@@ -12,6 +13,8 @@ const VIDEO_CONTROL = 'video';
 const MEDIA_TYPE_LOCAL = 'local';
 const MEDIA_TYPE_REMOTE_AUDIO = 'remoteAudio';
 const MEDIA_TYPE_REMOTE_VIDEO = 'remoteVideo';
+const HYDRA_ID_TYPE_PEOPLE = 'PEOPLE';
+const HYDRA_ID_TYPE_ROOM = 'ROOM';
 const MEDIA_EVENT_TYPES = [MEDIA_TYPE_LOCAL, MEDIA_TYPE_REMOTE_AUDIO, MEDIA_TYPE_REMOTE_VIDEO];
 const DEFAULT_MEDIA_SETTINGS = {
   receiveVideo: true,
@@ -158,6 +161,42 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Returns a promise of a meeting title for a given destination.
+   * Supported destinations are person ID, room ID and SIP URI.
+   *
+   * @param {string} destination  Virtual meeting destination
+   * @returns {Promise<string>}
+   * @memberof MeetingsSDKAdapter
+   */
+  async fetchMeetingTitle(destination) {
+    const {id, type} = deconstructHydraId(destination);
+    let meetingTitle = destination;
+
+    if (type === HYDRA_ID_TYPE_PEOPLE) {
+      const {displayName} = await this.datasource.people.get(id);
+
+      meetingTitle = `${displayName}'s Personal Room`;
+    } else if (type === HYDRA_ID_TYPE_ROOM) {
+      const {title} = await this.datasource.rooms.get(id);
+
+      meetingTitle = title;
+    } else {
+      try {
+        const people = await this.datasource.people.list({destination});
+
+        if (people.items) {
+          const {displayName} = people.items[0];
+
+          meetingTitle = `${displayName}'s Personal Room`;
+        }
+        // eslint-disable-next-line no-empty
+      } catch (error) {}
+    }
+
+    return meetingTitle;
+  }
+
+  /**
    * Creates meeting and returns an observable to the new meeting data.
    *
    * @param {string} target destination to start the meeting at
@@ -166,11 +205,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(target) {
     return from(this.datasource.meetings.create(target)).pipe(
+      flatMap(({id, sipUri}) => from(this.fetchMeetingTitle(sipUri)).pipe(map((title) => ({ID: id, title})))),
       map(
-        ({id, destination, sipuri}) => {
-          this.meetings[id] = {
-            ID: id,
-            title: destination || sipuri,
+        ({ID, title}) => {
+          this.meetings[ID] = {
+            ID,
+            title,
             localVideo: null,
             localAudio: null,
             localShare: null,
@@ -179,7 +219,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             remoteShare: null,
           };
 
-          return this.meetings[id];
+          return this.meetings[ID];
         },
         (error) => {
           // eslint-disable-next-line no-console

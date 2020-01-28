@@ -190,6 +190,7 @@ describe('Meetings SDK Adapter', () => {
 
   describe('createMeeting()', () => {
     test('returns a new meeting in a proper shape', (done) => {
+      meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingSDKAdapter.createMeeting(target).subscribe((newMeeting) => {
         expect(newMeeting).toMatchObject(meeting);
         done();
@@ -208,6 +209,40 @@ describe('Meetings SDK Adapter', () => {
           done();
         }
       );
+    });
+  });
+
+  describe('fetchMeetingTitle()', () => {
+    test('returns meeting sipUri as title', async () => {
+      const meetingTitle = 'sipUri';
+
+      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual(meetingTitle);
+    });
+
+    test('returns person displayName if the destination is a personID', async () => {
+      const meetingTitle = 'HYDRA_PEOPLE_ID';
+
+      meetingSDKAdapter.datasource.people.get = jest.fn(() => Promise.resolve({displayName: 'displayName'}));
+
+      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual("displayName's Personal Room");
+    });
+
+    test("returns room's title if the destination is a personID", async () => {
+      const meetingTitle = 'HYDRA_ROOM_ID';
+
+      meetingSDKAdapter.datasource.rooms.get = jest.fn(() => Promise.resolve({title: 'title'}));
+
+      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual('title');
+    });
+
+    test('returns person display name if the sipUri is an email address', async () => {
+      const meetingTitle = 'person@webex.com';
+
+      meetingSDKAdapter.datasource.people.list = jest.fn(() =>
+        Promise.resolve({items: [{displayName: 'displayName'}]})
+      );
+
+      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual("displayName's Personal Room");
     });
   });
 
@@ -444,6 +479,10 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('getMeeting()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
+    });
+
     test('returns a meeting in a proper shape', (done) => {
       meetingSDKAdapter
         .createMeeting(target)
