@@ -3,7 +3,7 @@ import webexSDKAdapter from './start';
 let MEETING_ID = null;
 
 function handleAudio() {
-  webexSDKAdapter.meetingsAdapter.meetingControls.audio.display(MEETING_ID).subscribe((data) => {
+  webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].display(MEETING_ID).subscribe((data) => {
     const muteAudio = document.getElementById('mute-audio');
 
     muteAudio.innerHTML = `${data.tooltip} audio`;
@@ -11,7 +11,7 @@ function handleAudio() {
 }
 
 function handleVideo() {
-  webexSDKAdapter.meetingsAdapter.meetingControls.video.display(MEETING_ID).subscribe((data) => {
+  webexSDKAdapter.meetingsAdapter.meetingControls['mute-video'].display(MEETING_ID).subscribe((data) => {
     const muteVideo = document.getElementById('mute-video');
 
     muteVideo.innerHTML = data.tooltip;
@@ -83,7 +83,7 @@ document.getElementById('actions').addEventListener('click', async (event) => {
   try {
     switch (event.target.id) {
       case 'mute-audio':
-        await webexSDKAdapter.meetingsAdapter.meetingControls.audio.action(MEETING_ID);
+        await webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].action(MEETING_ID);
         break;
       case 'mute-video':
         await webexSDKAdapter.meetingsAdapter.handleLocalVideo(MEETING_ID);
