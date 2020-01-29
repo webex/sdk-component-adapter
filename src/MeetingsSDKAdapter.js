@@ -524,30 +524,23 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         observer.complete();
       });
 
-      // Listen to attach mediaStream source objects to the existing meeting
       const meetingWithMediaReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
         filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
-        map((event) => this.attachMedia(ID, event)),
-        map(() => this.meetings[ID])
+        map((event) => this.attachMedia(ID, event))
       );
 
-      // Listen to remove mediaStream source objects from the existing meeting
       const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
         tap(() => this.removeMedia(ID)),
         tap(() => end$.next(`Completing meeting ${ID}`))
       );
 
-      // Listen to update event to return the meeting object
-      const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
-        map(() => this.meetings[ID])
-      );
+      const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
-      // Merge all event observables to update the existing meeting object simultaneously
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$
-      );
+      ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
 
