@@ -173,7 +173,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       meetingTitle = title;
     } else {
       try {
-        const people = await this.datasource.people.list({destination});
+        const people = await this.datasource.people.list({email: destination});
 
         if (people.items) {
           const {displayName} = people.items[0];
@@ -190,13 +190,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Creates meeting and returns an observable to the new meeting data.
    *
-   * @param {string} target destination to start the meeting at
+   * @param {string} destination destination to start the meeting at
    * @returns {Observable.<Meeting>}
    * @memberof MeetingsSDKAdapter
    */
-  createMeeting(target) {
-    return from(this.datasource.meetings.create(target)).pipe(
-      flatMap(({id, sipUri}) => from(this.fetchMeetingTitle(sipUri)).pipe(map((title) => ({ID: id, title})))),
+  createMeeting(destination) {
+    return from(this.datasource.meetings.create(destination)).pipe(
+      flatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(map((title) => ({ID: id, title})))),
       flatMap(({ID, title}) =>
         from(this.getLocalMedia(ID)).pipe(map(({localAudio, localVideo}) => ({ID, title, localAudio, localVideo})))
       ),
@@ -217,7 +217,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         },
         (error) => {
           // eslint-disable-next-line no-console
-          console.error(`Unable to create a meeting with "${target}"`, error);
+          console.error(`Unable to create a meeting with "${destination}"`, error);
         }
       )
     );
