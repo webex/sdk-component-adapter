@@ -1,3 +1,11 @@
+## [1.19.2](https://github.com/webex/sdk-component-adapter/compare/v1.19.1...v1.19.2) (2020-01-29)
+
+
+### Bug Fixes
+
+* **JestApp:** remove addLocalMedia ([86497b7](https://github.com/webex/sdk-component-adapter/commit/86497b7b5724fce18d2a571458f0988b6cdb8eb8))
+* **package:** update @webex/sdk-adapter-interfaces to 1.8.0 ([ebf7b22](https://github.com/webex/sdk-component-adapter/commit/ebf7b22d4ba04f50a88c7e196abda2fa4576c02f))
+
 ## [1.19.1](https://github.com/webex/sdk-component-adapter/compare/v1.19.0...v1.19.1) (2020-01-29)
 
 
