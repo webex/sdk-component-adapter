@@ -10,6 +10,7 @@ const output = (name, format) => ({
   format,
   sourcemap: true,
   globals: {
+    '@webex/common': '@webex.common',
     bufferutil: 'bufferutil',
     'prop-types': 'PropTypes',
     react: 'React',
@@ -36,11 +37,7 @@ export default [
       babel({
         runtimeHelpers: true,
       }),
-      commonJS({
-        // TODO: Remove workaround once fixed in SDK
-        // explicitly specify unresolvable named exports
-        namedExports: {'@webex/common': ['deconstructHydraId']},
-      }),
+      commonJS(),
       json(),
       builtins(),
     ],
@@ -52,6 +49,7 @@ export default [
       warn(warning);
     },
     external: [
+      '@webex/common',
       'bufferutil',
       'prop-types',
       'react',
