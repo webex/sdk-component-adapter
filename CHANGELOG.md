@@ -1,3 +1,11 @@
+## [1.19.1](https://github.com/webex/sdk-component-adapter/compare/v1.19.0...v1.19.1) (2020-01-29)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** complete getMeeting when remote media is removed ([8a854e6](https://github.com/webex/sdk-component-adapter/commit/8a854e6bdda153a8d66a4545c9ffc5d828366469))
+* **MeetingSdkAdapter:** rename controls to match component ([48c6051](https://github.com/webex/sdk-component-adapter/commit/48c6051358373b0566b07463fbb52fc239c0b261))
+
 # [1.19.0](https://github.com/webex/sdk-component-adapter/compare/v1.18.2...v1.19.0) (2020-01-29)
 
 
