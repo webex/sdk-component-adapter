@@ -69,9 +69,6 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleVideo();
         });
         break;
-      case 'add-local-media':
-        webexSDKAdapter.meetingsAdapter.addLocalMedia(MEETING_ID);
-        break;
       case 'join-meeting':
         await webexSDKAdapter.meetingsAdapter.meetingControls['join-meeting'].action(MEETING_ID);
         break;
