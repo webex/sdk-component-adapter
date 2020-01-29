@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/webex/sdk-component-adapter/compare/v1.18.2...v1.19.0) (2020-01-29)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** fetchMeetingTitle method is implemented ([c3f118d](https://github.com/webex/sdk-component-adapter/commit/c3f118d36443916157204e401d5d9baaa4381ff6))
+
 ## [1.18.2](https://github.com/webex/sdk-component-adapter/compare/v1.18.1...v1.18.2) (2020-01-28)
 
 
