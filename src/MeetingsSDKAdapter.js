@@ -80,23 +80,26 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Retrieve the local device media and add them to the meeting
-   * with the given default media settings to the meeting.
+   * Returns the local device media
    *
    * @param {string} ID  ID to retrieve the SDK meeting object to add the local media to
+   * @returns {Object}
    */
-  async addLocalMedia(ID) {
+  async getLocalMedia(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
+    const localMedia = {localAudio: null, localVideo: null};
 
     try {
       const [localStream] = await sdkMeeting.getMediaStreams(DEFAULT_MEDIA_SETTINGS);
 
-      // We need to emit a media ready event for retrieving local stream media
-      sdkMeeting.emit(EVENT_MEDIA_READY, {type: MEDIA_TYPE_LOCAL, stream: localStream});
+      localMedia.localAudio = new MediaStream(localStream.getAudioTracks());
+      localMedia.localVideo = new MediaStream(localStream.getVideoTracks());
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to retrieve local stream media "${ID}"`, error);
     }
+
+    return localMedia;
   }
 
   /**
@@ -194,13 +197,16 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   createMeeting(target) {
     return from(this.datasource.meetings.create(target)).pipe(
       flatMap(({id, sipUri}) => from(this.fetchMeetingTitle(sipUri)).pipe(map((title) => ({ID: id, title})))),
+      flatMap(({ID, title}) =>
+        from(this.getLocalMedia(ID)).pipe(map(({localAudio, localVideo}) => ({ID, title, localAudio, localVideo})))
+      ),
       map(
-        ({ID, title}) => {
+        ({ID, title, localAudio, localVideo}) => {
           this.meetings[ID] = {
             ID,
             title,
-            localVideo: null,
-            localAudio: null,
+            localVideo,
+            localAudio,
             localShare: null,
             remoteAudio: null,
             remoteVideo: null,
