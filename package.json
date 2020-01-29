@@ -31,7 +31,6 @@
   "author": "devsupport@webex.com",
   "license": "MIT",
   "dependencies": {
-    "@webex/common": "1.80.43",
     "@webex/component-adapter-interfaces": "^1.9.0"
   },
   "devDependencies": {
