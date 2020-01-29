@@ -34,13 +34,40 @@ describe('Meetings SDK Adapter', () => {
     target = null;
   });
 
-  describe('addLocalMedia()', () => {
+  describe('getLocalMedia()', () => {
+    beforeEach(() => {
+      global.MediaStream = jest.fn((instance) => instance);
+    });
+
+    test('returns local media in a proper shape', async () => {
+      expect(await meetingSDKAdapter.getLocalMedia(meetingID)).toEqual({
+        localAudio: ['localAudio'],
+        localVideo: ['localVideo'],
+      });
+    });
+
     test('throws errors if the local media is not retrieved successfully', async () => {
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
       global.console.error = jest.fn();
-      await meetingSDKAdapter.addLocalMedia(meetingID);
+      await meetingSDKAdapter.getLocalMedia(meetingID);
 
       expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local stream media "meetingID"', undefined);
+    });
+
+    test('nullifies local Audio if the local media is not retrieved successfully', async () => {
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      const localMedia = await meetingSDKAdapter.getLocalMedia(meetingID);
+
+      expect(localMedia.localAudio).toBeNull();
+    });
+
+    test('nullifies local Video if the local media is not retrieved successfully', async () => {
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      const localMedia = await meetingSDKAdapter.getLocalMedia(meetingID);
+
+      expect(localMedia.localVideo).toBeNull();
     });
   });
 
@@ -191,8 +218,11 @@ describe('Meetings SDK Adapter', () => {
   describe('createMeeting()', () => {
     test('returns a new meeting in a proper shape', (done) => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
+      meetingSDKAdapter.getLocalMedia = jest.fn(() =>
+        Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'})
+      );
       meetingSDKAdapter.createMeeting(target).subscribe((newMeeting) => {
-        expect(newMeeting).toMatchObject(meeting);
+        expect(newMeeting).toMatchObject({...meeting, localAudio: 'localAudio', localVideo: 'localVideo'});
         done();
       });
     });
@@ -481,6 +511,10 @@ describe('Meetings SDK Adapter', () => {
   describe('getMeeting()', () => {
     beforeEach(() => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
+      meetingSDKAdapter.getLocalMedia = jest.fn(() =>
+        Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'})
+      );
+      meeting = {...meeting, localAudio: 'localAudio', localVideo: 'localVideo'};
     });
 
     test('returns a meeting in a proper shape', (done) => {
