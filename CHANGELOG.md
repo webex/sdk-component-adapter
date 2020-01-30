@@ -1,3 +1,11 @@
+## [1.19.3](https://github.com/webex/sdk-component-adapter/compare/v1.19.2...v1.19.3) (2020-01-30)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** fetch the title from the destination ([cf0c0bd](https://github.com/webex/sdk-component-adapter/commit/cf0c0bd0847cc229ab339a15be650db3afe010a4))
+* **package:** webex is @webex/common dependency ([4ed5411](https://github.com/webex/sdk-component-adapter/commit/4ed5411540ab2c9b0c76e507f895da5084908bce))
+
 ## [1.19.2](https://github.com/webex/sdk-component-adapter/compare/v1.19.1...v1.19.2) (2020-01-29)
 
 
