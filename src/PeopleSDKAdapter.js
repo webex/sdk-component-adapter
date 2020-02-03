@@ -20,7 +20,8 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
   }
 
   /**
-   * Returns a proper Enum key for a given PersonStatus value
+   * Returns a PersonStatus enum key from the given value.
+   * If status does not match an enum key, it returns null.
    *
    * @private
    * @param {string} status  Person status from Apheleia service.
@@ -28,7 +29,9 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * @memberof PeopleSDKAdapter
    */
   getStatus(status) {
-    return Object.keys(PersonStatus).find((key) => PersonStatus[key] === status);
+    const personStatus = Object.keys(PersonStatus).find((key) => PersonStatus[key] === status);
+
+    return personStatus === undefined ? null : personStatus;
   }
 
   /**
