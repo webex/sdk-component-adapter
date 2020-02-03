@@ -34,8 +34,10 @@ describe('People SDK Adapter', () => {
     });
 
     test('emits a Person object with null status on presence plug-in error', (done) => {
+      const errorMessage = 'Presence not enabled for user';
+
       // SDK presence plug-in fails to return a status
-      mockSDK.internal.presence.get = jest.fn(() => Promise.reject(new Error()));
+      mockSDK.internal.presence.get = jest.fn(() => Promise.reject(new Error(errorMessage)));
 
       peopleSDKAdapter.getMe().subscribe((person) => {
         expect(person).toMatchObject({
@@ -62,7 +64,7 @@ describe('People SDK Adapter', () => {
       expect(isObservable(peopleSDKAdapter.getPerson(personID))).toBeTruthy();
     });
 
-    test('returns a person in a proper shape', (done) => {
+    test('emits a Person object on subscription', (done) => {
       peopleSDKAdapter.getPerson(personID).subscribe((person) => {
         expect(person).toEqual({
           ID: 'id',
@@ -78,17 +80,10 @@ describe('People SDK Adapter', () => {
       });
     });
 
-    test('stops listening to events when unsubscribing', () => {
-      const subscription = peopleSDKAdapter.getPerson(personID).subscribe();
+    test('throws error on people plug-in error', (done) => {
+      const errorMessage = 'Could not find person with given ID';
 
-      subscription.unsubscribe();
-      expect(mockSDK.internal.presence.unsubscribe).toHaveBeenCalled();
-    });
-
-    test('throws error on failed person fetch request', (done) => {
-      const errorMessage = 'a proper people error message';
-
-      personID = 'invalid personID';
+      // SDK people plug-in fails to find person
       peopleSDKAdapter.fetchPerson = jest.fn(() => Promise.reject(new Error(errorMessage)));
 
       peopleSDKAdapter.getPerson(personID).subscribe(
@@ -100,10 +95,10 @@ describe('People SDK Adapter', () => {
       );
     });
 
-    test('throws error on failed presence update subscription', (done) => {
-      const errorMessage = 'a proper subscription error message';
+    test('throws error on failed presence plug-in update subscription', (done) => {
+      const errorMessage = 'error while subscribing to presence updates';
 
-      personID = 'invalid personID';
+      // SDK presence plug-in fails to subscribe to person status updates
       mockSDK.internal.presence.subscribe = jest.fn(() => Promise.reject(new Error(errorMessage)));
 
       peopleSDKAdapter.getPerson(personID).subscribe(
@@ -113,6 +108,13 @@ describe('People SDK Adapter', () => {
           done();
         }
       );
+    });
+
+    test('stops listening to presence updates when unsubscribing', () => {
+      const subscription = peopleSDKAdapter.getPerson(personID).subscribe();
+
+      subscription.unsubscribe();
+      expect(mockSDK.internal.presence.unsubscribe).toHaveBeenCalled();
     });
   });
 
