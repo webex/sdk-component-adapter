@@ -13,7 +13,11 @@ describe('People SDK Adapter', () => {
   });
 
   describe('getMe()', () => {
-    test('returns a person in a proper shape', (done) => {
+    test('returns an observable', () => {
+      expect(isObservable(peopleSDKAdapter.getMe())).toBeTruthy();
+    });
+
+    test('emits a Person object on subscription', (done) => {
       peopleSDKAdapter.getMe().subscribe((person) => {
         expect(person).toMatchObject({
           ID: 'id',
@@ -39,6 +43,17 @@ describe('People SDK Adapter', () => {
         });
         done();
       });
+    });
+
+    test('completes after one emission', (done) => {
+      peopleSDKAdapter.getMe().subscribe(
+        () => {},
+        () => {},
+        () => {
+          expect(true).toBeTruthy();
+          done();
+        }
+      );
     });
   });
 

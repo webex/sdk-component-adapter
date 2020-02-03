@@ -65,10 +65,14 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * @memberof PeopleSDKAdapter
    */
   getMe() {
+    // Get person data of the current access token bearer
     return defer(() => this.fetchPerson('me')).pipe(
       flatMap((person) =>
+        // Get person status information from presence plug-in
         defer(() => this.datasource.internal.presence.get([person.id])).pipe(
-          catchError(() => of({status: null})), // When SDK throws error, don't set a status
+          // When SDK throws error, don't set a status
+          catchError(() => of({status: null})),
+          // Combine person data and presence data to send back
           map(({status}) => ({...person, status: this.getStatus(status)}))
         )
       )
