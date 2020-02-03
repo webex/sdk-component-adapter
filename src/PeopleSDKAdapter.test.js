@@ -28,6 +28,18 @@ describe('People SDK Adapter', () => {
         done();
       });
     });
+
+    test('emits a Person object with null status on presence plug-in error', (done) => {
+      // SDK presence plug-in fails to return a status
+      mockSDK.internal.presence.get = jest.fn(() => Promise.reject(new Error()));
+
+      peopleSDKAdapter.getMe().subscribe((person) => {
+        expect(person).toMatchObject({
+          status: null,
+        });
+        done();
+      });
+    });
   });
 
   describe('getPerson()', () => {

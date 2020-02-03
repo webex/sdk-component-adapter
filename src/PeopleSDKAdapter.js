@@ -1,5 +1,5 @@
-import {concat, from, fromEvent} from 'rxjs';
-import {flatMap, filter, finalize, map, publishReplay, refCount, take} from 'rxjs/operators';
+import {concat, defer, from, fromEvent, of} from 'rxjs';
+import {catchError, flatMap, filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
 import {deconstructHydraId} from '@webex/common';
 import {PeopleAdapter, PersonStatus} from '@webex/component-adapter-interfaces';
 
@@ -65,13 +65,13 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * @memberof PeopleSDKAdapter
    */
   getMe() {
-    return from(this.fetchPerson('me')).pipe(
+    return defer(() => this.fetchPerson('me')).pipe(
       flatMap((person) =>
-        from(this.datasource.internal.presence.get([person.id])).pipe(
+        defer(() => this.datasource.internal.presence.get([person.id])).pipe(
+          catchError(() => of({status: null})), // When SDK throws error, don't set a status
           map(({status}) => ({...person, status: this.getStatus(status)}))
         )
-      ),
-      take(1)
+      )
     );
   }
 
