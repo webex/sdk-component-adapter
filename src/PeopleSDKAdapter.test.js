@@ -80,26 +80,25 @@ describe('People SDK Adapter', () => {
       });
     });
 
+    test('emits a Person object with null status on presence plug-in error', (done) => {
+      const errorMessage = 'error while subscribing to presence updates';
+
+      // SDK presence plug-in fails to subscribe to person status updates
+      mockSDK.internal.presence.subscribe = jest.fn(() => Promise.reject(new Error(errorMessage)));
+
+      peopleSDKAdapter.getPerson(personID).subscribe((person) => {
+        expect(person).toMatchObject({
+          status: null,
+        });
+        done();
+      });
+    });
+
     test('throws error on people plug-in error', (done) => {
       const errorMessage = 'Could not find person with given ID';
 
       // SDK people plug-in fails to find person
       peopleSDKAdapter.fetchPerson = jest.fn(() => Promise.reject(new Error(errorMessage)));
-
-      peopleSDKAdapter.getPerson(personID).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe(errorMessage);
-          done();
-        }
-      );
-    });
-
-    test('throws error on failed presence plug-in update subscription', (done) => {
-      const errorMessage = 'error while subscribing to presence updates';
-
-      // SDK presence plug-in fails to subscribe to person status updates
-      mockSDK.internal.presence.subscribe = jest.fn(() => Promise.reject(new Error(errorMessage)));
 
       peopleSDKAdapter.getPerson(personID).subscribe(
         () => {},

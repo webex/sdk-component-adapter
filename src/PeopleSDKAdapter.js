@@ -1,4 +1,4 @@
-import {concat, defer, from, fromEvent, of} from 'rxjs';
+import {concat, defer, fromEvent, of} from 'rxjs';
 import {catchError, flatMap, filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
 import {deconstructHydraId} from '@webex/common';
 import {PeopleAdapter, PersonStatus} from '@webex/component-adapter-interfaces';
@@ -90,12 +90,13 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
   getPerson(ID) {
     if (!(ID in this.getPersonObservables)) {
       const personUUID = deconstructHydraId(ID).id;
-      const person$ = from(this.fetchPerson(ID));
+      const person$ = defer(() => this.fetchPerson(ID));
 
-      // Subscribe to `Apheleia` internal service to listen for status changes
-      // And update the person object with status response from the subscription
-      const personWithStatus$ = from(this.datasource.internal.presence.subscribe(personUUID)).pipe(
-        map((data) => data.responses[0].status.status),
+      // Subscribe to 'Apheleia' internal service to listen for status changes
+      // Update the Person object with status response from the subscription
+      const personWithStatus$ = defer(() => this.datasource.internal.presence.subscribe(personUUID)).pipe(
+        map((data) => data.responses[0].status.status), // This returns only the status data from subscription
+        catchError(() => of(null)), // If subscription fails, don't set a status
         flatMap((status) => person$.pipe(map((person) => ({...person, status: this.getStatus(status)}))))
       );
 
@@ -110,17 +111,22 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
         flatMap((person) => statusUpdate$.pipe(map((status) => ({...person, status}))))
       );
 
-      // Fetch the original person data on the first run
-      // and updated object after each status change
+      // Emit initial person data on the first run and send updates after each status change
       const getPerson$ = concat(personWithStatus$, personUpdate$).pipe(
-        finalize(() => {
-          // Unsubscribe from `Apheleia` internal service
-          // when there are no more subscriptions.
-          this.datasource.internal.presence.unsubscribe(personUUID);
+        finalize(async () => {
+          try {
+            // Unsubscribe from `Apheleia` internal service when there are no more subscriptions
+            await this.datasource.internal.presence.unsubscribe(personUUID);
+          } catch (error) {
+            // Don't do anything when unsubscribing fails
+            // Trying to remove a subscription fails when the user has presence turned off
+          }
+
           delete this.getPersonObservables[ID];
         })
       );
 
+      // Store observable for future subscriptions
       this.getPersonObservables[ID] = getPerson$.pipe(
         publishReplay(1),
         refCount()
