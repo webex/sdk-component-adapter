@@ -1,3 +1,12 @@
+## [1.19.4](https://github.com/webex/sdk-component-adapter/compare/v1.19.3...v1.19.4) (2020-02-06)
+
+
+### Bug Fixes
+
+* **PeopleSdkAdapter:** handle null state in getStatus() ([6da9928](https://github.com/webex/sdk-component-adapter/commit/6da99282c32b35b8fafca101b29082f473861004))
+* **PeopleSdkAdapter:** handle presence being turned off in getPerson() ([79f472c](https://github.com/webex/sdk-component-adapter/commit/79f472cb897ddd3d29ae0ba618ad3d2a460eff09))
+* **PeopleSdkAdapter:** handle presence plug-in error in getMe() ([c99fcf9](https://github.com/webex/sdk-component-adapter/commit/c99fcf99e98b76fbee258e775d07d6c1c9243568))
+
 ## [1.19.3](https://github.com/webex/sdk-component-adapter/compare/v1.19.2...v1.19.3) (2020-01-30)
 
 
