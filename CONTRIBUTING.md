@@ -1,5 +1,22 @@
 # Contributing
 
+We'd love for you to contribute to our source code and to make **Webex SDK Component Adapter** even better than it is today!
+If you would like to contribute to this repository by adding features, enhancements or bug fixes, you must follow our process:
+
+  1. [Create an issue](https://github.com/webex/sdk-component-adapter/issues) to propose your solution _before_ you get coding
+  2. Let core members know about your proposal by posting a message in the [contributor's Webex Teams space](https://eurl.io/#Bk9WGfRcB)
+  3. A core member will review your proposal and if necessary may suggest to have a meeting to better understand your approach
+      - You are welcomed you join our [weekly review meeting](https://cisco.webex.com/m/f4ebbec6-c306-49ca-83f4-fb2d098fc946) (Thursdays, 11:30a-12:30p PST) to propose your contribution as well
+  4. If your proposal is approved you should start coding at this point
+  5. We recommend opening a draft PR to receive feedback before finalizing your solution
+      - When opening a draft PR, specify with PR comments where in the code you would like to get feedback
+  6. Before opening a PR ensure **all** [PR guidelines](#pull-request-guidelines) are followed
+  7. Let core members know about your PR by posting a message in the [contributor's Webex Teams space](https://eurl.io/#Bk9WGfRcB)
+  8. The PR will be reviewed by core members and leave feedback, if any
+      - If a PR is too large, you may be asked to break it down into multiple smaller-scoped PRs
+  9. Once the PR is approved by a core member, it will be merged
+  10. Celebrate! Your code is released 🎈🎉🍻
+
 ## Opening an Issue
 
 The title of a Bug or Enhancement should clearly indicate what is broken or desired. Use the description to explain possible solutions or add details and (especially for Enhancemnts) explain _how_ or _why_ the issue is broken or desired.
@@ -75,3 +92,7 @@ The footer should contain any information about **Breaking changes** and is also
 ### Static Analysis (e.g. linting)
 
 We use eslint as a part of our static analysis step. Before contributing any code, please be sure to install eslint and be sure to following the instructions to correctly install peerDependnencies <https://www.npmjs.com/package/@webex/eslint-config-react>
+
+## Pull Request Guidelines
+
+Pull requests must include code documentation, tests, follow code style and commits format.
