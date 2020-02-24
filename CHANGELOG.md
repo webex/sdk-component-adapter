@@ -1,3 +1,11 @@
+## [1.19.5](https://github.com/webex/sdk-component-adapter/compare/v1.19.4...v1.19.5) (2020-02-24)
+
+
+### Bug Fixes
+
+* **package-lock:** fix dependency vulnerabilities ([ebe6b13](https://github.com/webex/sdk-component-adapter/commit/ebe6b13d135d110cb5780c271f027178ee7d9d7a))
+* **package:** update webex dependency to V1.80.132 ([e4d77a8](https://github.com/webex/sdk-component-adapter/commit/e4d77a83deab26e4a25e3b389881ed031951c4ed))
+
 ## [1.19.4](https://github.com/webex/sdk-component-adapter/compare/v1.19.3...v1.19.4) (2020-02-06)
 
 
