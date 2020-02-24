@@ -12,7 +12,7 @@ If you would like to contribute to this repository by adding features, enhanceme
       - When opening a draft PR, specify with PR comments where in the code you would like to get feedback
   6. Before opening a PR ensure **all** [PR guidelines](#pull-request-guidelines) are followed
   7. Let core members know about your PR by posting a message in the [contributor's Webex Teams space](https://eurl.io/#Bk9WGfRcB)
-  8. The PR will be reviewed by core members and leave feedback, if any
+  8. Core members will review the pull request and provide feedback when necessary
       - If a PR is too large, you may be asked to break it down into multiple smaller-scoped PRs
   9. Once the PR is approved by a core member, it will be merged
   10. Celebrate! Your code is released 🎈🎉🍻
