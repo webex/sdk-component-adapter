@@ -11,6 +11,7 @@ const output = (name, format) => ({
     '@webex/common': '@webex.common',
     rxjs: 'rxjs',
     'rxjs/operators': 'rxjs.operators',
+    webex: 'webex',
   },
 });
 
@@ -29,6 +30,6 @@ export default [
       }),
       commonJS(),
     ],
-    external: ['@webex/common', 'rxjs', 'rxjs/operators'],
+    external: ['@webex/common', 'rxjs', 'rxjs/operators', 'webex'],
   },
 ];
