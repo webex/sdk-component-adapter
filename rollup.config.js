@@ -18,11 +18,7 @@ const output = (name, format) => ({
 export default [
   {
     input: 'src/index.js',
-    output: [
-      output('webexSDKComponentAdapter', 'cjs'),
-      output('UMDWebexSDKComponentAdapter', 'umd'),
-      output('ESMWebexSDKComponentAdapter', 'esm'),
-    ],
+    output: [output('ESMWebexSDKComponentAdapter', 'esm')],
     plugins: [
       resolve(),
       babel({
