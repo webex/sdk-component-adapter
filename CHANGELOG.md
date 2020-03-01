@@ -1,3 +1,21 @@
+# [1.20.0](https://github.com/webex/sdk-component-adapter/compare/v1.19.5...v1.20.0) (2020-03-01)
+
+
+### Bug Fixes
+
+* **release:** exclude  umd and cjs bundles to publish ([49066a5](https://github.com/webex/sdk-component-adapter/commit/49066a5164f2bfcdccd5bb4c5a2453e7bd4bbf14))
+* **package:** main attribute now points to esm bundle ([8190b1f](https://github.com/webex/sdk-component-adapter/commit/8190b1fe15dfbf9232c1b9c28a8d0f899365bd2a))
+* **rollup:** remove extra externals ([a4164c3](https://github.com/webex/sdk-component-adapter/commit/a4164c34ff03006964a0654f46554e48967b524f))
+
+
+### Features
+
+* **rollup:** exclude webex from the bundle ([7ec7394](https://github.com/webex/sdk-component-adapter/commit/7ec7394dc06cba24710494520e324974fe0a970d))
+* **rollup:** remove cjs and umd bundles ([908c251](https://github.com/webex/sdk-component-adapter/commit/908c251b2503689fef5b625261696be16374f2a3))
+* **rollup:** remove extra configuration ([becd8a4](https://github.com/webex/sdk-component-adapter/commit/becd8a451d1f4fa1cb4982e157c6df90f33bc30f))
+* **package:** remove rollup builtin plugin dependency ([30da5e6](https://github.com/webex/sdk-component-adapter/commit/30da5e6a4085dca21e2f89e02b6a877aab47b1c2))
+* **package:** remove rollup json plugin dependency ([149c414](https://github.com/webex/sdk-component-adapter/commit/149c4142f8f7a93b6e0c8587f4c4cf0c3be622a0))
+
 ## [1.19.5](https://github.com/webex/sdk-component-adapter/compare/v1.19.4...v1.19.5) (2020-02-24)
 
 
