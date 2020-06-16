@@ -157,6 +157,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Stops the tracks of the given media stream.
+   * @see {@link MediaStream|https://developer.mozilla.org/en-US/docs/Web/API/MediaStream}.
+   *
+   * @param {MediaStream} stream  media stream for which to stop tracks
+   * @memberof MeetingsSDKAdapter
+   * @private
+   */
+  stopStream(stream) {
+    if (stream) {
+      const tracks = stream.getTracks();
+
+      tracks.forEach((track) => track.stop());
+    }
+  }
+
+  /**
    * Update the meeting object by removing all media.
    *
    * @param {string} ID  ID of the meeting to fetch
@@ -164,6 +180,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    */
   removeMedia(ID) {
+    if (this.meetings && this.meetings[ID]) {
+      this.stopStream(this.meetings[ID].localAudio);
+      this.stopStream(this.meetings[ID].localVideo);
+      this.stopStream(this.meetings[ID].localShare);
+    }
+
     this.meetings[ID] = {
       ...this.meetings[ID],
       localAudio: null,
