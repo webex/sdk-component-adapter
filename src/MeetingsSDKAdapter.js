@@ -80,26 +80,48 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Returns the local device media
+   * Returns a promise to the local device media streams.
    *
    * @param {string} ID  ID to retrieve the SDK meeting object to add the local media to
    * @returns {Object}
    */
   async getLocalMedia(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
     const localMedia = {localAudio: null, localVideo: null};
 
-    try {
-      const [localStream] = await sdkMeeting.getMediaStreams(DEFAULT_MEDIA_SETTINGS);
+    if (DEFAULT_MEDIA_SETTINGS.sendAudio) {
+      localMedia.localAudio = await this.getStream(ID, {sendAudio: true});
+    }
 
-      localMedia.localAudio = new MediaStream(localStream.getAudioTracks());
-      localMedia.localVideo = new MediaStream(localStream.getVideoTracks());
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to retrieve local stream media "${ID}"`, error);
+    if (DEFAULT_MEDIA_SETTINGS.sendVideo) {
+      localMedia.localVideo = await this.getStream(ID, {sendVideo: true});
     }
 
     return localMedia;
+  }
+
+  /**
+   * Returns a promise to a local media stream based on the given constraints.
+   * @see {@link MediaStream|https://developer.mozilla.org/en-US/docs/Web/API/MediaStream}.
+   *
+   * @param {string} ID  ID of the meeting for which to fetch streams
+   * @param {Object} constraint
+   * @returns {Promise.<MediaStream>}  Requested media stream
+   * @memberof MeetingsSDKAdapter
+   * @private
+   */
+  async getStream(ID, constraint) {
+    let localStream = null;
+
+    try {
+      const sdkMeeting = this.fetchMeeting(ID);
+
+      [localStream] = await sdkMeeting.getMediaStreams(constraint);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to retrieve local media stream for meeting "${ID}" with constraint "${constraint}"`, error);
+    }
+
+    return localStream;
   }
 
   /**
@@ -156,7 +178,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Supported destinations are person ID, room ID and SIP URI.
    *
    * @param {string} destination  Virtual meeting destination
-   * @returns {Promise<string>}
+   * @returns {Promise.<string>}
    * @memberof MeetingsSDKAdapter
    */
   async fetchMeetingTitle(destination) {
@@ -246,7 +268,19 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
       const {localAudio, localVideo} = this.meetings[ID];
-      const [localStream] = await sdkMeeting.getMediaStreams(DEFAULT_MEDIA_SETTINGS);
+      const localStream = new MediaStream();
+
+      if (localAudio) {
+        const tracks = localAudio.getTracks();
+
+        tracks.forEach((track) => localStream.addTrack(track));
+      }
+
+      if (localVideo) {
+        const tracks = localVideo.getTracks();
+
+        tracks.forEach((track) => localStream.addTrack(track));
+      }
 
       await sdkMeeting.join();
 
