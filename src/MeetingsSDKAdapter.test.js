@@ -213,7 +213,38 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('stopStream()', () => {
+    const mockStop = jest.fn();
+    let mockMediaStreamInstance;
+
+    beforeEach(() => {
+      mockMediaStreamInstance = {
+        getTracks: () => [{stop: mockStop}],
+      };
+
+      global.MediaStream = jest.fn(() => mockMediaStreamInstance);
+    });
+
+    test('test cal stopStream()', () => {
+      meetingSDKAdapter.stopStream(new MediaStream());
+      expect(mockStop).toHaveBeenCalled();
+    });
+  });
+
   describe('removeMedia()', () => {
+    let stopStream;
+
+    beforeEach(() => {
+      const {trueStopStream} = meetingSDKAdapter.stopStream;
+
+      stopStream = trueStopStream;
+      meetingSDKAdapter.stopStream = jest.fn();
+    });
+
+    afterEach(() => {
+      meetingSDKAdapter.stopStream = stopStream;
+    });
+
     test('removes `localAudio` and `localVideo`, if the event type is `local`', () => {
       meetingSDKAdapter.removeMedia(meetingID, {type: 'local'});
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
@@ -256,6 +287,19 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('createMeeting()', () => {
+    let stopStream;
+
+    beforeEach(() => {
+      const {trueStopStream} = meetingSDKAdapter.stopStream;
+
+      stopStream = trueStopStream;
+      meetingSDKAdapter.stopStream = jest.fn();
+    });
+
+    afterEach(() => {
+      meetingSDKAdapter.stopStream = stopStream;
+    });
+
     test('returns a new meeting in a proper shape', (done) => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingSDKAdapter.getLocalMedia = jest.fn(() =>
@@ -549,12 +593,22 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('getMeeting()', () => {
+    let stopStream;
+
     beforeEach(() => {
+      const {trueStopStream} = meetingSDKAdapter.stopStream;
+
+      stopStream = trueStopStream;
+      meetingSDKAdapter.stopStream = jest.fn();
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingSDKAdapter.getLocalMedia = jest.fn(() =>
         Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'})
       );
       meeting = {...meeting, localAudio: 'localAudio', localVideo: 'localVideo'};
+    });
+
+    afterEach(() => {
+      meetingSDKAdapter.stopStream = stopStream;
     });
 
     test('returns a meeting in a proper shape', (done) => {
