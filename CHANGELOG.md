@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/webex/sdk-component-adapter/compare/v1.20.0...v1.21.0) (2020-06-16)
+
+
+### Features
+
+* **MeetingSdkAdapter:** add screen share meeting control ([4083451](https://github.com/webex/sdk-component-adapter/commit/4083451730029b4b41f9ff12bb728bdd9e9c404a))
+
 # [1.20.0](https://github.com/webex/sdk-component-adapter/compare/v1.19.5...v1.20.0) (2020-03-01)
 
 
