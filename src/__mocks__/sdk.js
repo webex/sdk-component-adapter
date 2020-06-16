@@ -28,6 +28,8 @@ export const mockSDKMeeting = {
   join: jest.fn(() => Promise.resolve()),
   unmuteAudio: jest.fn(() => Promise.resolve()),
   unmuteVideo: jest.fn(() => Promise.resolve()),
+  canUpdateMedia: jest.fn(() => true),
+  updateShare: jest.fn(() => Promise.resolve()),
 };
 
 /**

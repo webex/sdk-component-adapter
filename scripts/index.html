@@ -28,6 +28,7 @@
             <legend>Actions</legend>
             <button id="mute-audio">Mute Audio</button>
             <button id="mute-video">Mute Video</button>
+            <button id="share-screen">Screen Share</button>
           </fieldset>
         </form>
         <div style="display: flex; justify-content: space-between;">
@@ -41,6 +42,16 @@
             <h2>Remote Stream:</h2>
             <audio id="remote-audio" autoplay playsinline></audio>
             <video style="width:25rem" id="remote-video" autoplay playsinline></video>
+          </div>
+
+          <div>
+            <h2>Local Share Stream:</h2>
+            <video style="width:25rem" id="local-share" autoplay playsinline></video>
+          </div>
+
+          <div>
+            <h2>Remote Share Stream:</h2>
+            <video style="width:25rem" id="remote-share" autoplay playsinline></video>
           </div>
         </div>
       </div>
