@@ -51,7 +51,10 @@ describe('Meetings SDK Adapter', () => {
       global.console.error = jest.fn();
       await meetingSDKAdapter.getLocalMedia(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local stream media "meetingID"', undefined);
+      expect(global.console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
+        undefined
+      );
     });
 
     test('nullifies local Audio if the local media is not retrieved successfully', async () => {
@@ -68,6 +71,43 @@ describe('Meetings SDK Adapter', () => {
       const localMedia = await meetingSDKAdapter.getLocalMedia(meetingID);
 
       expect(localMedia.localVideo).toBeNull();
+    });
+  });
+
+  describe('getStream()', () => {
+    afterEach(() => {
+      mockSDKMeeting.getMediaStreams = jest.fn((constraint) =>
+        Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']])
+      );
+    });
+
+    test('throws errors and nullifies local Audio if not retrieved successfully', async () => {
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      const localAudio = await meetingSDKAdapter.getStream(meetingID, {sendAudio: true});
+
+      expect(localAudio).toBeNull();
+      expect(global.console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
+        undefined
+      );
+    });
+
+    test('throws errors and nullifies local Video if not retrieved successfully', async () => {
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      global.console.error = jest.fn();
+      const localVideo = await meetingSDKAdapter.getStream(meetingID, {sendVideo: true});
+
+      expect(localVideo).toBeNull();
+      expect(global.console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
+        undefined
+      );
+    });
+
+    test('returns local media in a proper shape', async () => {
+      expect(await meetingSDKAdapter.getStream(meetingID, {sendAudio: true})).toEqual(['localAudio']);
+      expect(await meetingSDKAdapter.getStream(meetingID, {sendVideo: true})).toEqual(['localVideo']);
     });
   });
 
