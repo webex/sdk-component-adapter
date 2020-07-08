@@ -1,3 +1,10 @@
+## [1.21.1](https://github.com/webex/sdk-component-adapter/compare/v1.21.0...v1.21.1) (2020-07-08)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** use correct key for media settings on addMedia ([a51531a](https://github.com/webex/sdk-component-adapter/commit/a51531ac51e6e06410513c71a1c03bcf6eada87f))
+
 # [1.21.0](https://github.com/webex/sdk-component-adapter/compare/v1.20.0...v1.21.0) (2020-06-16)
 
 
