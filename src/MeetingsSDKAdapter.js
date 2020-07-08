@@ -33,7 +33,7 @@ const MEDIA_EVENT_TYPES = [
   MEDIA_TYPE_REMOTE_SHARE,
 ];
 
-const DEFAULT_MEDIA_SETTINGS = {
+const mediaSettings = {
   receiveVideo: true,
   receiveAudio: true,
   receiveShare: true,
@@ -114,11 +114,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async getLocalMedia(ID) {
     const localMedia = {localAudio: null, localVideo: null};
 
-    if (DEFAULT_MEDIA_SETTINGS.sendAudio) {
+    if (mediaSettings.sendAudio) {
       localMedia.localAudio = await this.getStream(ID, {sendAudio: true});
     }
 
-    if (DEFAULT_MEDIA_SETTINGS.sendVideo) {
+    if (mediaSettings.sendVideo) {
       localMedia.localVideo = await this.getStream(ID, {sendVideo: true});
     }
 
@@ -341,7 +341,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       await sdkMeeting.join();
 
       // SDK requires to join the meeting before adding the local stream media to the meeting
-      await sdkMeeting.addMedia({localStream, DEFAULT_MEDIA_SETTINGS});
+      await sdkMeeting.addMedia({localStream, mediaSettings});
 
       // Mute either streams after join if user had muted them before joining
       if (localAudio === null) {
