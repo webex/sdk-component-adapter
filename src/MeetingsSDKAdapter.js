@@ -181,7 +181,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         this.meetings[ID] = {...meeting, localShare: stream};
         break;
       case MEDIA_TYPE_REMOTE_SHARE:
-        this.meetings[ID] = {...meeting, remoteShare: stream};
+        this.meetings[ID] = {...meeting, remoteShare: null};
         break;
       default:
         break;
