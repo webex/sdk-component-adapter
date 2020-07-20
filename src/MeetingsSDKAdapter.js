@@ -57,6 +57,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     super(datasource);
     this.getMeetingObservables = {};
     this.meetings = {};
+    this.audioEnabled = true;
 
     this.meetingControls[JOIN_CONTROL] = {
       ID: JOIN_CONTROL,
@@ -343,9 +344,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       // SDK requires to join the meeting before adding the local stream media to the meeting
       await sdkMeeting.addMedia({localStream, mediaSettings});
 
-      // Mute either streams after join if user had muted them before joining
-      if (localAudio === null) {
+      if (this.meetings[ID].disabledLocalAudio === true) {
         await sdkMeeting.muteAudio();
+        this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
+        this.meetings[ID].localAudio = null;
       }
 
       if (localVideo === null) {
@@ -370,6 +372,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       await sdkMeeting.leave();
 
+      this.meetings[ID].disabledLocalAudio = null;
+      this.audioEnabled = true;
       // Due to SDK limitations, We need to emit a media stopped event for remote media types
       sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_REMOTE_AUDIO});
       sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_REMOTE_VIDEO});
@@ -432,35 +436,34 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     try {
       const isInSession = this.meetings[ID].remoteAudio !== null;
-      let audioEnabled = this.meetings[ID].localAudio !== null;
 
-      if (audioEnabled) {
+      if (this.audioEnabled) {
         // Mute the audio only if there is an active meeting
         if (isInSession) {
           await sdkMeeting.muteAudio();
+          this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
+          this.meetings[ID].localAudio = null;
+        } else {
+          this.meetings[ID].disabledLocalAudio = true;
         }
 
-        // Store the current local audio stream to avoid an extra request call
-        this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
-        this.meetings[ID].localAudio = null;
-        audioEnabled = false;
+        this.audioEnabled = false;
       } else {
         // Unmute the audio only if there is an active meeting
         if (isInSession) {
           await sdkMeeting.unmuteAudio();
+          // Retrieve the stored local audio stream
+          this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
         }
-
-        // Retrieve the stored local audio stream
-        this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
         this.meetings[ID].disabledLocalAudio = null;
-        audioEnabled = true;
+        this.audioEnabled = true;
       }
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for audio mute updates
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: AUDIO_CONTROL,
-        state: audioEnabled,
+        state: this.audioEnabled,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
