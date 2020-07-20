@@ -323,14 +323,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async joinMeeting(ID) {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
-      const {localAudio, localVideo} = this.meetings[ID];
+      const {localVideo} = this.meetings[ID];
       const localStream = new MediaStream();
 
-      if (localAudio) {
-        const tracks = localAudio.getTracks();
+      const localAudio = this.meetings[ID].localAudio || this.meetings[ID].disabledLocalAudio;
+      const audioTracks = localAudio.getTracks();
 
-        tracks.forEach((track) => localStream.addTrack(track));
-      }
+      audioTracks.forEach((track) => localStream.addTrack(track));
 
       if (localVideo) {
         const tracks = localVideo.getTracks();
@@ -344,7 +343,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       await sdkMeeting.addMedia({localStream, mediaSettings});
 
       // Mute either streams after join if user had muted them before joining
-      if (localAudio === null) {
+      if (this.meetings[ID].localAudio === null) {
         await sdkMeeting.muteAudio();
       }
 
