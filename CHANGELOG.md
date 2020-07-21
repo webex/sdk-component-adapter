@@ -1,3 +1,11 @@
+## [1.21.2](https://github.com/webex/sdk-component-adapter/compare/v1.21.1...v1.21.2) (2020-07-21)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** attach local audio at join even when muted ([b9bc5fe](https://github.com/webex/sdk-component-adapter/commit/b9bc5fe1d298d791bbd98ba7e27dcc599aa795ea))
+* **MeetingsSdkAdapter:** attach local video stream at join when muted ([95f4ede](https://github.com/webex/sdk-component-adapter/commit/95f4ede18e0b8052d369ceacb8759071d2f8c022))
+
 ## [1.21.1](https://github.com/webex/sdk-component-adapter/compare/v1.21.0...v1.21.1) (2020-07-08)
 
 
