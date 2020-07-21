@@ -323,7 +323,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async joinMeeting(ID) {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
-      const {localVideo} = this.meetings[ID];
       const localStream = new MediaStream();
 
       const localAudio = this.meetings[ID].localAudio || this.meetings[ID].disabledLocalAudio;
@@ -331,11 +330,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       audioTracks.forEach((track) => localStream.addTrack(track));
 
-      if (localVideo) {
-        const tracks = localVideo.getTracks();
+      const localVideo = this.meetings[ID].localVideo || this.meetings[ID].disabledLocalVideo;
+      const videoTracks = localVideo.getTracks();
 
-        tracks.forEach((track) => localStream.addTrack(track));
-      }
+      videoTracks.forEach((track) => localStream.addTrack(track));
 
       await sdkMeeting.join();
 
@@ -347,7 +345,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         await sdkMeeting.muteAudio();
       }
 
-      if (localVideo === null) {
+      if (this.meetings[ID].localVideo === null) {
         await sdkMeeting.muteVideo();
       }
     } catch (error) {
