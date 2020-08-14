@@ -8,7 +8,6 @@ const output = (name, format) => ({
   format,
   sourcemap: true,
   globals: {
-    '@webex/common': '@webex.common',
     rxjs: 'rxjs',
     'rxjs/operators': 'rxjs.operators',
     webex: 'webex',
@@ -20,12 +19,16 @@ export default [
     input: 'src/index.js',
     output: [output('ESMWebexSDKComponentAdapter', 'esm')],
     plugins: [
-      resolve(),
+      resolve({preferBuiltins: false}),
       babel({
         runtimeHelpers: true,
       }),
-      commonJS(),
+      commonJS({
+        namedExports: {
+          '@webex/common': ['deconstructHydraId'],
+        },
+      }),
     ],
-    external: ['@webex/common', 'rxjs', 'rxjs/operators', 'webex'],
+    external: ['rxjs', 'rxjs/operators', 'webex'],
   },
 ];
