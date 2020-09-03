@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/webex/sdk-component-adapter/compare/v1.21.2...v1.22.0) (2020-09-03)
+
+
+### Features
+
+* **package:** update webex dependency to ^1.92.0 ([f089502](https://github.com/webex/sdk-component-adapter/commit/f089502bb32b6ae1b76ca1dedcaa086188ccddcf))
+
 ## [1.21.2](https://github.com/webex/sdk-component-adapter/compare/v1.21.1...v1.21.2) (2020-07-21)
 
 
