@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/webex/sdk-component-adapter/compare/v1.22.0...v1.22.1) (2020-09-09)
+
+
+### Bug Fixes
+
+* **meetingsSDKAdapter:** check media stream exists before getting tracks when joining ([685556c](https://github.com/webex/sdk-component-adapter/commit/685556ca8b50ec83004149c380b95ac83a52452d))
+
 # [1.22.0](https://github.com/webex/sdk-component-adapter/compare/v1.21.2...v1.22.0) (2020-09-03)
 
 
