@@ -17,6 +17,14 @@ export const mockSDKPerson = {
 export const mockSDKMeeting = {
   id: 'meetingID',
   sipuri: 'my meeting',
+  members: {
+    membersCollection: {
+      members: {
+        id: mockSDKPerson,
+      },
+    },
+    on: jest.fn(),
+  },
   addMedia: jest.fn(() => Promise.resolve()),
   emit: jest.fn(() => Promise.resolve()),
   getMediaStreams: jest.fn((constraint) => Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']])),
@@ -65,6 +73,9 @@ export default function createMockSDK() {
     meetings: {
       create: jest.fn(() => Promise.resolve(mockSDKMeeting)),
       getMeetingByType: jest.fn((_, ID) => (ID === 'meetingID' ? mockSDKMeeting : undefined)),
+      members: {
+        on: jest.fn(),
+      },
     },
   };
 }
