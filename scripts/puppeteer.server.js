@@ -1,6 +1,11 @@
-import webexSDKAdapter from './start';
+/* eslint-disable no-console */
+import {DestinationType} from '@webex/component-adapter-interfaces';
+import Webex from 'webex';
+
+import WebexSDKAdapter from '../src/WebexSDKAdapter';
 
 let MEETING_ID = null;
+let webexSDKAdapter;
 
 function handleAudio() {
   webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].display(MEETING_ID).subscribe((data) => {
@@ -19,9 +24,7 @@ function handleVideo() {
 }
 
 function handleShare() {
-  webexSDKAdapter.meetingsAdapter.meetingControls['share-screen']
-    .display(MEETING_ID)
-    .subscribe((data) => {
+  webexSDKAdapter.meetingsAdapter.meetingControls['share-screen'].display(MEETING_ID).subscribe((data) => {
     const startShare = document.getElementById('share-screen');
 
     startShare.innerHTML = data.tooltip;
@@ -31,7 +34,6 @@ function handleShare() {
 function getMeeting() {
   webexSDKAdapter.meetingsAdapter.getMeeting(MEETING_ID).subscribe(
     (meeting) => {
-      // eslint-disable-next-line no-console
       console.log('Received meeting update: ', meeting);
 
       document.getElementById('remote-audio').srcObject = meeting.remoteAudio;
@@ -42,8 +44,9 @@ function getMeeting() {
       document.getElementById('remote-share').srcObject = meeting.remoteShare;
       document.getElementById('meeting-title').innerHTML = meeting.title;
     },
-    () => {},
-    // eslint-disable-next-line no-console
+    (error) => {
+      console.error('Get Meeting error: ', error);
+    },
     () => console.log(`Meeting "${MEETING_ID}" has ended.`)
   );
 }
@@ -51,17 +54,22 @@ function getMeeting() {
 document.getElementById('connector').addEventListener('click', async (event) => {
   event.preventDefault();
   const status = document.getElementById('connection-status');
+  const credentials = document.getElementById('credentials').value;
 
   try {
     if (event.target.id === 'connect') {
+      const webex = new Webex({
+        credentials,
+      });
+
+      webexSDKAdapter = new WebexSDKAdapter(webex);
       await webexSDKAdapter.connect();
       status.innerHTML = 'Connected ✅';
-    } else {
+    } else if (event.target.id === 'disconnect') {
       await webexSDKAdapter.disconnect();
       status.innerHTML = 'Disconnected ❌';
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Unable to connect/disconnect:', error);
   }
 });
@@ -90,7 +98,6 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
         break;
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Unable to perform any dialing actions:', error);
   }
 });
@@ -111,7 +118,18 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         break;
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Unable to perform an action:', error);
+  }
+});
+
+document.getElementById('members').addEventListener('click', (event) => {
+  event.preventDefault();
+
+  if (event.target.id === 'get-members') {
+    webexSDKAdapter.membershipsAdapter
+      .getMembersFromDestination(MEETING_ID, DestinationType.MEETING)
+      .subscribe((members) => {
+        document.getElementById('members-list').value = JSON.stringify(members, '', 2);
+      });
   }
 });
