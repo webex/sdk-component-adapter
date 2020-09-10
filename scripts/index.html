@@ -9,6 +9,7 @@
         <form id="connector">
           <fieldset>
             <legend>JS SDK Connection</legend>
+            <input id="credentials" placeholder="Access Token" type="password" />
             <button id="connect">Connect</button>
             <button id="disconnect">Disconnect</button>
             <span id="connection-status"> Disconnected ❌ </span>
@@ -29,6 +30,13 @@
             <button id="mute-audio">Mute Audio</button>
             <button id="mute-video">Mute Video</button>
             <button id="share-screen">Screen Share</button>
+          </fieldset>
+        </form>
+        <form id="members">
+          <fieldset>
+            <legend>Members</legend>
+            <button id="get-members">Get Members</button>
+            <textarea id="members-list"></textarea>
           </fieldset>
         </form>
         <div style="display: flex; justify-content: space-between;">
