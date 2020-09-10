@@ -2,10 +2,10 @@ version: 2.1
 
 # reusable environment for all jobs
 executors:
-  main-executor:
+  node-erbium-executor:
     working_directory: ~/sdk-component-adapter
     docker:
-      - image: circleci/node:12.7.0-browsers
+      - image: circleci/node:erbium-browsers
         environment:
           NODE_ENV: development # Only needed if puppeteer is in `devDependencies`
 
@@ -21,7 +21,7 @@ commands:
 # define jobs
 jobs:
   install:
-    executor: main-executor
+    executor: node-erbium-executor
     steps:
       - checkout
       - restore_cache:
@@ -38,7 +38,7 @@ jobs:
           paths: node_modules
 
   unit-test:
-    executor: main-executor
+    executor: node-erbium-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -51,7 +51,7 @@ jobs:
           path: test_results
 
   integration-test:
-    executor: main-executor
+    executor: node-erbium-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -61,7 +61,7 @@ jobs:
           path: test_results
 
   build:
-    executor: main-executor
+    executor: node-erbium-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -72,7 +72,7 @@ jobs:
           paths: dist
 
   release:
-    executor: main-executor
+    executor: node-erbium-executor
     steps:
       - checkout_from_workspace
       - run:
