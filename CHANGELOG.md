@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/webex/sdk-component-adapter/compare/v1.22.1...v1.23.0) (2020-09-11)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add ability to find meeting memberships ([c0f2750](https://github.com/webex/sdk-component-adapter/commit/c0f27502b7938a6399c68108001078ec0dcaea38))
+
 ## [1.22.1](https://github.com/webex/sdk-component-adapter/compare/v1.22.0...v1.22.1) (2020-09-09)
 
 
