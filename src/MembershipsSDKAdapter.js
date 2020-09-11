@@ -25,24 +25,6 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
   }
 
   /**
-   * Returns an observable subject for the given membership.
-   *
-   * @private
-   * @param {string} membershipID  ID of the destination for which to get members
-   * @param {DestinationType} destinationType  type of the membership destination
-   * @returns {BehaviorSubject}
-   */
-  getOrCreateMembershipSubject(membershipID) {
-    if (!this.membershipSubjects[membershipID]) {
-      // Behavior subject will keep the last emitted object for new subscribers
-      // https://rxjs.dev/guide/subject#behaviorsubject
-      this.membershipSubjects[membershipID] = new BehaviorSubject([]);
-    }
-
-    return this.membershipSubjects[membershipID];
-  }
-
-  /**
    * Returns an observable that emits a Membership object.
    * Whenever there is an update to the membership, the observable
    * will emit a new updated Membership object, if datasource permits.
