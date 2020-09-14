@@ -8,6 +8,8 @@ const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
 const EVENT_LOCAL_SHARE_STOP = 'meeting:stoppedSharingLocal';
 const EVENT_LOCAL_SHARE_START = 'meeting:startedSharingLocal';
+const EVENT_REMOTE_SHARE_START = 'meeting:startedSharingRemote';
+const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 
 // Adapter Events
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
@@ -181,7 +183,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         this.meetings[ID] = {...meeting, localShare: stream};
         break;
       case MEDIA_TYPE_REMOTE_SHARE:
-        this.meetings[ID] = {...meeting, remoteShare: stream};
+        this.meetings[ID] = {...meeting, remoteShareStream: stream};
+        break;
+      case EVENT_REMOTE_SHARE_START:
+        // Only activate the remote stream when get get the start notification
+        this.meetings[ID] = {...meeting, remoteShare: meeting.remoteShareStream};
+        break;
+      case EVENT_REMOTE_SHARE_STOP:
+        // Remove remote share on stop event
+        this.meetings[ID] = {...meeting, remoteShare: null};
         break;
       default:
         break;
@@ -796,12 +806,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         tap(() => end$.next(`Completing meeting ${ID}`))
       );
 
+      const meetingWithMediaShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_START).pipe(
+        tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_START}))
+      );
+
+      const meetingWithMediaStoppedShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_STOP).pipe(
+        tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_STOP}))
+      );
+
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
-        meetingWithLocalUpdateEvent$
+        meetingWithLocalUpdateEvent$,
+        meetingWithMediaShareEvent$,
+        meetingWithMediaStoppedShareEvent$
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);

@@ -201,6 +201,33 @@ describe('Meetings SDK Adapter', () => {
       });
     });
 
+    test('sets `remoteShare`, if the event type is `meeting:startedSharingRemote`', () => {
+      event = {
+        type: 'meeting:startedSharingRemote',
+      };
+      meetingSDKAdapter.meetings[meetingID] = {
+        remoteShareStream: 'remoteShareStream',
+      };
+      meetingSDKAdapter.attachMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        remoteShare: 'remoteShareStream',
+      });
+    });
+
+    test('clears `remoteShare`, if the event type is `meeting:stoppedSharingRemote`', () => {
+      event = {
+        type: 'meeting:stoppedSharingRemote',
+      };
+
+      meetingSDKAdapter.meetings[meetingID] = {
+        remoteShare: 'remoteShareStream',
+      };
+      meetingSDKAdapter.attachMedia(meetingID, event);
+      expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
+        remoteShare: null,
+      });
+    });
+
     test('returns the same meeting object, if the event type is not declared', () => {
       meetingSDKAdapter.meetings[meetingID] = meeting;
       event = {
