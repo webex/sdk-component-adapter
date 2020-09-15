@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/webex/sdk-component-adapter/compare/v1.23.0...v1.24.0) (2020-09-15)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add support for remote sharing events ([ffaacf4](https://github.com/webex/sdk-component-adapter/commit/ffaacf43e57bb6b5eb1383b59b22088213da5b42))
+
 # [1.23.0](https://github.com/webex/sdk-component-adapter/compare/v1.22.1...v1.23.0) (2020-09-11)
 
 
