@@ -11,7 +11,7 @@ import {DestinationType, MembershipsAdapter} from '@webex/component-adapter-inte
  */
 function getActiveMembers(members) {
   return Object.values(members)
-    .filter((member) => !member.isInMeeting)
+    .filter((member) => member.isInMeeting && member.isUser)
     .map((member) => ({
       id: member.id,
     }));
