@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/webex/sdk-component-adapter/compare/v1.24.0...v1.24.1) (2020-09-16)
+
+
+### Bug Fixes
+
+* **MembershipsSdkAdapter:** get in meeting members ([685764d](https://github.com/webex/sdk-component-adapter/commit/685764dc59b2474707a01f1319c3c0643d6fb19a))
+
 # [1.24.0](https://github.com/webex/sdk-component-adapter/compare/v1.23.0...v1.24.0) (2020-09-15)
 
 
