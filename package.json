@@ -68,11 +68,11 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "semantic-release": "^15.13.24",
-    "webex": "^1.92.0"
+    "webex": "^1.96.1"
   },
   "peerDependencies": {
     "rxjs": "^6.5.4",
-    "webex": "^1.92.0"
+    "webex": "^1.96.1"
   },
   "babel": {
     "plugins": [
