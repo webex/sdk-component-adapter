@@ -67,7 +67,7 @@
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "semantic-release": "^15.13.24",
+    "semantic-release": "^17.2.3",
     "webex": "^1.92.0"
   },
   "peerDependencies": {
