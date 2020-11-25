@@ -8,6 +8,7 @@ This guide describes the dependencies of this repository and their purpose.
   - [Babel](#babel)
   - [commitlint](#commitlint)
   - [Husky](#husky)
+  - [semantic-release](#semantic-release)
 
 ### Babel
 
@@ -42,3 +43,19 @@ checks commit messages to make sure they follow
 
 [Husky](https://github.com/typicode/husky#husky) simplifies running scripts in
 [Git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks).
+
+### Semantic Release
+
+[semantic-release](https://semantic-release.gitbook.io/semantic-release/)
+automates the versioning and release process.
+semantic-release using semantic versioning to find the next version.
+It also takes care of updating all packages, pushing back to Git and publishing to NPM.
+
+#### Semantic Release Packages
+
+- [semantic-release](https://www.npmjs.com/package/semantic-release):
+  semantic-release core package
+- [@semantic-release/changelog](https://www.npmjs.com/package/@semantic-release/changelog):
+  Plugin to generate the changelog
+- [@semantic-release/git](https://www.npmjs.com/package/@semantic-release/git):
+  Plugin to commit release assets into a Git repository
