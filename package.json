@@ -109,6 +109,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run test:eslint",
+      "pre-push": "npm run test:unit",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }
