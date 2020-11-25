@@ -2,6 +2,10 @@ version: 2.1
 
 # reusable environment for all jobs
 executors:
+  node-fermium-executor:
+    working_directory: ~/sdk-component-adapter
+    docker:
+      - image: circleci/node:fermium-browsers
   node-erbium-executor:
     working_directory: ~/sdk-component-adapter
     docker:
@@ -21,7 +25,7 @@ commands:
 # define jobs
 jobs:
   install:
-    executor: node-erbium-executor
+    executor: node-fermium-executor
     steps:
       - checkout
       - restore_cache:
@@ -38,7 +42,7 @@ jobs:
           paths: node_modules
 
   unit-test:
-    executor: node-erbium-executor
+    executor: node-fermium-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -51,7 +55,7 @@ jobs:
           path: test_results
 
   integration-test:
-    executor: node-erbium-executor
+    executor: node-fermium-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -61,7 +65,7 @@ jobs:
           path: test_results
 
   build:
-    executor: node-erbium-executor
+    executor: node-fermium-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -72,7 +76,7 @@ jobs:
           paths: dist
 
   release:
-    executor: node-erbium-executor
+    executor: node-fermium-executor
     steps:
       - checkout_from_workspace
       - run:
