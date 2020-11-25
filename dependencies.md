@@ -7,6 +7,7 @@ This guide describes the dependencies of this repository and their purpose.
 - [Development Dependencies](#development-dependencies)
   - [Babel](#babel)
   - [commitlint](#commitlint)
+  - [Husky](#husky)
 
 ### Babel
 
@@ -36,3 +37,8 @@ checks commit messages to make sure they follow
   commitlint core package
 - [@commitlint/config-conventional](https://www.npmjs.com/package/@commitlint/config-conventional):
   commitlint enforcer of [conventional commit](https://conventionalcommits.org/) guidelines
+
+### Husky
+
+[Husky](https://github.com/typicode/husky#husky) simplifies running scripts in
+[Git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks).
