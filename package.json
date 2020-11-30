@@ -11,7 +11,7 @@
     "release": "semantic-release",
     "release:debug": "semantic-release --debug",
     "release:dry-run": "semantic-release --dry-run",
-    "start": "NODE_ENV=development nodemon scripts/start.js --exec babel-node",
+    "start": "nodemon -r dotenv/config scripts/start.js",
     "serve": "parcel scripts/index.html",
     "test": "jest",
     "test:integration": "jest \"^(?=.*integration.test.js).*\"",
@@ -90,6 +90,16 @@
   "jest-junit": {
     "outputDirectory": "test_results/jest",
     "outputName": "results.xml"
+  },
+  "nodemonConfig": {
+    "execMap": {
+      "js": "babel-node"
+    },
+    "ext": "js,json",
+    "watch": [
+      ".env",
+      "scripts/**/*"
+    ]
   },
   "commitlint": {
     "extends": [
