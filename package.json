@@ -57,7 +57,7 @@
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
     "jest-puppeteer": "^4.3.0",
-    "nodemon": "^1.19.4",
+    "nodemon": "^2.0.6",
     "parcel": "^1.12.4",
     "prettier": "^1.18.2",
     "puppeteer": "^2.0.0",

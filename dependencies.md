@@ -8,6 +8,7 @@ This guide describes the dependencies of this repository and their purpose.
   - [Babel](#babel)
   - [commitlint](#commitlint)
   - [Husky](#husky)
+  - [nodemon](#nodemon)
   - [semantic-release](#semantic-release)
 
 ### Babel
@@ -43,6 +44,16 @@ checks commit messages to make sure they follow
 
 [Husky](https://github.com/typicode/husky#husky) simplifies running scripts in
 [Git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks).
+
+### nodemon
+
+[nodemon](https://nodemon.io/) is a tool that helps develop node.js based applications by
+automatically restarting the node application when file changes in the directory are detected.
+
+#### nodemon Packages
+
+- [nodemon](https://www.npmjs.com/package/nodemon):
+  CLI core package
 
 ### Semantic Release
 
