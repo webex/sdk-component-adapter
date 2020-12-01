@@ -6,7 +6,6 @@ If you would like to contribute to this repository by adding features, enhanceme
   1. [Create an issue](https://github.com/webex/sdk-component-adapter/issues) to propose your solution _before_ you get coding
   2. Let core members know about your proposal by posting a message in the [contributor's Webex Teams space](https://eurl.io/#Bk9WGfRcB)
   3. A core member will review your proposal and if necessary may suggest to have a meeting to better understand your approach
-      - You are welcomed you join our [weekly review meeting](https://cisco.webex.com/m/f4ebbec6-c306-49ca-83f4-fb2d098fc946) (Thursdays, 11:30a-12:30p PST) to propose your contribution as well
   4. If your proposal is approved you should start coding at this point
   5. We recommend opening a draft PR to receive feedback before finalizing your solution
       - When opening a draft PR, specify with PR comments where in the code you would like to get feedback
@@ -17,27 +16,75 @@ If you would like to contribute to this repository by adding features, enhanceme
   9. Once the PR is approved by a core member, it will be merged
   10. Celebrate! Your code is released 🎈🎉🍻
 
-## Opening an Issue
+## Table of Contents
 
-The title of a Bug or Enhancement should clearly indicate what is broken or desired. Use the description to explain possible solutions or add details and (especially for Enhancemnts) explain _how_ or _why_ the issue is broken or desired.
+- [Development Setup](#development-setup)
+- [Pull Request Guidelines](#pull-request-guidelines)
+  - [Documentation](#documentation)
+  - [Testing](#testing)
+  - [Code Style](#code-style)
+  - [Git Commit](#git-commit)
+- [Release Process](#release-process)
 
-### Grammar
+## Development Setup
 
-While quibbling about grammar in issue titles may seem a bit pedantic, adhering to some simple rules can make it much easier to understand a Bug or an Enhancement from the title alone. For example, is the title **"Browsers should support blinking text"** a bug or a feature request?
+### Getting Started
 
-- Enhancements: The title should be an imperative statement of how things should be. **"Add support for blinking text"**
+To get started developing for contributions, follow these steps:
 
-- Bugs: The title should be a declarative statement of how things are. **"Text does not blink"**
+1. Fork the adapter repository
 
-## Git Commit Guidelines
+    1. Click on the `Fork` button on the top-right corner
+    2. Wait for Github to finish forking the repository
+    3. Head over to your newly created repository fork
 
-As part of the build process, commits are run through [conventional changelog](https://github.com/conventional-changelog/conventional-changelog) to generate the changelog. Please adhere to the following guidelines when formatting your commit messages.
+2. Clone your repository fork locally
 
-### Commit Message Format
+    ```bash
+    git clone git@github.com:{your username}/sdk-component-adapter.git
+    ```
+
+3. Install all project and peer dependencies
+
+    ```bash
+    cd sdk-component-adapter
+    npx npm-install-peers
+    ```
+
+4. Open the code with your favorite editor. You're ready! 👍🏼
+
+## Pull Request Guidelines
+
+Pull requests must include code documentation, tests, follow code style and commits format.
+
+### Documentation
+
+All methods, functions and object structures should be documented following [JSDoc](https://jsdoc.app/index.html) style comments.
+
+### Testing
+
+We take testing very seriously, all code changes must include unit, integration and end-to-end tests.
+
+- **Unit**: Tests at the file level with mocked external requests
+- **Integration**: Tests at the application level with mocked I/O requests
+- **End-to-end**: Tests the application in a system
+
+### Code Style
+
+Code style is enforced by [linters](https://eslint.org). Use `npm run linter` to verify that your code is beautiful, too!
+
+We highly discourage disabling eslint rules.
+Unless there is an exceptional use case, we may request additional changes to your PR.
+
+### Git Commit
+
+As part of the build process, commits are run through [conventional changelog](https://github.com/conventional-changelog/conventional-changelog) to generate the changelog. Please adhere to the following guidelines when formatting your commit messages as the commit message will become part of the changelog word by word.
+
+#### Commit Message Format
 
 Each commit message consists of a **header**, a **body** and a **footer**. The header has a special format that includes a **type**, a **scope** and a **subject**:
 
-```text
+```none
 <type>(<scope>): <subject>
 <BLANK LINE>
 <body>
@@ -49,11 +96,17 @@ The **header** is mandatory and the scope of the header is optional.
 
 Any line of the commit message cannot be longer 100 characters! This allows the message to be easier to read on GitHub as well as in various git tools.
 
-### Revert
+#### Revert
 
 If the commit reverts a previous commit, it should begin with `revert:`, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>`., where the hash is the SHA of the commit being reverted.
 
-### Type
+You may use Git to revert changes:
+
+```bash
+git revert <commit hash>
+```
+
+#### Type
 
 Must be one of the following:
 
@@ -89,10 +142,15 @@ The footer should contain any information about **Breaking changes** and is also
 
 **Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
 
-### Static Analysis (e.g. linting)
+### Release Process
 
-We use eslint as a part of our static analysis step. Before contributing any code, please be sure to install eslint and be sure to following the instructions to correctly install peerDependnencies <https://www.npmjs.com/package/@webex/eslint-config-react>
+There is a list of commit types provided [here](https://github.com/webex/sdk-component-adapter/blob/master/CONTRIBUTING.md#type). However, not all commits trigger our release process.
+We are using [semantic-release](https://github.com/semantic-release/semantic-release) to fully automate the version management and package publishing.
+By default `semantic-release` uses the [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines) and triggers release and publishing based on the following rules:
 
-## Pull Request Guidelines
-
-Pull requests must include code documentation, tests, follow code style and commits format.
+| Commit                             | Release type  |
+| ---------------------------------- | ------------- |
+| Commit with type `BREAKING CHANGE` | Major release |
+| Commit with type `feat`            | Minor release |
+| Commit with type `fix`             | Patch release |
+| Commit with type `perf`            | Patch release |
