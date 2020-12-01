@@ -4,7 +4,8 @@ import RoomsSDKAdapter from './RoomsSDKAdapter';
 import createMockSDK, {mockSDKRoom} from './__mocks__/sdk';
 
 describe('Rooms SDK Adapter', () => {
-  let mockSDK, roomsSDKAdapter;
+  let mockSDK;
+  let roomsSDKAdapter;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
@@ -23,7 +24,7 @@ describe('Rooms SDK Adapter', () => {
             ID: mockSDKRoom.id,
             type: mockSDKRoom.type,
             title: mockSDKRoom.title,
-          })
+          }),
         );
         done();
       });
@@ -53,7 +54,7 @@ describe('Rooms SDK Adapter', () => {
         (error) => {
           expect(error.message).toBe(errorMessage);
           done();
-        }
+        },
       );
     });
   });

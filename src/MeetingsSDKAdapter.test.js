@@ -5,7 +5,11 @@ import MeetingSDKAdapter from './MeetingsSDKAdapter';
 import createMockSDK, {mockSDKMeeting} from './__mocks__/sdk';
 
 describe('Meetings SDK Adapter', () => {
-  let meetingSDKAdapter, mockSDK, meetingID, meeting, target;
+  let meeting;
+  let meetingID;
+  let meetingSDKAdapter;
+  let mockSDK;
+  let target;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
@@ -53,7 +57,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(global.console.error).toHaveBeenCalledWith(
         expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
-        undefined
+        undefined,
       );
     });
 
@@ -76,9 +80,7 @@ describe('Meetings SDK Adapter', () => {
 
   describe('getStream()', () => {
     afterEach(() => {
-      mockSDKMeeting.getMediaStreams = jest.fn((constraint) =>
-        Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']])
-      );
+      mockSDKMeeting.getMediaStreams = jest.fn((constraint) => Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']]));
     });
 
     test('throws errors and nullifies local Audio if not retrieved successfully', async () => {
@@ -89,7 +91,7 @@ describe('Meetings SDK Adapter', () => {
       expect(localAudio).toBeNull();
       expect(global.console.error).toHaveBeenCalledWith(
         expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
-        undefined
+        undefined,
       );
     });
 
@@ -101,7 +103,7 @@ describe('Meetings SDK Adapter', () => {
       expect(localVideo).toBeNull();
       expect(global.console.error).toHaveBeenCalledWith(
         expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
-        undefined
+        undefined,
       );
     });
 
@@ -112,7 +114,8 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('attachMedia()', () => {
-    let mockMediaStreamInstance, event;
+    let event;
+    let mockMediaStreamInstance;
 
     beforeEach(() => {
       mockMediaStreamInstance = {
@@ -134,7 +137,6 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID] = {
         disabledLocalAudio: {},
       };
-
       meetingSDKAdapter.attachMedia(meetingID, event);
 
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
@@ -146,7 +148,6 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID] = {
         disabledLocalVideo: {},
       };
-
       meetingSDKAdapter.attachMedia(meetingID, event);
 
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
@@ -159,7 +160,6 @@ describe('Meetings SDK Adapter', () => {
         disabledLocalVideo: {},
         disabledLocalAudio: {},
       };
-
       meetingSDKAdapter.attachMedia(meetingID, event);
 
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
@@ -182,8 +182,8 @@ describe('Meetings SDK Adapter', () => {
         type: 'remoteAudio',
         stream: 'remoteAudio',
       };
-
       meetingSDKAdapter.attachMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteAudio: 'remoteAudio',
       });
@@ -194,8 +194,8 @@ describe('Meetings SDK Adapter', () => {
         type: 'remoteVideo',
         stream: 'remoteVideo',
       };
-
       meetingSDKAdapter.attachMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteVideo: 'remoteVideo',
       });
@@ -209,6 +209,7 @@ describe('Meetings SDK Adapter', () => {
         remoteShareStream: 'remoteShareStream',
       };
       meetingSDKAdapter.attachMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteShare: 'remoteShareStream',
       });
@@ -223,19 +224,21 @@ describe('Meetings SDK Adapter', () => {
         remoteShare: 'remoteShareStream',
       };
       meetingSDKAdapter.attachMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteShare: null,
       });
     });
 
     test('returns the same meeting object, if the event type is not declared', () => {
-      meetingSDKAdapter.meetings[meetingID] = meeting;
       event = {
         type: 'NA',
         stream: {},
       };
 
+      meetingSDKAdapter.meetings[meetingID] = meeting;
       meetingSDKAdapter.attachMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject(meeting);
     });
   });
@@ -254,6 +257,7 @@ describe('Meetings SDK Adapter', () => {
 
     test('test cal stopStream()', () => {
       meetingSDKAdapter.stopStream(new MediaStream());
+
       expect(mockStop).toHaveBeenCalled();
     });
   });
@@ -274,6 +278,7 @@ describe('Meetings SDK Adapter', () => {
 
     test('removes `localAudio` and `localVideo`, if the event type is `local`', () => {
       meetingSDKAdapter.removeMedia(meetingID, {type: 'local'});
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         localAudio: null,
         localVideo: null,
@@ -286,6 +291,7 @@ describe('Meetings SDK Adapter', () => {
       };
 
       meetingSDKAdapter.removeMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteAudio: null,
       });
@@ -297,18 +303,20 @@ describe('Meetings SDK Adapter', () => {
       };
 
       meetingSDKAdapter.removeMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteVideo: null,
       });
     });
 
     test('returns the same meeting object, if the event type is not declared', () => {
-      meetingSDKAdapter.meetings[meetingID] = meeting;
       const event = {
         type: 'NA',
       };
 
+      meetingSDKAdapter.meetings[meetingID] = meeting;
       meetingSDKAdapter.removeMedia(meetingID, event);
+
       expect(meetingSDKAdapter.meetings[meetingID]).toMatchObject(meeting);
     });
   });
@@ -329,9 +337,8 @@ describe('Meetings SDK Adapter', () => {
 
     test('returns a new meeting in a proper shape', (done) => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
-      meetingSDKAdapter.getLocalMedia = jest.fn(() =>
-        Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'})
-      );
+      meetingSDKAdapter.getLocalMedia = jest.fn(() => Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'}));
+
       meetingSDKAdapter.createMeeting(target).subscribe((newMeeting) => {
         expect(newMeeting).toMatchObject({...meeting, localAudio: 'localAudio', localVideo: 'localVideo'});
         done();
@@ -343,12 +350,13 @@ describe('Meetings SDK Adapter', () => {
       const errorMessage = `Unable to create a meeting "${wrongTarget}"`;
 
       meetingSDKAdapter.datasource.meetings.create = jest.fn(() => Promise.reject(errorMessage));
+
       meetingSDKAdapter.createMeeting(target).subscribe(
         () => {},
         (error) => {
           expect(error).toBe(errorMessage);
           done();
-        }
+        },
       );
     });
   });
@@ -379,9 +387,7 @@ describe('Meetings SDK Adapter', () => {
     test('returns person display name if the sipUri is an email address', async () => {
       const meetingTitle = 'person@webex.com';
 
-      meetingSDKAdapter.datasource.people.list = jest.fn(() =>
-        Promise.resolve({items: [{displayName: 'displayName'}]})
-      );
+      meetingSDKAdapter.datasource.people.list = jest.fn(() => Promise.resolve({items: [{displayName: 'displayName'}]}));
 
       expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual("displayName's Personal Room");
     });
@@ -437,7 +443,7 @@ describe('Meetings SDK Adapter', () => {
         (error) => {
           expect(error.message).toBe('Could not find meeting with ID "meetingID" to add audio control');
           done();
-        }
+        },
       );
     });
   });
@@ -453,30 +459,33 @@ describe('Meetings SDK Adapter', () => {
 
     test('skips muting audio if there is an inactive meeting', async () => {
       meetingSDKAdapter.meetings[meetingID].remoteAudio = null;
-
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(mockSDKMeeting.muteAudio).not.toHaveBeenCalled();
     });
 
     test('skips unmuting audio if there is an inactive meeting', async () => {
       meetingSDKAdapter.meetings[meetingID].remoteAudio = null;
-
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(mockSDKMeeting.unmuteAudio).not.toHaveBeenCalled();
     });
 
     test('mutes audio if the the audio track is enabled', async () => {
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
     });
 
     test('localAudio property should be null once the audio track is muted', async () => {
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(meetingSDKAdapter.meetings[meetingID].localAudio).toBeNull();
     });
 
     test('emits the custom event after muting the audio track', async () => {
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-audio',
         state: false,
@@ -486,6 +495,7 @@ describe('Meetings SDK Adapter', () => {
     test('unmutes audio if the the audio track is disabled', async () => {
       meetingSDKAdapter.meetings[meetingID].localAudio = null;
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(mockSDKMeeting.unmuteAudio).toHaveBeenCalled();
     });
 
@@ -493,12 +503,14 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID].localAudio = null;
       meetingSDKAdapter.meetings[meetingID].disabledLocalAudio = {};
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(meetingSDKAdapter.meetings[meetingID].localAudio).toEqual({});
     });
 
     test('emits the custom event after unmuting the audio track', async () => {
       meetingSDKAdapter.meetings[meetingID].localAudio = null;
       await meetingSDKAdapter.handleLocalAudio(meetingID);
+
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-audio',
         state: true,
@@ -512,7 +524,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(global.console.error).toHaveBeenCalledWith(
         'Unable to update local audio settings for meeting "meetingID"',
-        undefined
+        undefined,
       );
     });
   });
@@ -539,7 +551,7 @@ describe('Meetings SDK Adapter', () => {
         (error) => {
           expect(error.message).toBe('Could not find meeting with ID "meetingID" to add video control');
           done();
-        }
+        },
       );
     });
   });
@@ -555,30 +567,33 @@ describe('Meetings SDK Adapter', () => {
 
     test('skips muting video if there is an inactive meeting', async () => {
       meetingSDKAdapter.meetings[meetingID].remoteVideo = null;
-
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(mockSDKMeeting.muteVideo).not.toHaveBeenCalled();
     });
 
     test('skips unmuting video if there is an inactive meeting', async () => {
       meetingSDKAdapter.meetings[meetingID].remoteVideo = null;
-
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(mockSDKMeeting.unmuteVideo).not.toHaveBeenCalled();
     });
 
     test('mutes video if the the video track is enabled', async () => {
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
     });
 
     test('localVideo property should be null once the video track is muted', async () => {
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(meetingSDKAdapter.meetings[meetingID].localVideo).toBeNull();
     });
 
     test('emits the custom event after muting the video track', async () => {
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-video',
         state: false,
@@ -588,6 +603,7 @@ describe('Meetings SDK Adapter', () => {
     test('unmutes video if the video track is disabled', async () => {
       meetingSDKAdapter.meetings[meetingID].localVideo = null;
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
     });
 
@@ -595,12 +611,14 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID].localVideo = null;
       meetingSDKAdapter.meetings[meetingID].disabledLocalVideo = {};
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(meetingSDKAdapter.meetings[meetingID].localVideo).toEqual({});
     });
 
     test('emits the custom event after unmuting the video track', async () => {
       meetingSDKAdapter.meetings[meetingID].localVideo = null;
       await meetingSDKAdapter.handleLocalVideo(meetingID);
+
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-video',
         state: true,
@@ -613,8 +631,8 @@ describe('Meetings SDK Adapter', () => {
       await meetingSDKAdapter.handleLocalVideo(meetingID);
 
       expect(global.console.error).toHaveBeenCalledWith(
-        `Unable to update local video settings for meeting "meetingID"`,
-        undefined
+        'Unable to update local video settings for meeting "meetingID"',
+        undefined,
       );
     });
   });
@@ -642,13 +660,14 @@ describe('Meetings SDK Adapter', () => {
         (error) => {
           expect(error.message).toBe('Could not find meeting with ID "meetingID" to add share control');
           done();
-        }
+        },
       );
     });
   });
 
   describe('handleLocalShare()', () => {
-    let stopStream, mockConsole;
+    let mockConsole;
+    let stopStream;
 
     beforeEach(() => {
       meetingSDKAdapter.meetings[meetingID] = {
@@ -675,6 +694,7 @@ describe('Meetings SDK Adapter', () => {
 
       mockSDKMeeting.canUpdateMedia = jest.fn(() => false);
       await meetingSDKAdapter.handleLocalShare(meetingID);
+
       expect(global.console.error).toHaveBeenCalledWith(expect.stringContaining('due to unstable connection'));
       mockSDKMeeting.canUpdateMedia = canUpdateMedia;
     });
@@ -685,6 +705,7 @@ describe('Meetings SDK Adapter', () => {
 
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.resolve([['mockStream'], 'localShare']));
       await meetingSDKAdapter.handleLocalShare(meetingID);
+
       expect(meetingSDKAdapter.meetings[meetingID].localShare).toEqual('localShare');
       expect(mockSDKMeeting.updateShare).toHaveBeenCalled();
       mockSDKMeeting.getMediaStreams = getMediaStreams;
@@ -693,6 +714,7 @@ describe('Meetings SDK Adapter', () => {
     test('stop share if the share track is enabled', async () => {
       meetingSDKAdapter.meetings[meetingID].localShare = 'localShare';
       await meetingSDKAdapter.handleLocalShare(meetingID);
+
       expect(mockSDKMeeting.updateShare).toHaveBeenCalled();
       expect(meetingSDKAdapter.meetings[meetingID].localShare).toBeNull();
     });
@@ -704,7 +726,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockConsole).toHaveBeenCalledWith(
         expect.stringContaining(`Unable to update local share stream for meeting "${meetingID}"`),
-        undefined
+        undefined,
       );
     });
   });
@@ -718,9 +740,7 @@ describe('Meetings SDK Adapter', () => {
       stopStream = trueStopStream;
       meetingSDKAdapter.stopStream = jest.fn();
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
-      meetingSDKAdapter.getLocalMedia = jest.fn(() =>
-        Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'})
-      );
+      meetingSDKAdapter.getLocalMedia = jest.fn(() => Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'}));
       meeting = {...meeting, localAudio: 'localAudio', localVideo: 'localVideo'};
     });
 
@@ -760,7 +780,7 @@ describe('Meetings SDK Adapter', () => {
           (error) => {
             expect(error.message).toBe(errorMessage);
             done();
-          }
+          },
         );
     });
   });

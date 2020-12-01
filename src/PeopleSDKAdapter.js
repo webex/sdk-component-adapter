@@ -1,9 +1,35 @@
-import {concat, defer, fromEvent, of} from 'rxjs';
-import {catchError, flatMap, filter, finalize, map, publishReplay, refCount} from 'rxjs/operators';
+import {
+  concat,
+  defer,
+  fromEvent,
+  of,
+} from 'rxjs';
+import {
+  catchError,
+  flatMap,
+  filter,
+  finalize,
+  map,
+  publishReplay,
+  refCount,
+} from 'rxjs/operators';
 import {deconstructHydraId} from '@webex/common';
 import {PeopleAdapter, PersonStatus} from '@webex/component-adapter-interfaces';
 
 const USER_PRESENCE_UPDATE_EVENT = 'event:apheleia.subscription_update';
+
+/**
+ * Returns a PersonStatus enum key from the given value.
+ * If status does not match an enum key, it returns null.
+ *
+ * @param {string} status  Person status from Apheleia service.
+ * @returns {string} PersonStatus
+ */
+function getStatus(status) {
+  const personStatus = Object.keys(PersonStatus).find((key) => PersonStatus[key] === status);
+
+  return personStatus === undefined ? null : personStatus;
+}
 
 /**
  * The `PeopleSDKAdapter` is an implementation of the `PeopleAdapter` interface.
@@ -20,21 +46,6 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
   }
 
   /**
-   * Returns a PersonStatus enum key from the given value.
-   * If status does not match an enum key, it returns null.
-   *
-   * @private
-   * @param {string} status  Person status from Apheleia service.
-   * @returns {string} PersonStatus
-   * @memberof PeopleSDKAdapter
-   */
-  getStatus(status) {
-    const personStatus = Object.keys(PersonStatus).find((key) => PersonStatus[key] === status);
-
-    return personStatus === undefined ? null : personStatus;
-  }
-
-  /**
    * Fetches the person data from the sdk and returns in the shape required by adapter.
    *
    * @private
@@ -43,7 +54,15 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * @memberof PeopleSDKAdapter
    */
   async fetchPerson(ID) {
-    const {id, emails, displayName, firstName, lastName, avatar, orgId} = await this.datasource.people.get(ID);
+    const {
+      id,
+      emails,
+      displayName,
+      firstName,
+      lastName,
+      avatar,
+      orgId,
+    } = await this.datasource.people.get(ID);
 
     return {
       ID: id,
@@ -67,15 +86,15 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
   getMe() {
     // Get person data of the current access token bearer
     return defer(() => this.fetchPerson('me')).pipe(
-      flatMap((person) =>
-        // Get person status information from presence plug-in
-        defer(() => this.datasource.internal.presence.get([person.id])).pipe(
-          // When SDK throws error, don't set a status
-          catchError(() => of({status: null})),
-          // Combine person data and presence data to send back
-          map(({status}) => ({...person, status: this.getStatus(status)}))
-        )
-      )
+      // Get person status information from presence plug-in
+      flatMap((person) => defer(
+        () => this.datasource.internal.presence.get([person.id]),
+      ).pipe(
+        // When SDK throws error, don't set a status
+        catchError(() => of({status: null})),
+        // Combine person data and presence data to send back
+        map(({status}) => ({...person, status: getStatus(status)})),
+      )),
     );
   }
 
@@ -94,21 +113,28 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
 
       // Subscribe to 'Apheleia' internal service to listen for status changes
       // Update the Person object with status response from the subscription
-      const personWithStatus$ = defer(() => this.datasource.internal.presence.subscribe(personUUID)).pipe(
+      const personWithStatus$ = defer(
+        () => this.datasource.internal.presence.subscribe(personUUID),
+      ).pipe(
         map((data) => data.responses[0].status.status), // This returns only the status data from subscription
         catchError(() => of(null)), // If subscription fails, don't set a status
-        flatMap((status) => person$.pipe(map((person) => ({...person, status: this.getStatus(status)}))))
+        flatMap((status) => person$.pipe(
+          map((person) => ({...person, status: getStatus(status)})),
+        )),
       );
 
       // Listen for status changes for the given person ID after subscription to service
-      const statusUpdate$ = fromEvent(this.datasource.internal.mercury, USER_PRESENCE_UPDATE_EVENT).pipe(
+      const statusUpdate$ = fromEvent(
+        this.datasource.internal.mercury,
+        USER_PRESENCE_UPDATE_EVENT,
+      ).pipe(
         filter((event) => event.data.subject === personUUID),
-        map((event) => this.getStatus(event.data.status))
+        map((event) => getStatus(event.data.status)),
       );
 
       // Update the person status after each change emitted from the event
       const personUpdate$ = person$.pipe(
-        flatMap((person) => statusUpdate$.pipe(map((status) => ({...person, status}))))
+        flatMap((person) => statusUpdate$.pipe(map((status) => ({...person, status})))),
       );
 
       // Emit initial person data on the first run and send updates after each status change
@@ -123,13 +149,13 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
           }
 
           delete this.getPersonObservables[ID];
-        })
+        }),
       );
 
       // Store observable for future subscriptions
       this.getPersonObservables[ID] = getPerson$.pipe(
         publishReplay(1),
-        refCount()
+        refCount(),
       );
     }
 

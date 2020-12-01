@@ -3,10 +3,14 @@ import {delayWhen, skip} from 'rxjs/operators';
 
 import {createIntegrationTestUser, removeIntegrationTestUser} from './testHelper';
 
-import WebexSDKAdapter from './';
+import WebexSDKAdapter from '.';
 
 describe('Rooms SDK Adapter', () => {
-  let createdRoom, getRoom$, webexSDKAdapter, subscription, user;
+  let createdRoom;
+  let getRoom$;
+  let subscription;
+  let user;
+  let webexSDKAdapter;
 
   // Since these are integration tests with live data,
   // increase the async "idle" timeout so jest doesn't error early.
@@ -62,7 +66,7 @@ describe('Rooms SDK Adapter', () => {
       subscription = getRoom$
         .pipe(
           delayWhen(() => from(user.sdk.rooms.update({id: createdRoom.id, title: updatedTitle}))),
-          skip(1)
+          skip(1),
         )
         .subscribe((room) => {
           expect(room.title).toBe(updatedTitle);

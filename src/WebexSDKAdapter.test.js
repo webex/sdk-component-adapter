@@ -5,7 +5,8 @@ import MeetingsSDKAdapter from './MeetingsSDKAdapter';
 import createMockSDK from './__mocks__/sdk';
 
 describe('Webex SDK Adapter', () => {
-  let webexSDKAdapter, mockSDK;
+  let mockSDK;
+  let webexSDKAdapter;
 
   beforeEach(() => {
     mockSDK = createMockSDK();

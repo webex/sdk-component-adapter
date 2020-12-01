@@ -4,7 +4,9 @@ import PeopleSDKAdapter from './PeopleSDKAdapter';
 import createMockSDK from './__mocks__/sdk';
 
 describe('People SDK Adapter', () => {
-  let peopleSDKAdapter, mockSDK, personID;
+  let mockSDK;
+  let peopleSDKAdapter;
+  let personID;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
@@ -54,7 +56,7 @@ describe('People SDK Adapter', () => {
         () => {
           expect(true).toBeTruthy();
           done();
-        }
+        },
       );
     });
   });
@@ -105,7 +107,7 @@ describe('People SDK Adapter', () => {
         (error) => {
           expect(error.message).toBe(errorMessage);
           done();
-        }
+        },
       );
     });
 
