@@ -7,6 +7,7 @@ This guide describes the dependencies of this repository and their purpose.
 - [Development Dependencies](#development-dependencies)
   - [Babel](#babel)
   - [commitlint](#commitlint)
+  - [Dotenv](#dotenv)
   - [Husky](#husky)
   - [nodemon](#nodemon)
   - [semantic-release](#semantic-release)
@@ -39,6 +40,15 @@ checks commit messages to make sure they follow
   commitlint core package
 - [@commitlint/config-conventional](https://www.npmjs.com/package/@commitlint/config-conventional):
   commitlint enforcer of [conventional commit](https://conventionalcommits.org/) guidelines
+
+### Dotenv
+
+Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`.
+
+#### Dotenv Packages
+
+- [dotenv](https://www.npmjs.com/package/dotenv):
+  Core package
 
 ### Husky
 
