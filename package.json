@@ -5,6 +5,7 @@
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
     "build": "rollup -c",
+    "linter": "eslint src/",
     "release": "semantic-release",
     "release:debug": "semantic-release --debug",
     "release:dry-run": "semantic-release --dry-run",
@@ -14,8 +15,7 @@
     "test:integration": "jest \"^(?=.*integration.test.js).*\"",
     "test:unit": "jest \"^(?=.*.test.js)(?!.*integration).*\"",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:eslint": "eslint src/"
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "webex": "^1.92.0"
   },
   "dependencies": {
+    "@webex/common": "^1.105.0",
     "@webex/component-adapter-interfaces": "^1.11.0"
   },
   "devDependencies": {
@@ -43,15 +44,11 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/git": "^9.0.0",
-    "@webex/eslint-config-base": "^0.8.0",
     "@webex/test-users": "^1.80.36",
-    "babel-eslint": "^10.0.3",
     "dotenv": "^8.2.0",
-    "eslint": "^6.4.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jest": "^23.0.4",
-    "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-mocha": "^6.1.1",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
     "husky": "^4.3.0",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
@@ -111,7 +108,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run test:eslint",
+      "pre-commit": "npm run linter",
       "pre-push": "npm run test:unit",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }

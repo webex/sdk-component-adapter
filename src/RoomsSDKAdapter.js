@@ -1,5 +1,15 @@
-import {concat, from, fromEvent} from 'rxjs';
-import {filter, finalize, flatMap, publishReplay, refCount} from 'rxjs/operators';
+import {
+  concat,
+  from,
+  fromEvent,
+} from 'rxjs';
+import {
+  filter,
+  finalize,
+  flatMap,
+  publishReplay,
+  refCount,
+} from 'rxjs/operators';
 import {RoomsAdapter} from '@webex/component-adapter-interfaces';
 
 export const ROOM_UPDATED_EVENT = 'updated';
@@ -53,7 +63,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
       // Tell the sdk to start listening to room changes
       this.datasource.rooms.listen();
     }
-    this.listenerCount = this.listenerCount + 1;
+    this.listenerCount += 1;
   }
 
   /**
@@ -67,7 +77,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * @memberof RoomsSDKAdapter
    */
   stopListeningToRoomUpdates() {
-    this.listenerCount = this.listenerCount - 1;
+    this.listenerCount -= 1;
 
     if (this.listenerCount <= 0) {
       // Once all listeners are done, stop listening
@@ -94,26 +104,26 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
         // Is the room change event for our subscribed room?
         filter((event) => event.data.id === ID),
         // Event data doesn't have the room data in it, so we need to fetch manually
-        flatMap(() => from(this.fetchRoom(ID)))
+        flatMap(() => from(this.fetchRoom(ID))),
       );
 
       // The observable flow for fetching room data, then listening for websocket events about room changes.
       const getRoom$ = concat(
         // Fetch Our Room Data
         room$,
-        roomUpdate$
+        roomUpdate$,
       ).pipe(
         finalize(() => {
           // Called once all subscriptions to `ID` are done.
           this.stopListeningToRoomUpdates();
           delete this.getRoomObservables[ID];
-        })
+        }),
       );
 
       // Convert to a multicast observable
       this.getRoomObservables[ID] = getRoom$.pipe(
         publishReplay(1),
-        refCount()
+        refCount(),
       );
     }
 

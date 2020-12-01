@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import dotenv from 'dotenv';
 import {createTestUser, removeTestUser} from '@webex/test-users';
 import Webex from 'webex';
@@ -9,8 +10,7 @@ dotenv.config();
 const URL_CONVO_SERVICE_INTEGRATION = 'https://conversation-intb.ciscospark.com/conversation/api/v1';
 const URL_ID_BROKER_INTEGRATION = 'https://idbrokerbts.webex.com';
 const URL_U2C_INTEGRATION = 'https://u2c-intb.ciscospark.com/u2c/api/v1';
-const SCOPE =
-  'Identity:OAuthClient webexsquare:get_conversation webexsquare:admin Identity:SCIM spark:people_read spark:rooms_read spark:rooms_write spark:memberships_read spark:memberships_write spark:messages_read spark:messages_write spark:applications_read spark:applications_write spark:teams_read spark:teams_write spark:team_memberships_read spark:team_memberships_write spark:bots_read spark:bots_write spark:kms';
+const SCOPE = 'Identity:OAuthClient webexsquare:get_conversation webexsquare:admin Identity:SCIM spark:people_read spark:rooms_read spark:rooms_write spark:memberships_read spark:memberships_write spark:messages_read spark:messages_write spark:applications_read spark:applications_write spark:teams_read spark:teams_write spark:team_memberships_read spark:team_memberships_write spark:bots_read spark:bots_write spark:kms';
 
 /**
  * Creates an SDK instance for the given access token, pointed at the webex integration environment.

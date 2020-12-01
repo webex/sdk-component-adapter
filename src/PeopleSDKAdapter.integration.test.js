@@ -3,10 +3,14 @@ import {delayWhen, skip} from 'rxjs/operators';
 
 import {createIntegrationTestUser, removeIntegrationTestUser, getPersonHydraID} from './testHelper';
 
-import WebexSDKAdapter from './';
+import WebexSDKAdapter from '.';
 
 describe('People SDK Adapter', () => {
-  let getPerson$, webexSDKAdapter, subscription, user, userID;
+  let getPerson$;
+  let subscription;
+  let user;
+  let userID;
+  let webexSDKAdapter;
 
   // Since these are integration tests with live data,
   // increase the async "idle" timeout so jest doesn't error early.
@@ -66,7 +70,7 @@ describe('People SDK Adapter', () => {
       subscription = getPerson$
         .pipe(
           delayWhen(() => from(user.sdk.internal.presence.setStatus('active', 1500))),
-          skip(1)
+          skip(1),
         )
         .subscribe((person) => {
           expect(person.status).toEqual('ACTIVE');

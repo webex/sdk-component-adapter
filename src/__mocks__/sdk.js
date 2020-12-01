@@ -20,9 +20,23 @@ export const mockSDKMeeting = {
   members: {
     membersCollection: {
       members: {
-        person: {...mockSDKPerson, isInMeeting: true, isUser: true},
-        notJoinedPerson: {...mockSDKPerson, id: 'notJoinedPerson', isInMeeting: false, isUser: true},
-        device: {...mockSDKPerson, id: 'device', isInMeeting: true, isUser: false},
+        person: {
+          ...mockSDKPerson,
+          isInMeeting: true,
+          isUser: true,
+        },
+        notJoinedPerson: {
+          ...mockSDKPerson,
+          id: 'notJoinedPerson',
+          isInMeeting: false,
+          isUser: true,
+        },
+        device: {
+          ...mockSDKPerson,
+          id: 'device',
+          isInMeeting: true,
+          isUser: false,
+        },
       },
     },
     on: jest.fn(),

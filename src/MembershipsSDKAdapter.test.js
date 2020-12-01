@@ -5,7 +5,9 @@ import MembershipsSDKAdapter from './MembershipsSDKAdapter';
 import createMockSDK from './__mocks__/sdk';
 
 describe('Memberships SDK Adapter', () => {
-  let membershipSDKAdapter, mockSDK, meetingID;
+  let meetingID;
+  let membershipSDKAdapter;
+  let mockSDK;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
@@ -20,19 +22,20 @@ describe('Memberships SDK Adapter', () => {
 
     describe('when destination type is MEETING', () => {
       test('emits a membership object on subscription', (done) => {
-        membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING).subscribe((membership) => {
-          expect(membership).toMatchObject({
-            ID: 'meeting-meetingID',
-            destinationID: meetingID,
-            destinationType: DestinationType.MEETING,
-            members: [
-              {
-                id: 'id',
-              },
-            ],
+        membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
+          .subscribe((membership) => {
+            expect(membership).toMatchObject({
+              ID: 'meeting-meetingID',
+              destinationID: meetingID,
+              destinationType: DestinationType.MEETING,
+              members: [
+                {
+                  id: 'id',
+                },
+              ],
+            });
+            done();
           });
-          done();
-        });
       });
 
       test('throws an error on invalid meeting ID', (done) => {
@@ -41,7 +44,7 @@ describe('Memberships SDK Adapter', () => {
           (error) => {
             expect(error.message).toBe('Meeting badID not found.');
             done();
-          }
+          },
         );
       });
     });
@@ -53,7 +56,7 @@ describe('Memberships SDK Adapter', () => {
           (error) => {
             expect(error.message).toBe('getMembersFromDestination for room is not currently supported.');
             done();
-          }
+          },
         );
       });
     });

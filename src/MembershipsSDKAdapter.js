@@ -60,7 +60,10 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
 
     const membershipSubject = this.membershipSubjects[membershipID];
 
-    if (meeting.members && meeting.members.membersCollection && meeting.members.membersCollection.members) {
+    if (meeting.members
+      && meeting.members.membersCollection
+      && meeting.members.membersCollection.members
+    ) {
       const members = getActiveMembers(meeting.members.membersCollection.members);
 
       // First, emit the current collection

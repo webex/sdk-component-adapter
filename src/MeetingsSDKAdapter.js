@@ -1,7 +1,23 @@
 import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
-import {concat, defer, from, fromEvent, merge, Observable, Subject} from 'rxjs';
-import {flatMap, filter, map, publishReplay, refCount, takeUntil, tap} from 'rxjs/operators';
+import {
+  concat,
+  defer,
+  from,
+  fromEvent,
+  merge,
+  Observable,
+  Subject,
+} from 'rxjs';
+import {
+  flatMap,
+  filter,
+  map,
+  publishReplay,
+  refCount,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
@@ -206,6 +222,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @memberof MeetingsSDKAdapter
    * @private
    */
+  // eslint-disable-next-line class-methods-use-this
   stopStream(stream) {
     if (stream) {
       const tracks = stream.getTracks();
@@ -284,30 +301,38 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     return from(this.datasource.meetings.create(destination)).pipe(
-      flatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(map((title) => ({ID: id, title})))),
-      flatMap(({ID, title}) =>
-        from(this.getLocalMedia(ID)).pipe(map(({localAudio, localVideo}) => ({ID, title, localAudio, localVideo})))
-      ),
-      map(
-        ({ID, title, localAudio, localVideo}) => {
-          this.meetings[ID] = {
-            ID,
-            title,
-            localVideo,
-            localAudio,
-            localShare: null,
-            remoteAudio: null,
-            remoteVideo: null,
-            remoteShare: null,
-          };
+      flatMap(({id}) => from(this.fetchMeetingTitle(destination))
+        .pipe(map((title) => ({ID: id, title})))),
+      flatMap(({ID, title}) => from(this.getLocalMedia(ID))
+        .pipe(map(({localAudio, localVideo}) => ({
+          ID,
+          title,
+          localAudio,
+          localVideo,
+        })))),
+      map(({
+        ID,
+        title,
+        localAudio,
+        localVideo,
+      }) => {
+        this.meetings[ID] = {
+          ID,
+          title,
+          localVideo,
+          localAudio,
+          localShare: null,
+          remoteAudio: null,
+          remoteVideo: null,
+          remoteShare: null,
+        };
 
-          return this.meetings[ID];
-        },
-        (error) => {
-          // eslint-disable-next-line no-console
-          console.error(`Unable to create a meeting with "${destination}"`, error);
-        }
-      )
+        return this.meetings[ID];
+      },
+      (error) => {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to create a meeting with "${destination}"`, error);
+      }),
     );
   }
 
@@ -394,6 +419,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @memberof MeetingJSONAdapter
    * @private
    */
+  // eslint-disable-next-line class-methods-use-this
   joinControl() {
     return Observable.create((observer) => {
       observer.next({
@@ -414,6 +440,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @memberof MeetingJSONAdapter
    * @private
    */
+  // eslint-disable-next-line class-methods-use-this
   exitControl() {
     return Observable.create((observer) => {
       observer.next({
@@ -511,7 +538,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === AUDIO_CONTROL),
-      map(({state}) => (state ? unmuted : muted))
+      map(({state}) => (state ? unmuted : muted)),
     );
 
     return concat(getDisplayData$, localMediaUpdateEvent$);
@@ -601,7 +628,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === VIDEO_CONTROL),
-      map(({state}) => (state ? unmuted : muted))
+      map(({state}) => (state ? unmuted : muted)),
     );
 
     return concat(getDisplayData$, localMediaUpdateEvent$);
@@ -749,27 +776,29 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
 
         return eventData;
-      })
+      }),
     );
 
-    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP).pipe(
-      // TODO (SPARK-152004): This is a workaround for a bug of stopping share when onended event is triggered.
-      flatMap(() => defer(() => this.meetingControls[SHARE_CONTROL].action(ID))),
-      // eslint-disable-next-line no-console
-      tap(() => console.log('EVENT_LOCAL_SHARE_STOP is triggered', this)),
-      map(() => inactiveShare)
-    );
+    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP)
+      .pipe(
+        // TODO (SPARK-152004): This is a workaround for a bug of stopping share when onended event is triggered.
+        flatMap(() => defer(() => this.meetingControls[SHARE_CONTROL].action(ID))),
+        // eslint-disable-next-line no-console
+        tap(() => console.log('EVENT_LOCAL_SHARE_STOP is triggered', this)),
+        map(() => inactiveShare),
+      );
 
-    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START).pipe(
-      // eslint-disable-next-line no-console
-      tap(() => console.log('EVENT_LOCAL_SHARE_START is triggered')),
-      map(() => activeShare)
-    );
+    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START)
+      .pipe(
+        // eslint-disable-next-line no-console
+        tap(() => console.log('EVENT_LOCAL_SHARE_START is triggered')),
+        map(() => activeShare),
+      );
 
     const sharingEvents$ = merge(
       localMediaUpdateEvent$,
       meetingWithMediaStoppedSharingLocalEvent$,
-      meetingWithMediaStartedSharingLocalEvent$
+      meetingWithMediaStartedSharingLocalEvent$,
     );
 
     return concat(getDisplayData$, sharingEvents$);
@@ -798,21 +827,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithMediaReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
         filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
-        map((event) => this.attachMedia(ID, event))
+        map((event) => this.attachMedia(ID, event)),
       );
 
       const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
         tap(() => this.removeMedia(ID)),
-        tap(() => end$.next(`Completing meeting ${ID}`))
+        tap(() => end$.next(`Completing meeting ${ID}`)),
       );
 
       const meetingWithMediaShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_START).pipe(
-        tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_START}))
+        tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_START})),
       );
 
-      const meetingWithMediaStoppedShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_STOP).pipe(
-        tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_STOP}))
-      );
+      const meetingWithMediaStoppedShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_STOP)
+        .pipe(
+          tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_STOP})),
+        );
 
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
@@ -821,7 +851,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$,
         meetingWithMediaShareEvent$,
-        meetingWithMediaStoppedShareEvent$
+        meetingWithMediaStoppedShareEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
@@ -830,7 +860,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
         publishReplay(1),
         refCount(),
-        takeUntil(end$)
+        takeUntil(end$),
       );
     }
 

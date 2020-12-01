@@ -8,6 +8,7 @@ This guide describes the dependencies of this repository and their purpose.
   - [Babel](#babel)
   - [commitlint](#commitlint)
   - [Dotenv](#dotenv)
+  - [ESLint](#eslint)
   - [Husky](#husky)
   - [nodemon](#nodemon)
   - [semantic-release](#semantic-release)
@@ -49,6 +50,21 @@ Dotenv is a zero-dependency module that loads environment variables from a `.env
 
 - [dotenv](https://www.npmjs.com/package/dotenv):
   Core package
+
+### ESLint
+
+[ESLint](https://eslint.org/) is a static analysis tool that enforces code styles and patterns.
+
+#### ESLint Packages
+
+- [eslint](https://www.npmjs.com/package/eslint):
+  ESLint core package
+- [eslint-config-airbnb-base](https://www.npmjs.com/package/eslint-config-airbnb-base):
+  Airbnb's
+  [JavaScript style guide](https://github.com/airbnb/javascript#airbnb-javascript-style-guide-)
+  configurations
+- [eslint-plugin-import](https://www.npmjs.com/package/eslint-plugin-import):
+  Plugin that enforces import/export styles
 
 ### Husky
 
