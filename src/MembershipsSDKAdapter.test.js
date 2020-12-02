@@ -2,7 +2,7 @@ import {isObservable} from 'rxjs';
 import {DestinationType} from '@webex/component-adapter-interfaces';
 
 import MembershipsSDKAdapter from './MembershipsSDKAdapter';
-import createMockSDK from './__mocks__/sdk';
+import createMockSDK from './mockSdk';
 
 describe('Memberships SDK Adapter', () => {
   let meetingID;

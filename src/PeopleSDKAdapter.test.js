@@ -1,7 +1,7 @@
 import {isObservable} from 'rxjs';
 
 import PeopleSDKAdapter from './PeopleSDKAdapter';
-import createMockSDK from './__mocks__/sdk';
+import createMockSDK from './mockSdk';
 
 describe('People SDK Adapter', () => {
   let mockSDK;

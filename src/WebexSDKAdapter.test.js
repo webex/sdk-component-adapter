@@ -2,7 +2,7 @@ import WebexSDKAdapter from './WebexSDKAdapter';
 import RoomsSDKAdapter from './RoomsSDKAdapter';
 import PeopleSDKAdapter from './PeopleSDKAdapter';
 import MeetingsSDKAdapter from './MeetingsSDKAdapter';
-import createMockSDK from './__mocks__/sdk';
+import createMockSDK from './mockSdk';
 
 describe('Webex SDK Adapter', () => {
   let mockSDK;
