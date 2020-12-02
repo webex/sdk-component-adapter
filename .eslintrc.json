@@ -8,8 +8,13 @@
   "parserOptions": {
     "sourceType": "module"
   },
+  "plugins": [
+    "jest"
+  ],
   "extends": [
-    "airbnb-base"
+    "airbnb-base",
+    "plugin:jest/recommended",
+    "plugin:jest/style"
   ],
   "globals": {
     "rxjs": "readonly",
@@ -68,5 +73,15 @@
     "newline-before-return": "error",
     "lines-around-directive": "error",
     "no-useless-call": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.test.js"
+      ],
+      "rules": {
+        "jest/no-done-callback": "off"
+      }
+    }
+  ]
 }

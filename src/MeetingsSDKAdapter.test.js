@@ -2,7 +2,7 @@ import * as rxjs from 'rxjs';
 import {flatMap} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
-import createMockSDK, {mockSDKMeeting} from './__mocks__/sdk';
+import createMockSDK, {mockSDKMeeting} from './mockSdk';
 
 describe('Meetings SDK Adapter', () => {
   let meeting;
@@ -255,7 +255,7 @@ describe('Meetings SDK Adapter', () => {
       global.MediaStream = jest.fn(() => mockMediaStreamInstance);
     });
 
-    test('test cal stopStream()', () => {
+    test('calls stop() of the stream track', () => {
       meetingSDKAdapter.stopStream(new MediaStream());
 
       expect(mockStop).toHaveBeenCalled();

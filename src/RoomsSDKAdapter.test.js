@@ -1,7 +1,7 @@
 import {isObservable} from 'rxjs';
 
 import RoomsSDKAdapter from './RoomsSDKAdapter';
-import createMockSDK, {mockSDKRoom} from './__mocks__/sdk';
+import createMockSDK, {mockSDKRoom} from './mockSdk';
 
 describe('Rooms SDK Adapter', () => {
   let mockSDK;
