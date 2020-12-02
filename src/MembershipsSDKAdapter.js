@@ -1,13 +1,20 @@
 import {BehaviorSubject, throwError} from 'rxjs';
 import {DestinationType, MembershipsAdapter} from '@webex/component-adapter-interfaces';
 
+// TODO: Figure out how to import JS Doc definitions and remove duplication.
+/**
+ * A relationship between a destination (e.g. room, meeting) in Webex and people.
+ *
+ * @external Membership
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/MembershipsAdapter.js#L6}
+ */
+
 /**
  * Gets the active members in a meeting
  *
  * @private
  * @param {object} members Members object from meeting, keyed by ID
- * @returns {Array}
- * @memberof MembershipsSDKAdapter
+ * @returns {Array} List of active users in a meeting
  */
 function getActiveMembers(members) {
   return Object.values(members)
@@ -17,6 +24,12 @@ function getActiveMembers(members) {
     }));
 }
 
+/**
+ * The `MembershipsSDKAdapter` is an implementation of the `MembershipsAdapter` interface.
+ * This adapter utilizes the Webex JS SDK to fetch data about a memberships.
+ *
+ * @implements {MembershipsAdapter}
+ */
 export default class MembershipsSDKAdapter extends MembershipsAdapter {
   constructor(datasource) {
     super(datasource);
@@ -30,9 +43,8 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
    * will emit a new updated Membership object, if datasource permits.
    *
    * @param {string} destinationID  ID of the destination for which to get members
-   * @param {DestinationType} destinationType  type of the membership destination
+   * @param {DestinationType} destinationType Type of the membership destination
    * @returns {external:Observable.<Membership>} Observable stream that emits membership data
-   * @memberof MembershipAdapter
    */
   getMembersFromDestination(destinationID, destinationType) {
     if (destinationType !== DestinationType.MEETING) {

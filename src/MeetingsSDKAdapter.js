@@ -19,6 +19,23 @@ import {
   tap,
 } from 'rxjs/operators';
 
+// TODO: Figure out how to import JS Doc definitions and remove duplication.
+/**
+ * A video conference in Webex over WebRTC.
+ *
+ * @external Meeting
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/MeetingsAdapter.js#L20}
+ * @see {@link https://webrtc.org}
+ */
+
+// TODO: Figure out how to import JS Doc definitions and remove duplication.
+/**
+ * Display options of a meeting control.
+ *
+ * @external MeetingControlDisplay
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/MeetingsAdapter.js#L58}
+ */
+
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
@@ -65,10 +82,9 @@ const HYDRA_ID_TYPE_ROOM = 'ROOM';
 
 /**
  * The `MeetingsSDKAdapter` is an implementation of the `MeetingsAdapter` interface.
- * This adapter utilizes the Webex JS SDK to create and join webex meetings.
+ * This adapter utilizes the Webex JS SDK to create and join Webex meetings.
  *
- * @class MeetingsSDKAdapter
- * @extends {MeetingsAdapter}
+ * @implements {MeetingsAdapter}
  */
 export default class MeetingsSDKAdapter extends MeetingsAdapter {
   constructor(datasource) {
@@ -126,8 +142,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns a promise to the local device media streams.
    *
-   * @param {string} ID  ID to retrieve the SDK meeting object to add the local media to
-   * @returns {Object}
+   * @private
+   * @param {string} ID ID to retrieve the SDK meeting object to add the local media to
+   * @returns {Promise.<MediaStream>} Promise to requested media stream
    */
   async getLocalMedia(ID) {
     const localMedia = {localAudio: null, localVideo: null};
@@ -145,13 +162,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
   /**
    * Returns a promise to a local media stream based on the given constraints.
+   *
    * @see {@link MediaStream|https://developer.mozilla.org/en-US/docs/Web/API/MediaStream}.
    *
-   * @param {string} ID  ID of the meeting for which to fetch streams
-   * @param {Object} constraint
-   * @returns {Promise.<MediaStream>}  Requested media stream
-   * @memberof MeetingsSDKAdapter
    * @private
+   * @param {string} ID ID of the meeting for which to fetch streams
+   * @param {object} constraint Media stream constraints
+   * @returns {Promise.<MediaStream>} Promise to requested media stream
    */
   async getStream(ID, constraint) {
     let localStream = null;
@@ -171,10 +188,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Update the meeting object with media attached based on a given event type.
    *
-   * @param {string} ID     ID of the meeting to fetch
-   * @param {Object} media  new media stream to attach to the meeting object based on a given event type
-   * @memberof MeetingsSDKAdapter
    * @private
+   * @param {string} ID ID of the meeting to update
+   * @param {object} media Media stream to attach to the meeting object based on a given event type
+   * @param {string} media.type Type of event associated with the media change
+   * @param {MediaStream} media.stream Media stream to attach to meeting
    */
   attachMedia(ID, {type, stream}) {
     const meeting = {...this.meetings[ID]};
@@ -216,11 +234,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
   /**
    * Stops the tracks of the given media stream.
+   *
    * @see {@link MediaStream|https://developer.mozilla.org/en-US/docs/Web/API/MediaStream}.
    *
-   * @param {MediaStream} stream  media stream for which to stop tracks
-   * @memberof MeetingsSDKAdapter
    * @private
+   * @static
+   * @param {MediaStream} stream Media stream for which to stop tracks
    */
   // eslint-disable-next-line class-methods-use-this
   stopStream(stream) {
@@ -234,9 +253,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Update the meeting object by removing all media.
    *
-   * @param {string} ID  ID of the meeting to fetch
-   * @memberof MeetingsSDKAdapter
    * @private
+   * @param {string} ID ID of the meeting to update
    */
   removeMedia(ID) {
     if (this.meetings && this.meetings[ID]) {
@@ -260,9 +278,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Returns a promise of a meeting title for a given destination.
    * Supported destinations are person ID, room ID and SIP URI.
    *
-   * @param {string} destination  Virtual meeting destination
-   * @returns {Promise.<string>}
-   * @memberof MeetingsSDKAdapter
+   * @private
+   * @param {string} destination Virtual meeting destination
+   * @returns {Promise.<string>} Promise to the tile of the meeting at the destination
    */
   async fetchMeetingTitle(destination) {
     const {id, type} = deconstructHydraId(destination);
@@ -295,9 +313,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Creates meeting and returns an observable to the new meeting data.
    *
-   * @param {string} destination destination to start the meeting at
-   * @returns {Observable.<Meeting>}
-   * @memberof MeetingsSDKAdapter
+   * @param {string} destination Destination where to start the meeting at
+   * @returns {Observable.<Meeting>} Observable stream that emits data of the newly created meeting
    */
   createMeeting(destination) {
     return from(this.datasource.meetings.create(destination)).pipe(
@@ -339,10 +356,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns a SDK meeting object retrieved from the collection.
    *
-   * @param {string} ID ID of the meeting to fetch.
-   * @returns {Object} The SDK meeting object from the meetings collection.
-   * @memberof MeetingsSDKAdapter
    * @private
+   * @param {string} ID ID of the meeting to fetch.
+   * @returns {object} The SDK meeting object from the meetings collection.
    */
   fetchMeeting(ID) {
     return this.datasource.meetings.getMeetingByType('id', ID);
@@ -353,7 +369,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * If the meeting is successfully joined, a ready event is dispatched.
    *
    * @param {string} ID ID of the meeting to join
-   * @memberof MeetingsSDKAdapter
    */
   async joinMeeting(ID) {
     try {
@@ -394,7 +409,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * If the user had left the meeting successfully, a stopped event is dispatched.
    *
    * @param {string} ID ID of the meeting to leave from
-   * @memberof MeetingsSDKAdapter
    */
   async leaveMeeting(ID) {
     try {
@@ -415,9 +429,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns an observable that emits the display data of a meeting control.
    *
-   * @returns {Observable.<MeetingControlDisplay>}
-   * @memberof MeetingJSONAdapter
    * @private
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the join control
    */
   // eslint-disable-next-line class-methods-use-this
   joinControl() {
@@ -436,9 +449,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns an observable that emits the display data of a meeting control.
    *
-   * @returns {Observable.<MeetingControlDisplay>}
-   * @memberof MeetingJSONAdapter
    * @private
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the exit control
    */
   // eslint-disable-next-line class-methods-use-this
   exitControl() {
@@ -458,8 +470,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Attempts to mute the microphone of the given meeting ID.
    * If the microphone is successfully muted, an audio mute event is dispatched.
    *
+   * @private
    * @param {string} ID ID of the meeting to mute audio
-   * @memberof MeetingsSDKAdapter
    */
   async handleLocalAudio(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
@@ -505,9 +517,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns an observable that emits the display data of a mute meeting audio control.
    *
+   * @private
    * @param {string} ID ID of the meeting to mute audio
-   * @returns {Observable.<MeetingControlDisplay>}
-   * @memberof MeetingJSONAdapter
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the audio control
    */
   audioControl(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
@@ -548,8 +560,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Attempts to mute the camera of the given meeting ID.
    * If the camera is successfully muted, a video mute event is dispatched.
    *
+   * @private
    * @param {string} ID ID of the meeting to mute video
-   * @memberof MeetingsSDKAdapter
    */
   async handleLocalVideo(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
@@ -595,9 +607,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns an observable that emits the display data of a mute meeting video control.
    *
+   * @private
    * @param {string} ID ID of the meeting to mute video
-   * @returns {Observable.<MeetingControlDisplay>}
-   * @memberof MeetingJSONAdapter
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the video control
    */
   videoControl(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
@@ -638,8 +650,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Attempts to start/stop screen sharing to the given meeting ID.
    * If successful, a sharing start/stop event is dispatched.
    *
+   * @private
    * @param {string} ID ID of the meeting to start/stop sharing
-   * @memberof MeetingJSONAdapter
    */
   async handleLocalShare(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
@@ -717,9 +729,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Returns an observable that emits the display data of a share control.
    *
+   * @private
    * @param {string} ID ID of the meeting to start/stop screen share
-   * @returns {Observable.<MeetingControlDisplay>}
-   * @memberof MeetingJSONAdapter
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the screen share control
    */
   shareControl(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
@@ -808,8 +820,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
-   * @returns {Observable.<Meeting>}
-   * @memberof MeetingsSDKAdapter
+   * @returns {Observable.<Meeting>} Observable stream that emits meeting data of the given ID
    */
   getMeeting(ID) {
     if (!(ID in this.getMeetingObservables)) {

@@ -16,13 +16,22 @@ import {
 import {deconstructHydraId} from '@webex/common';
 import {PeopleAdapter, PersonStatus} from '@webex/component-adapter-interfaces';
 
+// TODO: Figure out how to import JS Doc definitions and remove duplication.
+/**
+ * A Webex user.
+ *
+ * @external Person
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/PeopleAdapter.js#L6}
+ */
+
 const USER_PRESENCE_UPDATE_EVENT = 'event:apheleia.subscription_update';
 
 /**
  * Returns a PersonStatus enum key from the given value.
  * If status does not match an enum key, it returns null.
  *
- * @param {string} status  Person status from Apheleia service.
+ * @private
+ * @param {string} status Person status from Apheleia service.
  * @returns {string} PersonStatus
  */
 function getStatus(status) {
@@ -35,8 +44,7 @@ function getStatus(status) {
  * The `PeopleSDKAdapter` is an implementation of the `PeopleAdapter` interface.
  * This adapter utilizes the Webex JS SDK to fetch data about a person.
  *
- * @class PeopleSDKAdapter
- * @extends {PeopleAdapter}
+ * @implements {PeopleAdapter}
  */
 export default class PeopleSDKAdapter extends PeopleAdapter {
   constructor(datasource) {
@@ -49,9 +57,8 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * Fetches the person data from the sdk and returns in the shape required by adapter.
    *
    * @private
-   * @param {string} ID  ID of the person for which to fetch data
-   * @returns {Person}
-   * @memberof PeopleSDKAdapter
+   * @param {string} ID ID of the person for which to fetch data
+   * @returns {Person} Info about the person of the given ID
    */
   async fetchPerson(ID) {
     const {
@@ -79,9 +86,7 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * Returns an observable that emits person data of the access token bearer.
    * The observable will emit once and then complete.
    *
-   * @public
-   * @returns {Observable.<Person>}
-   * @memberof PeopleSDKAdapter
+   * @returns {external:Observable.<Person>} Observable stream that emits person data of the current user
    */
   getMe() {
     // Get person data of the current access token bearer
@@ -101,10 +106,8 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
   /**
    * Returns an observable that emits person data of the given ID.
    *
-   * @public
-   * @param {string} ID ID of person to get.
-   * @returns {Observable.<Person>}
-   * @memberof PeopleSDKAdapter
+   * @param {string} ID ID of person to get
+   * @returns {external:Observable.<Person>} Observable stream that emits person data of the given ID
    */
   getPerson(ID) {
     if (!(ID in this.getPersonObservables)) {

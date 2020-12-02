@@ -67,6 +67,8 @@ Dotenv is a zero-dependency module that loads environment variables from a `.env
   Plugin that enforces import/export styles
 - [eslint-plugin-jest](https://www.npmjs.com/package/eslint-plugin-jest):
   Plugin that enforces standard [Jest](https://jestjs.io) styles
+- [eslint-plugin-jsdoc](https://www.npmjs.com/package/eslint-plugin-jsdoc):
+  Plugin that enforces standard [JSDoc](https://jsdoc.app) styles
 
 ### Husky
 

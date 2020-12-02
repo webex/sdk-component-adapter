@@ -12,15 +12,21 @@ import {
 } from 'rxjs/operators';
 import {RoomsAdapter} from '@webex/component-adapter-interfaces';
 
+// TODO: Figure out how to import JS Doc definitions and remove duplication.
+/**
+ * A virtual space where people can collaborate in Webex.
+ *
+ * @external Room
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/RoomsAdapter.js#L7}
+ */
+
 export const ROOM_UPDATED_EVENT = 'updated';
 
 /**
  * The `RoomsSDKAdapter` is an implementation of the `RoomsAdapter` interface.
  * This adapter utilizes the Webex JS SDK to fetch data about a room.
  *
- * @export
- * @class RoomsSDKAdapter
- * @extends {RoomsAdapter}
+ * @implements {RoomsAdapter}
  */
 export default class RoomsSDKAdapter extends RoomsAdapter {
   constructor(datasource) {
@@ -35,8 +41,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    *
    * @private
    * @param {string} ID ID of the room for which to fetch data
-   * @returns {Room}
-   * @memberof RoomsSDKAdapter
+   * @returns {Room} Information about the room of the given ID
    */
   async fetchRoom(ID) {
     const {id, title, type} = await this.datasource.rooms.get(ID);
@@ -56,7 +61,6 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * Repeated calls to `rooms.listen` are not needed afterwards.
    *
    * @private
-   * @memberof RoomsSDKAdapter
    */
   startListeningToRoomUpdates() {
     if (this.listenerCount === 0) {
@@ -74,7 +78,6 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * If `rooms.stopListening` is called early, existing subscribers won't get any updates.
    *
    * @private
-   * @memberof RoomsSDKAdapter
    */
   stopListeningToRoomUpdates() {
     this.listenerCount -= 1;
@@ -88,10 +91,8 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
   /**
    * Returns an observable that emits room data of the given ID.
    *
-   * @public
    * @param {string} ID ID of room to get
-   * @returns {Observable.<Room>}
-   * @memberof RoomsSDKAdapter
+   * @returns {external:Observable.<Room>} Observable stream that emits room data of the given ID
    */
   getRoom(ID) {
     if (!(ID in this.getRoomObservables)) {
