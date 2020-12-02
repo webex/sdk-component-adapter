@@ -59,8 +59,7 @@ export const mockSDKMeeting = {
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
- * @export
- * @returns {Object} mockSDK Instance
+ * @returns {object} mockSDK Instance
  */
 export default function createMockSDK() {
   return {

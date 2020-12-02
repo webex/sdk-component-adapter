@@ -9,12 +9,14 @@
     "sourceType": "module"
   },
   "plugins": [
-    "jest"
+    "jest",
+    "jsdoc"
   ],
   "extends": [
     "airbnb-base",
     "plugin:jest/recommended",
-    "plugin:jest/style"
+    "plugin:jest/style",
+    "plugin:jsdoc/recommended"
   ],
   "globals": {
     "rxjs": "readonly",
@@ -81,6 +83,14 @@
       ],
       "rules": {
         "jest/no-done-callback": "off"
+      }
+    },
+    {
+      "files": [
+        "**/__mocks__/**"
+      ],
+      "rules": {
+        "jsdoc/require-jsdoc": "off"
       }
     }
   ]

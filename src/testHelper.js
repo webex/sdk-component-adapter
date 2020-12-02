@@ -13,10 +13,10 @@ const URL_U2C_INTEGRATION = 'https://u2c-intb.ciscospark.com/u2c/api/v1';
 const SCOPE = 'Identity:OAuthClient webexsquare:get_conversation webexsquare:admin Identity:SCIM spark:people_read spark:rooms_read spark:rooms_write spark:memberships_read spark:memberships_write spark:messages_read spark:messages_write spark:applications_read spark:applications_write spark:teams_read spark:teams_write spark:team_memberships_read spark:team_memberships_write spark:bots_read spark:bots_write spark:kms';
 
 /**
- * Creates an SDK instance for the given access token, pointed at the webex integration environment.
+ * Returns an SDK instance for the given access token, pointed at the webex integration environment.
  *
- * @param {Object} token details about user token, generated from createTestUser
- * @returns {Object} sdk instance
+ * @param {object} token Valid Webex access token
+ * @returns {object} Webex SDK instance
  */
 export function createIntegrationSdkInstance(token) {
   // Creating another instance of the token object because `new Webex` modifies the object passed to it.
@@ -37,10 +37,10 @@ export function createIntegrationSdkInstance(token) {
 }
 
 /**
- * Creates a test user in the integration webex environment.
+ * Returns a test user in the Webex integration environment.
+ * The test user has an instance of the SDK automatically created and attached to it.
  *
- * @returns {Object} user
- * @returns {Object} user.sdk SDK Instance for the created user
+ * @returns {object} user in integration environment
  */
 export async function createIntegrationTestUser() {
   const user = await createTestUser({
@@ -58,10 +58,12 @@ export async function createIntegrationTestUser() {
 }
 
 /**
- * Removes the test user from the integration environment.
+ * Removes the test user from the Webex integration environment.
  *
- * @param {Object} user created in #createIntegrationTestUser()
- * @returns {Promise}
+ * @see {@link createIntegrationTestUser}
+ *
+ * @param {object} user User created by `createIntegrationTestUser()`
+ * @returns {Promise} Promise indicating whether removing the user was successful
  */
 export async function removeIntegrationTestUser(user) {
   return removeTestUser({
@@ -73,8 +75,8 @@ export async function removeIntegrationTestUser(user) {
 /**
  * Constructs a Hydra ID for a given UUID.
  *
- * @param {String} UUID Person UUID
- * @returns {string}
+ * @param {string} UUID Person UUID
+ * @returns {string} UUID following Hydra's UUID format
  */
 export function getPersonHydraID(UUID) {
   return constructHydraId('PEOPLE', UUID);
