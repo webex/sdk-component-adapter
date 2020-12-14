@@ -34,7 +34,7 @@ describe('Rooms SDK Adapter', () => {
 
   describe('getRoom() returns', () => {
     beforeEach(async () => {
-      createdRoom = await user.sdk.rooms.create({title: 'Webex Teams Test Room'});
+      createdRoom = await user.sdk.rooms.create({title: 'Webex Test Room'});
       getRoom$ = webexSDKAdapter.roomsAdapter.getRoom(createdRoom.id);
     });
 
