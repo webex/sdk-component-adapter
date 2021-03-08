@@ -20,7 +20,7 @@ function getActiveMembers(members) {
   return Object.values(members)
     .filter((member) => member.isInMeeting && member.isUser)
     .map((member) => ({
-      id: member.id,
+      ID: member.id,
     }));
 }
 
@@ -46,9 +46,9 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
    * @param {DestinationType} destinationType Type of the membership destination
    * @returns {external:Observable.<Membership>} Observable stream that emits membership data
    */
-  getMembersFromDestination(destinationID, destinationType) {
+  getMembershipFromDestination(destinationID, destinationType) {
     if (destinationType !== DestinationType.MEETING) {
-      return throwError(new Error(`getMembersFromDestination for ${destinationType} is not currently supported.`));
+      return throwError(new Error(`getMembershipFromDestination for ${destinationType} is not currently supported.`));
     }
 
     const meeting = this.datasource.meetings.getMeetingByType('id', destinationID);
