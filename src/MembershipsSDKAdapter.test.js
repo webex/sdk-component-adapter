@@ -31,10 +31,12 @@ describe('Memberships SDK Adapter', () => {
               members: [
                 {
                   id: 'id',
+                  inMeeting: true,
                   muted: false,
                 },
                 {
                   id: 'mutedPerson',
+                  inMeeting: false,
                   muted: true,
                 },
               ],
