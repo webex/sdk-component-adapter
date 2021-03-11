@@ -17,13 +17,13 @@ import {DestinationType, MembershipsAdapter} from '@webex/component-adapter-inte
  * @returns {Array} List of active users in a meeting
  */
 function getMembers(members) {
-  return Object.values(members)
+  return members ? Object.values(members)
     .filter((member) => member.isUser)
     .map((member) => ({
       id: member.id,
       inMeeting: member.inMeeting,
       muted: member.isAudioMuted,
-    }));
+    })) : [];
 }
 
 /**
@@ -36,7 +36,7 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
   constructor(datasource) {
     super(datasource);
 
-    this.membershipSubjects = {};
+    this.membership$ = {}; // cache membership observables based on membership id
   }
 
   /**
@@ -49,60 +49,50 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
    * @returns {external:Observable.<Membership>} Observable stream that emits membership data
    */
   getMembersFromDestination(destinationID, destinationType) {
-    if (destinationType !== DestinationType.MEETING) {
-      return throwError(new Error(`getMembersFromDestination for ${destinationType} is not currently supported.`));
-    }
-
-    const meeting = this.datasource.meetings.getMeetingByType('id', destinationID);
-
-    if (!meeting) {
-      return throwError(new Error(`Meeting ${destinationID} not found.`));
-    }
-
     const membershipID = `${destinationType}-${destinationID}`;
+    let membership$ = this.membership$[membershipID];
 
-    if (!this.membershipSubjects[membershipID]) {
-      // Behavior subject will keep the last emitted object for new subscribers
-      // https://rxjs.dev/guide/subject#behaviorsubject
-      this.membershipSubjects[membershipID] = new BehaviorSubject({
-        ID: membershipID,
-        destinationID,
-        destinationType,
-        members: [],
-      });
-    }
+    if (!membership$) {
+      if (destinationType !== DestinationType.MEETING) {
+        membership$ = throwError(new Error(`getMembersFromDestination for ${destinationType} is not currently supported.`));
+      } else {
+        const meeting = this.datasource.meetings.getMeetingByType('id', destinationID);
 
-    const membershipSubject = this.membershipSubjects[membershipID];
+        if (!meeting) {
+          membership$ = throwError(new Error(`Meeting ${destinationID} not found.`));
+        } else {
+          const members = meeting.members
+            && meeting.members.membersCollection
+            && meeting.members.membersCollection.members;
 
-    if (meeting.members
-      && meeting.members.membersCollection
-      && meeting.members.membersCollection.members
-    ) {
-      const members = getMembers(meeting.members.membersCollection.members);
+          // Behavior subject will keep the last emitted object for new subscribers
+          // https://rxjs.dev/guide/subject#behaviorsubject
+          membership$ = new BehaviorSubject({
+            ID: membershipID,
+            destinationID,
+            destinationType,
+            members: getMembers(members),
+          });
 
-      // First, emit the current collection
-      membershipSubject.next({
-        ID: membershipID,
-        destinationID,
-        destinationType,
-        members,
-      });
-    }
+          this.membership$[membershipID] = membership$; // save for future calls
 
-    // Emit on membership updates
-    meeting.members.on('members:update', (payload) => {
-      if (payload && payload.full) {
-        const updatedMembers = getMembers(payload.full);
+          // Emit on membership updates
+          meeting.members.on('members:update', (payload) => {
+            if (payload && payload.full) {
+              const updatedMembers = getMembers(payload.full);
 
-        membershipSubject.next({
-          ID: membershipID,
-          destinationID,
-          destinationType,
-          members: updatedMembers,
-        });
+              membership$.next({
+                ID: membershipID,
+                destinationID,
+                destinationType,
+                members: updatedMembers,
+              });
+            }
+          });
+        }
       }
-    });
+    }
 
-    return membershipSubject;
+    return membership$;
   }
 }
