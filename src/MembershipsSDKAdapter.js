@@ -21,6 +21,7 @@ function getActiveMembers(members) {
     .filter((member) => member.isInMeeting && member.isUser)
     .map((member) => ({
       id: member.id,
+      muted: member.isAudioMuted,
     }));
 }
 
