@@ -22,7 +22,7 @@ export const mockSDKMeeting = {
       members: {
         person1: {
           ...mockSDKPerson,
-          isInMeeting: true,
+          inMeeting: true,
           isUser: true,
           isAudioMuted: false,
         },
@@ -36,14 +36,14 @@ export const mockSDKMeeting = {
         notJoinedPerson: {
           ...mockSDKPerson,
           id: 'notJoinedPerson',
-          isInMeeting: false,
+          inMeeting: false,
           isUser: true,
           isAudioMuted: false,
         },
         device: {
           ...mockSDKPerson,
           id: 'device',
-          isInMeeting: true,
+          inMeeting: true,
           isUser: false,
           isAudioMuted: false,
         },

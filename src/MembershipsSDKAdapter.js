@@ -16,11 +16,12 @@ import {DestinationType, MembershipsAdapter} from '@webex/component-adapter-inte
  * @param {object} members Members object from meeting, keyed by ID
  * @returns {Array} List of active users in a meeting
  */
-function getActiveMembers(members) {
+function getMembers(members) {
   return Object.values(members)
-    .filter((member) => member.isInMeeting && member.isUser)
+    .filter((member) => member.isUser)
     .map((member) => ({
       id: member.id,
+      inMeeting: member.isInMeeting,
       muted: member.isAudioMuted,
     }));
 }
@@ -77,7 +78,7 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
       && meeting.members.membersCollection
       && meeting.members.membersCollection.members
     ) {
-      const members = getActiveMembers(meeting.members.membersCollection.members);
+      const members = getMembers(meeting.members.membersCollection.members);
 
       // First, emit the current collection
       membershipSubject.next({
@@ -91,7 +92,7 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
     // Emit on membership updates
     meeting.members.on('members:update', (payload) => {
       if (payload && payload.full) {
-        const updatedMembers = getActiveMembers(payload.full);
+        const updatedMembers = getMembers(payload.full);
 
         membershipSubject.next({
           ID: membershipID,
