@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/webex/sdk-component-adapter/compare/v1.24.1...v1.25.0) (2021-03-18)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** return muted status ([dee4ff0](https://github.com/webex/sdk-component-adapter/commit/dee4ff07ec6783710ed4abe0f7b47efe5aca2486))
+
 ## [1.24.1](https://github.com/webex/sdk-component-adapter/compare/v1.24.0...v1.24.1) (2020-09-16)
 
 
