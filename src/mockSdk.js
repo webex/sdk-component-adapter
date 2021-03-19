@@ -70,6 +70,17 @@ export const mockSDKMeeting = {
   updateShare: jest.fn(() => Promise.resolve()),
 };
 
+export const mockSDKMembership = {
+  id: 'id',
+  roomId: 'roomID',
+  personId: 'personID',
+  personOrgId: 'organizationID',
+  personEmail: 'email@cisco.com',
+  isModerator: false,
+  isMonitor: false,
+  created: '',
+};
+
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
@@ -105,6 +116,20 @@ export default function createMockSDK() {
       members: {
         on: jest.fn(),
       },
+    },
+    memberships: {
+      listen: jest.fn(),
+      list: jest.fn(() => Promise.resolve({
+        items: [
+          mockSDKMembership,
+          {
+            ...mockSDKMembership,
+            personOrgId: 'organizationID1',
+            personId: 'personID1',
+          },
+        ],
+      })),
+      stopListening: jest.fn(() => Promise.resolve()),
     },
   };
 }
