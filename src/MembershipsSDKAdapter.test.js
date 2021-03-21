@@ -36,8 +36,13 @@ describe('Memberships SDK Adapter', () => {
                 },
                 {
                   id: 'mutedPerson',
-                  inMeeting: false,
+                  inMeeting: true,
                   muted: true,
+                },
+                {
+                  id: 'notJoinedPerson',
+                  inMeeting: false,
+                  muted: false,
                 },
               ],
             });
