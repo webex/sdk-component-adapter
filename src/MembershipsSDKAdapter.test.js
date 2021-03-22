@@ -21,31 +21,24 @@ describe('Memberships SDK Adapter', () => {
     });
 
     describe('when destination type is MEETING', () => {
-      test('emits a membership object on subscription', (done) => {
+      test('emits a member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
-          .subscribe((membership) => {
-            expect(membership).toMatchObject({
-              ID: 'meeting-meetingID',
-              destinationID: meetingID,
-              destinationType: DestinationType.MEETING,
-              members: [
-                {
-                  id: 'id',
-                  inMeeting: true,
-                  muted: false,
-                },
-                {
-                  id: 'mutedPerson',
-                  inMeeting: true,
-                  muted: true,
-                },
-                {
-                  id: 'notJoinedPerson',
-                  inMeeting: false,
-                  muted: false,
-                },
-              ],
-            });
+          .subscribe((members) => {
+            expect(members).toMatchObject([
+              {
+                id: 'id',
+                muted: false,
+              },
+              {
+                id: 'mutedPerson',
+                muted: true,
+              },
+              {
+                id: 'notJoinedPerson',
+                inMeeting: false,
+                muted: false,
+              },
+            ]);
             done();
           });
       });
