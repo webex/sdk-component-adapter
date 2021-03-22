@@ -3,9 +3,9 @@ import {DestinationType, MembershipsAdapter} from '@webex/component-adapter-inte
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
- * A relationship between a destination (e.g. room, meeting) in Webex and people.
+ * A Member object that is part of a membership
  *
- * @external Membership
+ * @external Member
  * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/MembershipsAdapter.js#L6}
  */
 
@@ -36,30 +36,30 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
   constructor(datasource) {
     super(datasource);
 
-    this.membership$ = {}; // cache membership observables based on membership id
+    this.members$ = {}; // cache membership observables based on membership id
   }
 
   /**
-   * Returns an observable that emits a Membership object.
+   * Returns an observable that emits a list of Member objects.
    * Whenever there is an update to the membership, the observable
-   * will emit a new updated Membership object, if datasource permits.
+   * will emit a new updated Member list, if datasource permits.
    *
    * @param {string} destinationID  ID of the destination for which to get members
    * @param {DestinationType} destinationType Type of the membership destination
-   * @returns {external:Observable.<Membership>} Observable stream that emits membership data
+   * @returns {external:Observable.<Array.<Member>>} Observable stream that emits member lists
    */
   getMembersFromDestination(destinationID, destinationType) {
     const membershipID = `${destinationType}-${destinationID}`;
-    let membership$ = this.membership$[membershipID];
+    let members$ = this.members$[membershipID];
 
-    if (!membership$) {
+    if (!members$) {
       if (destinationType !== DestinationType.MEETING) {
-        membership$ = throwError(new Error(`getMembersFromDestination for ${destinationType} is not currently supported.`));
+        members$ = throwError(new Error(`getMembersFromDestination for ${destinationType} is not currently supported.`));
       } else {
         const meeting = this.datasource.meetings.getMeetingByType('id', destinationID);
 
         if (!meeting) {
-          membership$ = throwError(new Error(`Meeting ${destinationID} not found.`));
+          members$ = throwError(new Error(`Meeting ${destinationID} not found.`));
         } else {
           const members = meeting.members
             && meeting.members.membersCollection
@@ -67,32 +67,20 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
 
           // Behavior subject will keep the last emitted object for new subscribers
           // https://rxjs.dev/guide/subject#behaviorsubject
-          membership$ = new BehaviorSubject({
-            ID: membershipID,
-            destinationID,
-            destinationType,
-            members: getMembers(members),
-          });
+          members$ = new BehaviorSubject(getMembers(members));
 
-          this.membership$[membershipID] = membership$; // save for future calls
+          this.members$[membershipID] = members$; // save for future calls
 
           // Emit on membership updates
           meeting.members.on('members:update', (payload) => {
             if (payload && payload.full) {
-              const updatedMembers = getMembers(payload.full);
-
-              membership$.next({
-                ID: membershipID,
-                destinationID,
-                destinationType,
-                members: updatedMembers,
-              });
+              members$.next(getMembers(payload.full));
             }
           });
         }
       }
     }
 
-    return membership$;
+    return members$;
   }
 }
