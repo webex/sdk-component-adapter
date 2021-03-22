@@ -1,3 +1,15 @@
+# [1.26.0](https://github.com/webex/sdk-component-adapter/compare/v1.25.0...v1.26.0) (2021-03-22)
+
+
+### Bug Fixes
+
+* **MembershipsSdkAdapter:** fix test ([65baa63](https://github.com/webex/sdk-component-adapter/commit/65baa63db9977b8b29c57ec750989d5f282dac34))
+
+
+### Features
+
+* **MembershipsSDKAdapter:** return membership status and all members ([825a0ed](https://github.com/webex/sdk-component-adapter/commit/825a0ed320e36ffbbf6ef8fe0a96f0cd54412e1f))
+
 # [1.25.0](https://github.com/webex/sdk-component-adapter/compare/v1.24.1...v1.25.0) (2021-03-18)
 
 
