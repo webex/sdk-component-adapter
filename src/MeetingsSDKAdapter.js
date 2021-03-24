@@ -291,7 +291,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       meetingTitle = `${displayName}'s Personal Room`;
     } else if (type === HYDRA_ID_TYPE_ROOM) {
-      const {title} = await this.datasource.rooms.get(id);
+      // One must use a Hydra ID when calling `get` on rooms.
+      // It has both the convo ID and cluster name in it.
+      const {title} = await this.datasource.rooms.get(destination);
 
       meetingTitle = title;
     } else {
