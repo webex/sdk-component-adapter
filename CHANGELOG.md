@@ -1,3 +1,10 @@
+## [1.26.1](https://github.com/webex/sdk-component-adapter/compare/v1.26.0...v1.26.1) (2021-03-24)
+
+
+### Bug Fixes
+
+* fetch room data with globalId ([12a135e](https://github.com/webex/sdk-component-adapter/commit/12a135ec84a46a7c422599524ee9d0a5cf8c32f1))
+
 # [1.26.0](https://github.com/webex/sdk-component-adapter/compare/v1.25.0...v1.26.0) (2021-03-22)
 
 
