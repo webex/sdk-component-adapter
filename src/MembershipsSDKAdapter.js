@@ -21,7 +21,7 @@ function getMembers(members) {
     .filter((member) => member.isUser)
     .map((member) => ({
       id: member.id,
-      inMeeting: member.inMeeting,
+      inMeeting: member.isInMeeting,
       muted: member.isAudioMuted,
     })) : [];
 }
