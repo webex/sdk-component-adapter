@@ -1,3 +1,10 @@
+## [1.26.2](https://github.com/webex/sdk-component-adapter/compare/v1.26.1...v1.26.2) (2021-03-25)
+
+
+### Bug Fixes
+
+* **memberships:** update Webex SDK ([867a9b6](https://github.com/webex/sdk-component-adapter/commit/867a9b6182aae43fd5084ef746ba3398294eb016))
+
 ## [1.26.1](https://github.com/webex/sdk-component-adapter/compare/v1.26.0...v1.26.1) (2021-03-24)
 
 
