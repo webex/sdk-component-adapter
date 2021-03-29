@@ -8,6 +8,8 @@ import {
   merge,
   Observable,
   Subject,
+  BehaviorSubject,
+  throwError,
 } from 'rxjs';
 import {
   flatMap,
@@ -46,6 +48,7 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 
 // Adapter Events
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
+const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -53,6 +56,7 @@ const EXIT_CONTROL = 'leave-meeting';
 const AUDIO_CONTROL = 'mute-audio';
 const VIDEO_CONTROL = 'mute-video';
 const SHARE_CONTROL = 'share-screen';
+const ROSTER_CONTROL = 'member-roster';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -120,6 +124,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: EXIT_CONTROL,
       action: this.leaveMeeting.bind(this),
       display: this.exitControl.bind(this),
+    };
+
+    this.meetingControls[ROSTER_CONTROL] = {
+      ID: ROSTER_CONTROL,
+      action: this.handleRoster.bind(this),
+      display: this.rosterControl.bind(this),
     };
   }
 
@@ -344,6 +354,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           remoteAudio: null,
           remoteVideo: null,
           remoteShare: null,
+          showRoster: null,
         };
 
         return this.meetings[ID];
@@ -819,6 +830,70 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Attempts to toggle roster to the given meeting ID.
+   * A roster toggle event is dispatched.
+   *
+   * @private
+   * @param {string} ID ID of the meeting to toggle roster
+   */
+  handleRoster(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const showRoster = !this.meetings[ID].showRoster;
+
+    this.meetings[ID].showRoster = showRoster;
+
+    sdkMeeting.emit(EVENT_ROSTER_TOGGLE, {
+      state: showRoster
+        ? MeetingControlState.ACTIVE
+        : MeetingControlState.INACTIVE,
+    });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a roster control.
+   *
+   * @private
+   * @param {string} ID ID of the meeting to toggle roster
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the roster control
+   */
+  rosterControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const active = {
+      ID: ROSTER_CONTROL,
+      icon: 'participant-list',
+      tooltip: 'Hide participants panel',
+      state: MeetingControlState.ACTIVE,
+      text: 'Participants',
+    };
+    const inactive = {
+      ID: ROSTER_CONTROL,
+      icon: 'participant-list',
+      tooltip: 'Show participants panel',
+      state: MeetingControlState.INACTIVE,
+      text: 'Participants',
+    };
+
+    let state$;
+
+    if (sdkMeeting) {
+      const initialControl = (this.meetings[ID] && this.meetings[ID].showRoster)
+        ? active
+        : inactive;
+
+      state$ = new BehaviorSubject(initialControl);
+
+      const rosterEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE)
+        .pipe(map(({state}) => (state === MeetingControlState.ACTIVE ? active : inactive)));
+
+      rosterEvent$.subscribe((value) => state$.next(value));
+    } else {
+      state$ = throwError(new Error(`Could not find meeting with ID "${ID}" to add roster control`));
+    }
+
+    return state$;
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -859,12 +934,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
+      const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
+
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$,
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
+        meetingWithRosterToggleEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
