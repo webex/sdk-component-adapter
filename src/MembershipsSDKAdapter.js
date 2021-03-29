@@ -23,6 +23,7 @@ function getMembers(members) {
       id: member.id,
       inMeeting: member.isInMeeting,
       muted: member.isAudioMuted,
+      sharing: member.isContentSharing,
     })) : [];
 }
 

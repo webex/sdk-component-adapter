@@ -28,10 +28,12 @@ describe('Memberships SDK Adapter', () => {
               {
                 id: 'id',
                 muted: false,
+                sharing: false,
               },
               {
                 id: 'mutedPerson',
                 muted: true,
+                sharing: true,
               },
               {
                 id: 'notJoinedPerson',
