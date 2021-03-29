@@ -24,6 +24,7 @@ describe('Meetings SDK Adapter', () => {
       remoteAudio: null,
       remoteVideo: null,
       remoteShare: null,
+      showRoster: null,
       title: 'my meeting',
     };
     target = 'target';
@@ -728,6 +729,62 @@ describe('Meetings SDK Adapter', () => {
         expect.stringContaining(`Unable to update local share stream for meeting "${meetingID}"`),
         undefined,
       );
+    });
+  });
+
+  describe('rosterControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.rosterControl(meetingID).subscribe((dataDisplay) => {
+        try {
+          expect(dataDisplay).toMatchObject({
+            ID: 'member-roster',
+            icon: 'participant-list',
+            tooltip: 'Show participants panel',
+            state: 'inactive',
+            text: 'Participants',
+          });
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.fetchMeeting = jest.fn();
+
+      meetingSDKAdapter.rosterControl(meetingID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add roster control');
+          done();
+        },
+      );
+    });
+  });
+
+  describe('handleRoster()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.meetings[meetingID] = {
+        showRoster: null,
+      };
+    });
+
+    test('emits the roster toggle event with active state', async () => {
+      await meetingSDKAdapter.handleRoster(meetingID);
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:roster:toggle', {
+        state: 'active',
+      });
+    });
+
+    test('emits the roster toggle event with inactive state', async () => {
+      meetingSDKAdapter.meetings[meetingID].showRoster = true;
+      await meetingSDKAdapter.handleRoster(meetingID);
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:roster:toggle', {
+        state: 'inactive',
+      });
     });
   });
 

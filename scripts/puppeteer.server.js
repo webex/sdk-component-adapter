@@ -31,6 +31,14 @@ function handleShare() {
   });
 }
 
+function handleRoster() {
+  webexSDKAdapter.meetingsAdapter.meetingControls['member-roster'].display(MEETING_ID).subscribe((display) => {
+    const memberRoster = document.getElementById('member-roster');
+
+    memberRoster.innerText = display.tooltip;
+  });
+}
+
 function getMeeting() {
   webexSDKAdapter.meetingsAdapter.getMeeting(MEETING_ID).subscribe(
     (meeting) => {
@@ -88,6 +96,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleAudio();
           handleVideo();
           handleShare();
+          handleRoster();
         });
         break;
       case 'join-meeting':
@@ -115,6 +124,9 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         break;
       case 'share-screen':
         await webexSDKAdapter.meetingsAdapter.meetingControls['share-screen'].action(MEETING_ID);
+        break;
+      case 'member-roster':
+        await webexSDKAdapter.meetingsAdapter.meetingControls['member-roster'].action(MEETING_ID);
         break;
     }
   } catch (error) {
