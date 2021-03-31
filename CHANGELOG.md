@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/webex/sdk-component-adapter/compare/v1.26.2...v1.27.0) (2021-03-31)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** return the sharing status of each member ([bef5099](https://github.com/webex/sdk-component-adapter/commit/bef50998ef0b1af86cc0d6dd354f003846c7aa05))
+
 ## [1.26.2](https://github.com/webex/sdk-component-adapter/compare/v1.26.1...v1.26.2) (2021-03-25)
 
 
