@@ -38,18 +38,24 @@ describe('Memberships SDK Adapter', () => {
             expect(members).toMatchObject([
               {
                 id: 'id',
+                orgID: 'orgID',
+                inMeeting: true,
                 muted: false,
                 sharing: false,
               },
               {
                 id: 'mutedPerson',
+                orgID: 'orgID',
+                inMeeting: true,
                 muted: true,
                 sharing: true,
               },
               {
                 id: 'notJoinedPerson',
+                orgID: 'orgID',
                 inMeeting: false,
                 muted: false,
+                sharing: false,
               },
             ]);
             done();
