@@ -104,6 +104,11 @@ export const mockSDKMembership = {
   created: '',
 };
 
+export const mockSDKOrganization = {
+  id: 'organizationID',
+  displayName: 'Cisco Systems, Inc.',
+};
+
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
