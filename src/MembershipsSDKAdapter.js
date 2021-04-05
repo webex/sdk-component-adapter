@@ -42,7 +42,7 @@ function getMembers(members) {
   return members ? Object.values(members)
     .filter((member) => member.isUser)
     .map((member) => ({
-      id: member.id,
+      ID: member.id,
       orgID: member.participant && member.participant.person && member.participant.person.orgId,
       inMeeting: member.isInMeeting,
       muted: member.isAudioMuted,
@@ -110,7 +110,7 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
     this.startListeningToMembershipsUpdates();
 
     const membershipToMember = (membership) => ({
-      id: deconstructHydraId(membership.personId).id,
+      ID: deconstructHydraId(membership.personId).id,
       orgID: deconstructHydraId(membership.personOrgId).id,
       muted: null,
       sharing: null,

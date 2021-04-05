@@ -37,21 +37,21 @@ describe('Memberships SDK Adapter', () => {
           .subscribe((members) => {
             expect(members).toMatchObject([
               {
-                id: 'id',
+                ID: 'id',
                 orgID: 'orgID',
                 inMeeting: true,
                 muted: false,
                 sharing: false,
               },
               {
-                id: 'mutedPerson',
+                ID: 'mutedPerson',
                 orgID: 'orgID',
                 inMeeting: true,
                 muted: true,
                 sharing: true,
               },
               {
-                id: 'notJoinedPerson',
+                ID: 'notJoinedPerson',
                 orgID: 'orgID',
                 inMeeting: false,
                 muted: false,
@@ -88,14 +88,14 @@ describe('Memberships SDK Adapter', () => {
           .subscribe((members) => {
             expect(members).toMatchObject([
               {
-                id: 'personID',
+                ID: 'personID',
                 orgID: 'organizationID',
                 muted: null,
                 sharing: null,
                 inMeeting: null,
               },
               {
-                id: 'personID1',
+                ID: 'personID1',
                 orgID: 'organizationID1',
                 muted: null,
                 sharing: null,
