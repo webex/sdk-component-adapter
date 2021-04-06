@@ -118,7 +118,7 @@ export default function createMockSDK() {
       },
     },
     memberships: {
-      listen: jest.fn(),
+      listen: jest.fn(() => Promise.resolve()),
       list: jest.fn(() => Promise.resolve({
         items: [
           mockSDKMembership,
@@ -130,6 +130,8 @@ export default function createMockSDK() {
         ],
       })),
       stopListening: jest.fn(() => Promise.resolve()),
+      on: jest.fn(),
+      off: jest.fn(),
     },
   };
 }
