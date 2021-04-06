@@ -20,7 +20,8 @@ import {
   MembershipsAdapter,
 } from '@webex/component-adapter-interfaces';
 
-const MAX_MEMBERSHIPS = 5000; // maximum participants in a space
+// max parameter value must be greater than 0 and less than or equal to 1000
+const MAX_MEMBERSHIPS = 1000;
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**

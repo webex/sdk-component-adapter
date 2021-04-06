@@ -1,19 +1,21 @@
 import {isObservable} from 'rxjs';
-import * as rxjs from 'rxjs';
 import {DestinationType} from '@webex/component-adapter-interfaces';
 
 import MembershipsSDKAdapter from './MembershipsSDKAdapter';
 import createMockSDK from './mockSdk';
 
 describe('Memberships SDK Adapter', () => {
-  let meetingID;
   let membershipSDKAdapter;
   let mockSDK;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
     membershipSDKAdapter = new MembershipsSDKAdapter(mockSDK);
-    meetingID = 'meetingID';
+  });
+
+  afterEach(() => {
+    mockSDK = null;
+    membershipSDKAdapter = null;
   });
 
   describe('getMembersFromDestination()', () => {
@@ -22,6 +24,14 @@ describe('Memberships SDK Adapter', () => {
     });
 
     describe('when destination type is MEETING', () => {
+      let meetingID;
+
+      beforeEach(() => {
+        meetingID = 'meetingID';
+      });
+      afterEach(() => {
+        meetingID = null;
+      });
       test('emits a member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
           .subscribe((members) => {
@@ -58,20 +68,17 @@ describe('Memberships SDK Adapter', () => {
     });
 
     describe('when destination type is ROOM', () => {
-      beforeEach(() => {
-        rxjs.fromEvent = jest.fn(() => rxjs.of({
-          data: {
-            roomId: 'roomID',
-          },
-        }));
-      });
+      let roomID;
 
+      beforeEach(() => {
+        roomID = 'roomID';
+      });
       afterEach(() => {
-        rxjs.fromEvent = null;
+        roomID = null;
       });
 
       test('emits a member list on subscription', (done) => {
-        membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.ROOM)
+        membershipSDKAdapter.getMembersFromDestination(roomID, DestinationType.ROOM)
           .subscribe((members) => {
             expect(members).toMatchObject([
               {
@@ -105,11 +112,5 @@ describe('Memberships SDK Adapter', () => {
         );
       });
     });
-  });
-
-  afterEach(() => {
-    mockSDK = null;
-    membershipSDKAdapter = null;
-    meetingID = null;
   });
 });
