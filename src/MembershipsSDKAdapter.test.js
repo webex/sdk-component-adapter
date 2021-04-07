@@ -5,14 +5,17 @@ import MembershipsSDKAdapter from './MembershipsSDKAdapter';
 import createMockSDK from './mockSdk';
 
 describe('Memberships SDK Adapter', () => {
-  let meetingID;
   let membershipSDKAdapter;
   let mockSDK;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
     membershipSDKAdapter = new MembershipsSDKAdapter(mockSDK);
-    meetingID = 'meetingID';
+  });
+
+  afterEach(() => {
+    mockSDK = null;
+    membershipSDKAdapter = null;
   });
 
   describe('getMembersFromDestination()', () => {
@@ -21,6 +24,14 @@ describe('Memberships SDK Adapter', () => {
     });
 
     describe('when destination type is MEETING', () => {
+      let meetingID;
+
+      beforeEach(() => {
+        meetingID = 'meetingID';
+      });
+      afterEach(() => {
+        meetingID = null;
+      });
       test('emits a member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
           .subscribe((members) => {
@@ -28,10 +39,12 @@ describe('Memberships SDK Adapter', () => {
               {
                 id: 'id',
                 muted: false,
+                sharing: false,
               },
               {
                 id: 'mutedPerson',
                 muted: true,
+                sharing: true,
               },
               {
                 id: 'notJoinedPerson',
@@ -55,21 +68,49 @@ describe('Memberships SDK Adapter', () => {
     });
 
     describe('when destination type is ROOM', () => {
+      let roomID;
+
+      beforeEach(() => {
+        roomID = 'roomID';
+      });
+      afterEach(() => {
+        roomID = null;
+      });
+
+      test('emits a member list on subscription', (done) => {
+        membershipSDKAdapter.getMembersFromDestination(roomID, DestinationType.ROOM)
+          .subscribe((members) => {
+            expect(members).toMatchObject([
+              {
+                id: 'personID',
+                orgID: 'organizationID',
+                muted: null,
+                sharing: null,
+                inMeeting: null,
+              },
+              {
+                id: 'personID1',
+                orgID: 'organizationID1',
+                muted: null,
+                sharing: null,
+                inMeeting: null,
+              },
+            ]);
+            done();
+          });
+      });
+    });
+
+    describe('when destination type is not MEETING or ROOM', () => {
       test('throws an error on subscription', (done) => {
-        membershipSDKAdapter.getMembersFromDestination('roomID', DestinationType.ROOM).subscribe(
+        membershipSDKAdapter.getMembersFromDestination('roomID', 'team').subscribe(
           () => {},
           (error) => {
-            expect(error.message).toBe('getMembersFromDestination for room is not currently supported.');
+            expect(error.message).toBe('getMembersFromDestination for team is not currently supported.');
             done();
           },
         );
       });
     });
-  });
-
-  afterEach(() => {
-    mockSDK = null;
-    membershipSDKAdapter = null;
-    meetingID = null;
   });
 });

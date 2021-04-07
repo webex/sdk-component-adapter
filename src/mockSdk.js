@@ -25,6 +25,7 @@ export const mockSDKMeeting = {
           isInMeeting: true,
           isUser: true,
           isAudioMuted: false,
+          isContentSharing: false,
         },
         person2: {
           ...mockSDKPerson,
@@ -32,6 +33,7 @@ export const mockSDKMeeting = {
           isInMeeting: true,
           isUser: true,
           isAudioMuted: true,
+          isContentSharing: true,
         },
         notJoinedPerson: {
           ...mockSDKPerson,
@@ -39,6 +41,7 @@ export const mockSDKMeeting = {
           isInMeeting: false,
           isUser: true,
           isAudioMuted: false,
+          isContentSharing: false,
         },
         device: {
           ...mockSDKPerson,
@@ -46,6 +49,7 @@ export const mockSDKMeeting = {
           isInMeeting: true,
           isUser: false,
           isAudioMuted: false,
+          isContentSharing: false,
         },
       },
     },
@@ -64,6 +68,17 @@ export const mockSDKMeeting = {
   unmuteVideo: jest.fn(() => Promise.resolve()),
   canUpdateMedia: jest.fn(() => true),
   updateShare: jest.fn(() => Promise.resolve()),
+};
+
+export const mockSDKMembership = {
+  id: 'id',
+  roomId: 'roomID',
+  personId: 'personID',
+  personOrgId: 'organizationID',
+  personEmail: 'email@cisco.com',
+  isModerator: false,
+  isMonitor: false,
+  created: '',
 };
 
 /**
@@ -101,6 +116,22 @@ export default function createMockSDK() {
       members: {
         on: jest.fn(),
       },
+    },
+    memberships: {
+      listen: jest.fn(() => Promise.resolve()),
+      list: jest.fn(() => Promise.resolve({
+        items: [
+          mockSDKMembership,
+          {
+            ...mockSDKMembership,
+            personOrgId: 'organizationID1',
+            personId: 'personID1',
+          },
+        ],
+      })),
+      stopListening: jest.fn(() => Promise.resolve()),
+      on: jest.fn(),
+      off: jest.fn(),
     },
   };
 }

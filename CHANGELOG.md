@@ -1,3 +1,22 @@
+# [1.28.0](https://github.com/webex/sdk-component-adapter/compare/v1.27.0...v1.28.0) (2021-04-06)
+
+
+### Bug Fixes
+
+* **MembershipsSdkAdapter:** add unresolvable named export SDK_EVENT ([a47fe23](https://github.com/webex/sdk-component-adapter/commit/a47fe234f1a8095679ea65ba265d6e2b0c896494))
+
+
+### Features
+
+* **MembershipsSdkAdapter:** return members of a room ([637109f](https://github.com/webex/sdk-component-adapter/commit/637109f64c50e57ba940b819c5f1c6e35d096f25))
+
+# [1.27.0](https://github.com/webex/sdk-component-adapter/compare/v1.26.2...v1.27.0) (2021-03-31)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** return the sharing status of each member ([bef5099](https://github.com/webex/sdk-component-adapter/commit/bef50998ef0b1af86cc0d6dd354f003846c7aa05))
+
 ## [1.26.2](https://github.com/webex/sdk-component-adapter/compare/v1.26.1...v1.26.2) (2021-03-25)
 
 
