@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/webex/sdk-component-adapter/compare/v1.28.0...v1.29.0) (2021-04-07)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add orgID field to meeting members ([262ea4c](https://github.com/webex/sdk-component-adapter/commit/262ea4c151ab9e5edc97529190ac2ec301dee192))
+
 # [1.28.0](https://github.com/webex/sdk-component-adapter/compare/v1.27.0...v1.28.0) (2021-04-06)
 
 
