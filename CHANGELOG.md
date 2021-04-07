@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/webex/sdk-component-adapter/compare/v1.29.0...v1.30.0) (2021-04-07)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add member-roster control ([0f22f71](https://github.com/webex/sdk-component-adapter/commit/0f22f71e502a644308b996153e9f7397a227f6cf))
+
 # [1.29.0](https://github.com/webex/sdk-component-adapter/compare/v1.28.0...v1.29.0) (2021-04-07)
 
 
