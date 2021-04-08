@@ -750,21 +750,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const inactiveShare = {
       ID: SHARE_CONTROL,
-      icon: 'share',
+      icon: 'share-screen-presence-stroke',
       tooltip: 'Start Share',
       state: MeetingControlState.INACTIVE,
       text: null,
     };
     const activeShare = {
       ID: SHARE_CONTROL,
-      icon: 'share',
+      icon: 'share-screen-presence-stroke',
       tooltip: 'Stop Share',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const disabledShare = {
       ID: SHARE_CONTROL,
-      icon: 'share',
+      icon: 'share-screen-presence-stroke',
       tooltip: 'Sharing is Unavailable',
       state: MeetingControlState.DISABLED,
       text: null,

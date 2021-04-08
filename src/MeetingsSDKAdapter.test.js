@@ -645,7 +645,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.shareControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'share-screen',
-          icon: 'share',
+          icon: 'share-screen-presence-stroke',
           text: null,
         });
         done();
