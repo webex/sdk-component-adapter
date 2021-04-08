@@ -1,5 +1,5 @@
 import * as rxjs from 'rxjs';
-import {flatMap} from 'rxjs/operators';
+import {flatMap, take} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
 import createMockSDK, {mockSDKMeeting} from './mockSdk';
@@ -808,7 +808,10 @@ describe('Meetings SDK Adapter', () => {
     test('returns a meeting in a proper shape', (done) => {
       meetingSDKAdapter
         .createMeeting(target)
-        .pipe(flatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
+        .pipe(
+          flatMap(() => meetingSDKAdapter.getMeeting(meetingID)),
+          take(1),
+        )
         .subscribe((getMeeting) => {
           expect(getMeeting).toMatchObject(meeting);
           done();

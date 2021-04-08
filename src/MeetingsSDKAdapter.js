@@ -1,4 +1,4 @@
-import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
+import {MeetingsAdapter, MeetingControlState, MeetingState} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
 import {
   concat,
@@ -7,7 +7,6 @@ import {
   fromEvent,
   merge,
   Observable,
-  Subject,
   BehaviorSubject,
   throwError,
 } from 'rxjs';
@@ -17,7 +16,7 @@ import {
   map,
   publishReplay,
   refCount,
-  takeUntil,
+  takeWhile,
   tap,
 } from 'rxjs/operators';
 
@@ -41,6 +40,7 @@ import {
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
+const EVENT_STATE_CHANGE = 'meeting:stateChange';
 const EVENT_LOCAL_SHARE_STOP = 'meeting:stoppedSharingLocal';
 const EVENT_LOCAL_SHARE_START = 'meeting:startedSharingLocal';
 const EVENT_REMOTE_SHARE_START = 'meeting:startedSharingRemote';
@@ -355,6 +355,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           remoteVideo: null,
           remoteShare: null,
           showRoster: null,
+          state: MeetingState.NOT_JOINED,
         };
 
         return this.meetings[ID];
@@ -901,7 +902,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   getMeeting(ID) {
     if (!(ID in this.getMeetingObservables)) {
-      const end$ = new Subject();
       const sdkMeeting = this.fetchMeeting(ID);
       const getMeeting$ = Observable.create((observer) => {
         if (this.meetings[ID]) {
@@ -920,7 +920,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
         tap(() => this.removeMedia(ID)),
-        tap(() => end$.next(`Completing meeting ${ID}`)),
       );
 
       const meetingWithMediaShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_START).pipe(
@@ -936,6 +935,23 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
 
+      const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
+        tap((event) => {
+          const sdkState = event.payload.currentState;
+          let state;
+
+          if (sdkState === 'ACTIVE') {
+            state = MeetingState.JOINED;
+          } else if (sdkState === 'INACTIVE') {
+            state = MeetingState.LEFT;
+          } else {
+            state = this.meetings[ID].state;
+          }
+
+          this.meetings[ID] = {...this.meetings[ID], state};
+        }),
+      );
+
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
@@ -943,6 +959,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
         meetingWithRosterToggleEvent$,
+        meetingStateChange$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
@@ -951,7 +968,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
         publishReplay(1),
         refCount(),
-        takeUntil(end$),
+        takeWhile((meeting) => meeting.state && meeting.state !== MeetingState.LEFT, true),
       );
     }
 
