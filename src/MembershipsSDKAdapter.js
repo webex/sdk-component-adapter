@@ -47,6 +47,7 @@ function getMembers(members) {
       inMeeting: member.isInMeeting,
       muted: member.isAudioMuted,
       sharing: member.isContentSharing,
+      host: member.isHost,
     })) : [];
 }
 
@@ -115,6 +116,7 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
       muted: null,
       sharing: null,
       inMeeting: null,
+      host: null,
     });
 
     const members$ = defer(() => this.datasource.memberships.list({

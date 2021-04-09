@@ -26,6 +26,7 @@ export const mockSDKMeeting = {
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
+          isHost: false,
           participant: {
             person: {
               ...mockSDKPerson,
@@ -38,6 +39,7 @@ export const mockSDKMeeting = {
           isUser: true,
           isAudioMuted: true,
           isContentSharing: true,
+          isHost: true,
           participant: {
             person: {
               ...mockSDKPerson,
@@ -51,6 +53,7 @@ export const mockSDKMeeting = {
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
+          isHost: false,
           participant: {
             person: {
               ...mockSDKPerson,
@@ -64,6 +67,7 @@ export const mockSDKMeeting = {
           isUser: false,
           isAudioMuted: false,
           isContentSharing: false,
+          isHost: false,
           participant: {
             person: {
               ...mockSDKPerson,
