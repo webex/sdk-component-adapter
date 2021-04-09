@@ -1,3 +1,10 @@
+## [1.30.1](https://github.com/webex/sdk-component-adapter/compare/v1.30.0...v1.30.1) (2021-04-09)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** update screen sharing icon ([3b8da37](https://github.com/webex/sdk-component-adapter/commit/3b8da3792f25a37c3cc9587604516a944e880fe5))
+
 # [1.30.0](https://github.com/webex/sdk-component-adapter/compare/v1.29.0...v1.30.0) (2021-04-07)
 
 
