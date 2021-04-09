@@ -42,6 +42,7 @@ describe('Memberships SDK Adapter', () => {
                 inMeeting: true,
                 muted: false,
                 sharing: false,
+                host: false,
               },
               {
                 ID: 'mutedPerson',
@@ -49,6 +50,7 @@ describe('Memberships SDK Adapter', () => {
                 inMeeting: true,
                 muted: true,
                 sharing: true,
+                host: true,
               },
               {
                 ID: 'notJoinedPerson',
@@ -56,6 +58,7 @@ describe('Memberships SDK Adapter', () => {
                 inMeeting: false,
                 muted: false,
                 sharing: false,
+                host: false,
               },
             ]);
             done();
@@ -93,6 +96,7 @@ describe('Memberships SDK Adapter', () => {
                 muted: null,
                 sharing: null,
                 inMeeting: null,
+                host: null,
               },
               {
                 ID: 'personID1',
@@ -100,6 +104,7 @@ describe('Memberships SDK Adapter', () => {
                 muted: null,
                 sharing: null,
                 inMeeting: null,
+                host: null,
               },
             ]);
             done();
