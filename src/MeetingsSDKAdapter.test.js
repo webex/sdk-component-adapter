@@ -413,7 +413,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.exitControl().subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'leave-meeting',
-          icon: 'cancel',
+          icon: 'cancel_28',
           tooltip: 'Leave',
           state: 'active',
         });
@@ -427,7 +427,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.audioControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'mute-audio',
-          icon: 'microphone-muted',
+          icon: 'microphone-muted_28',
           tooltip: 'Mute',
           state: 'inactive',
           text: null,
@@ -535,7 +535,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.videoControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'mute-video',
-          icon: 'camera-muted',
+          icon: 'camera-muted_28',
           tooltip: 'Stop video',
           state: 'inactive',
           text: null,
@@ -645,7 +645,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.shareControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'share-screen',
-          icon: 'share-screen-presence-stroke',
+          icon: 'share-screen-presence-stroke_26',
           text: null,
         });
         done();
@@ -738,7 +738,7 @@ describe('Meetings SDK Adapter', () => {
         try {
           expect(dataDisplay).toMatchObject({
             ID: 'member-roster',
-            icon: 'participant-list',
+            icon: 'participant-list_28',
             tooltip: 'Show participants panel',
             state: 'inactive',
             text: 'Participants',

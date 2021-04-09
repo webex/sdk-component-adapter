@@ -470,7 +470,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     return Observable.create((observer) => {
       observer.next({
         ID: EXIT_CONTROL,
-        icon: 'cancel',
+        icon: 'cancel_28',
         tooltip: 'Leave',
         state: MeetingControlState.ACTIVE,
       });
@@ -538,14 +538,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
       ID: AUDIO_CONTROL,
-      icon: 'microphone-muted',
+      icon: 'microphone-muted_28',
       tooltip: 'Unmute',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const unmuted = {
       ID: AUDIO_CONTROL,
-      icon: 'microphone-muted',
+      icon: 'microphone-muted_28',
       tooltip: 'Mute',
       state: MeetingControlState.INACTIVE,
       text: null,
@@ -628,14 +628,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
       ID: VIDEO_CONTROL,
-      icon: 'camera-muted',
+      icon: 'camera-muted_28',
       tooltip: 'Start video',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const unmuted = {
       ID: VIDEO_CONTROL,
-      icon: 'camera-muted',
+      icon: 'camera-muted_28',
       tooltip: 'Stop video',
       state: MeetingControlState.INACTIVE,
       text: null,
@@ -750,21 +750,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const inactiveShare = {
       ID: SHARE_CONTROL,
-      icon: 'share-screen-presence-stroke',
+      icon: 'share-screen-presence-stroke_26',
       tooltip: 'Start Share',
       state: MeetingControlState.INACTIVE,
       text: null,
     };
     const activeShare = {
       ID: SHARE_CONTROL,
-      icon: 'share-screen-presence-stroke',
+      icon: 'share-screen-presence-stroke_26',
       tooltip: 'Stop Share',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const disabledShare = {
       ID: SHARE_CONTROL,
-      icon: 'share-screen-presence-stroke',
+      icon: 'share-screen-presence-stroke_26',
       tooltip: 'Sharing is Unavailable',
       state: MeetingControlState.DISABLED,
       text: null,
@@ -860,14 +860,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const active = {
       ID: ROSTER_CONTROL,
-      icon: 'participant-list',
+      icon: 'participant-list_28',
       tooltip: 'Hide participants panel',
       state: MeetingControlState.ACTIVE,
       text: 'Participants',
     };
     const inactive = {
       ID: ROSTER_CONTROL,
-      icon: 'participant-list',
+      icon: 'participant-list_28',
       tooltip: 'Show participants panel',
       state: MeetingControlState.INACTIVE,
       text: 'Participants',
