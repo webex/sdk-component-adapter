@@ -1,3 +1,10 @@
+## [1.31.1](https://github.com/webex/sdk-component-adapter/compare/v1.31.0...v1.31.1) (2021-04-14)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** set size on each control icon ([7417163](https://github.com/webex/sdk-component-adapter/commit/7417163b39693b9bf0677c8dbbe973b6e42465aa))
+
 # [1.31.0](https://github.com/webex/sdk-component-adapter/compare/v1.30.1...v1.31.0) (2021-04-13)
 
 
