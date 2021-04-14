@@ -43,6 +43,7 @@ describe('Memberships SDK Adapter', () => {
                 muted: false,
                 sharing: false,
                 host: false,
+                guest: false,
               },
               {
                 ID: 'mutedPerson',
@@ -51,6 +52,7 @@ describe('Memberships SDK Adapter', () => {
                 muted: true,
                 sharing: true,
                 host: true,
+                guest: true,
               },
               {
                 ID: 'notJoinedPerson',
