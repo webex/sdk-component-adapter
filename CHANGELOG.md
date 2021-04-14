@@ -1,3 +1,15 @@
+# [1.32.0](https://github.com/webex/sdk-component-adapter/compare/v1.31.1...v1.32.0) (2021-04-14)
+
+
+### Bug Fixes
+
+* **dependencies:** use latest version for component adapter interfaces ([7de5c37](https://github.com/webex/sdk-component-adapter/commit/7de5c37c1399fb5eb1aa703d041b62d571d381cd))
+
+
+### Features
+
+* **OrganizationsSdkAdaper:** add organizations adapter ([fadb715](https://github.com/webex/sdk-component-adapter/commit/fadb715eee44125833a990d50b3923cbf755545c))
+
 ## [1.31.1](https://github.com/webex/sdk-component-adapter/compare/v1.31.0...v1.31.1) (2021-04-14)
 
 
