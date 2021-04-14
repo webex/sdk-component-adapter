@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/webex/sdk-component-adapter/compare/v1.30.1...v1.31.0) (2021-04-13)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add boolean host field to emitted membership members ([0b5c5f9](https://github.com/webex/sdk-component-adapter/commit/0b5c5f9fd6bfab1ed8250a21c1edec3c0c580332))
+
 ## [1.30.1](https://github.com/webex/sdk-component-adapter/compare/v1.30.0...v1.30.1) (2021-04-09)
 
 
