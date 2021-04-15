@@ -32,7 +32,7 @@ describe('Memberships SDK Adapter', () => {
       afterEach(() => {
         meetingID = null;
       });
-      test('emits a member list on subscription', (done) => {
+      test('emits a sorted member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
           .subscribe((members) => {
             expect(members).toMatchObject([
