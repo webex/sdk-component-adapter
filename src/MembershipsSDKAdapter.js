@@ -32,24 +32,44 @@ const MAX_MEMBERSHIPS = 1000;
  */
 
 /**
+ * Sort the members alphabetically, with the current user first
+ *
+ * @param {Array} members List of sdk meeting members
+ * @returns {Array} Sorted list of sdk meeting members
+ */
+function sortMeetingMembers(members) {
+  return members.sort((member1, member2) => (
+    /* eslint-disable no-nested-ternary, indent */
+    member1.isSelf ? -1 // current user comes first
+    : member2.isSelf ? +1
+    : !member1.name ? +1 // empty names come last
+    : !member2.name ? -1
+    : member1.name.localeCompare(member2.name))); // alphabetical order
+    /* eslint-enable no-nested-ternary, indent */
+}
+
+/**
  * Gets the active members in a meeting
  *
  * @private
- * @param {object} members Members object from meeting, keyed by ID
- * @returns {Array} List of active users in a meeting
+ * @param {object} sdkMembers Members object from sdk meeting, keyed by ID
+ * @returns {Array.<Member>} List of meeting members
  */
-function getMembers(members) {
-  return members ? Object.values(members)
-    .filter((member) => member.isUser)
-    .map((member) => ({
-      ID: member.id,
-      orgID: member.participant && member.participant.person && member.participant.person.orgId,
-      inMeeting: member.isInMeeting,
-      muted: member.isAudioMuted,
-      sharing: member.isContentSharing,
-      host: member.isHost,
-      guest: member.isGuest,
-    })) : [];
+function getMembers(sdkMembers) {
+  let members = Object.values(sdkMembers || {});
+
+  members = members.filter((member) => member.isUser);
+  members = sortMeetingMembers(members);
+
+  return members.map((member) => ({
+    ID: member.id,
+    orgID: member.participant && member.participant.person && member.participant.person.orgId,
+    inMeeting: member.isInMeeting,
+    muted: member.isAudioMuted,
+    sharing: member.isContentSharing,
+    host: member.isHost,
+    guest: member.isGuest,
+  }));
 }
 
 /**
