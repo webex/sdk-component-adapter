@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/webex/sdk-component-adapter/compare/v1.32.0...v1.33.0) (2021-04-20)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add boolean guest field to emitted membership members ([369ed10](https://github.com/webex/sdk-component-adapter/commit/369ed10800174ec601c5071cc26b8bb5e6203b76))
+
 # [1.32.0](https://github.com/webex/sdk-component-adapter/compare/v1.31.1...v1.32.0) (2021-04-14)
 
 
