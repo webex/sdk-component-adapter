@@ -1,3 +1,10 @@
+## [1.33.1](https://github.com/webex/sdk-component-adapter/compare/v1.33.0...v1.33.1) (2021-04-20)
+
+
+### Bug Fixes
+
+* **MeetingsAdapter:** change states for meeting ([02c8263](https://github.com/webex/sdk-component-adapter/commit/02c82634922e4b890d2a90c7a2913cdcf4803259))
+
 # [1.33.0](https://github.com/webex/sdk-component-adapter/compare/v1.32.0...v1.33.0) (2021-04-20)
 
 
