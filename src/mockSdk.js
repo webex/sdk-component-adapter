@@ -22,11 +22,14 @@ export const mockSDKMeeting = {
       members: {
         person1: {
           id: 'id',
+          name: 'Barbara German',
           isInMeeting: true,
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
           isHost: false,
+          isGuest: false,
+          isSelf: true,
           participant: {
             person: {
               ...mockSDKPerson,
@@ -35,11 +38,13 @@ export const mockSDKMeeting = {
         },
         person2: {
           id: 'mutedPerson',
+          name: 'Brenda Song',
           isInMeeting: true,
           isUser: true,
           isAudioMuted: true,
           isContentSharing: true,
           isHost: true,
+          isGuest: true,
           participant: {
             person: {
               ...mockSDKPerson,
@@ -47,13 +52,14 @@ export const mockSDKMeeting = {
           },
         },
         notJoinedPerson: {
-          ...mockSDKPerson,
           id: 'notJoinedPerson',
+          name: 'Giacomo Edwards',
           isInMeeting: false,
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
           isHost: false,
+          isGuest: true,
           participant: {
             person: {
               ...mockSDKPerson,
@@ -61,13 +67,13 @@ export const mockSDKMeeting = {
           },
         },
         device: {
-          ...mockSDKPerson,
           id: 'device',
           isInMeeting: true,
           isUser: false,
           isAudioMuted: false,
           isContentSharing: false,
           isHost: false,
+          isGuest: false,
           participant: {
             person: {
               ...mockSDKPerson,
