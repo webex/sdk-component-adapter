@@ -5,7 +5,7 @@ export const mockSDKRoom = {
 };
 
 export const mockSDKPerson = {
-  id: 'id',
+  id: 'personIDCurrentUser',
   emails: ['email@cisco.com'],
   displayName: 'Webex Components',
   firstName: 'Webex',
@@ -105,6 +105,7 @@ export const mockSDKMembership = {
   personId: 'personID',
   personOrgId: 'organizationID',
   personEmail: 'email@cisco.com',
+  personDisplayName: 'Simon Damiano',
   isModerator: false,
   isMonitor: false,
   created: '',
@@ -158,8 +159,21 @@ export default function createMockSDK() {
           mockSDKMembership,
           {
             ...mockSDKMembership,
+            personOrgId: 'organizationID3',
+            personId: 'personID3',
+            personDisplayName: '',
+          },
+          {
+            ...mockSDKMembership,
             personOrgId: 'organizationID1',
-            personId: 'personID1',
+            personId: 'personIDCurrentUser',
+            personDisplayName: 'Zlatan The Current User',
+          },
+          {
+            ...mockSDKMembership,
+            personOrgId: 'organizationID2',
+            personId: 'personID2',
+            personDisplayName: 'Maria Rossi',
           },
         ],
       })),

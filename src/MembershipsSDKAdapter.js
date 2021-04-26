@@ -1,7 +1,9 @@
 import {
   BehaviorSubject,
+  combineLatest,
   concat,
   defer,
+  from,
   fromEvent,
   merge,
   throwError,
@@ -45,6 +47,31 @@ function sortMeetingMembers(members) {
     : !member1.name ? +1 // empty names come last
     : !member2.name ? -1
     : member1.name.localeCompare(member2.name))); // alphabetical order
+    /* eslint-enable no-nested-ternary, indent */
+}
+
+/**
+ * A Webex user.
+ *
+ * @external Person
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/PeopleAdapter.js#L6}
+ */
+
+/**
+ * Sort a memberships list alphabetically, with the current user first
+ *
+ * @param {Array} memberships List of sdk memberships
+ * @param {string} myID Id of the current user
+ * @returns {Array} Sorted list of sdk memberships
+ */
+function sortRoomMembers(memberships, myID) {
+  return memberships.sort((m1, m2) => (
+    /* eslint-disable no-nested-ternary, indent */
+    m1.personId === myID ? -1 // current user comes first
+    : m2.personId === myID ? 1
+    : !m2.personDisplayName ? -1 // empty names come last
+    : !m1.personDisplayName ? 1
+    : m1.personDisplayName.localeCompare(m2.personDisplayName))); // alphabetical order
     /* eslint-enable no-nested-ternary, indent */
 }
 
@@ -141,11 +168,17 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
       guest: null,
     });
 
-    const members$ = defer(() => this.datasource.memberships.list({
+    const me$ = from(this.datasource.people.get('me'));
+
+    const memberships$ = defer(() => this.datasource.memberships.list({
       roomId: roomID,
       max: MAX_MEMBERSHIPS,
     })).pipe(
-      map((page) => page.items.map(membershipToMember)),
+      map((page) => page.items),
+    );
+
+    const members$ = combineLatest([me$, memberships$]).pipe(
+      map(([me, memberships]) => sortRoomMembers(memberships, me.id).map(membershipToMember)),
     );
 
     const createdEvent$ = fromEvent(
