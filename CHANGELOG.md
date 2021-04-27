@@ -1,3 +1,10 @@
+## [1.33.2](https://github.com/webex/sdk-component-adapter/compare/v1.33.1...v1.33.2) (2021-04-27)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** prevent JavaScript errors when access to camera/microphone is denied ([d9117c3](https://github.com/webex/sdk-component-adapter/commit/d9117c36731aa8bf0540e1b7b2aea8c7220963ea))
+
 ## [1.33.1](https://github.com/webex/sdk-component-adapter/compare/v1.33.0...v1.33.1) (2021-04-20)
 
 
