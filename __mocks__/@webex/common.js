@@ -7,6 +7,10 @@ export const deconstructHydraId = (ID) => {
   return {};
 };
 
+export const constructHydraId = (type, id, cluster = 'us') => {
+  return id;
+};
+
 export const SDK_EVENT = {
   EXTERNAL: {
     EVENT_TYPE: {
