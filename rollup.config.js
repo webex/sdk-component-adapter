@@ -25,7 +25,7 @@ export default [
       }),
       commonJS({
         namedExports: {
-          '@webex/common': ['deconstructHydraId', 'SDK_EVENT'],
+          '@webex/common': ['deconstructHydraId', 'constructHydraId', 'SDK_EVENT'],
         },
       }),
     ],

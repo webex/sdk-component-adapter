@@ -16,11 +16,12 @@ import {
   publishReplay,
   refCount,
 } from 'rxjs/operators';
-import {SDK_EVENT, deconstructHydraId} from '@webex/common';
+import {SDK_EVENT, constructHydraId, deconstructHydraId} from '@webex/common';
 import {
   DestinationType,
   MembershipsAdapter,
 } from '@webex/component-adapter-interfaces';
+import {hydraTypes} from '@webex/common/dist/constants';
 
 // max parameter value must be greater than 0 and less than or equal to 1000
 const MAX_MEMBERSHIPS = 1000;
@@ -89,8 +90,14 @@ function getMembers(sdkMembers) {
   members = sortMeetingMembers(members);
 
   return members.map((member) => ({
-    ID: member.id,
-    orgID: member.participant && member.participant.person && member.participant.person.orgId,
+    ID:
+      member.participant
+      && member.participant.person
+      && constructHydraId(hydraTypes.PEOPLE, member.participant.person.id),
+    orgID:
+      member.participant
+      && member.participant.person
+      && constructHydraId(hydraTypes.ORGANIZATION, member.participant.person.orgId),
     inMeeting: member.isInMeeting,
     muted: member.isAudioMuted,
     sharing: member.isContentSharing,
