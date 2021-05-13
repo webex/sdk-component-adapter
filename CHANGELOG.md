@@ -1,3 +1,10 @@
+## [1.33.3](https://github.com/webex/sdk-component-adapter/compare/v1.33.2...v1.33.3) (2021-05-13)
+
+
+### Bug Fixes
+
+* **MembershipSdkAdapter:** change member id ([64669cf](https://github.com/webex/sdk-component-adapter/commit/64669cfdbd8b82be7a8e5cb5ff733872e8db82c3))
+
 ## [1.33.2](https://github.com/webex/sdk-component-adapter/compare/v1.33.1...v1.33.2) (2021-04-27)
 
 
