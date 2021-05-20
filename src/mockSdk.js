@@ -5,7 +5,7 @@ export const mockSDKRoom = {
 };
 
 export const mockSDKPerson = {
-  id: 'id',
+  id: 'personIDCurrentUser',
   emails: ['email@cisco.com'],
   displayName: 'Webex Components',
   firstName: 'Webex',
@@ -21,52 +21,62 @@ export const mockSDKMeeting = {
     membersCollection: {
       members: {
         person1: {
-          id: 'id',
+          name: 'Barbara German',
           isInMeeting: true,
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
+          isHost: false,
+          isGuest: false,
+          isSelf: true,
           participant: {
             person: {
               ...mockSDKPerson,
+              id: 'id',
             },
           },
         },
         person2: {
-          id: 'mutedPerson',
+          name: 'Brenda Song',
           isInMeeting: true,
           isUser: true,
           isAudioMuted: true,
           isContentSharing: true,
+          isHost: true,
+          isGuest: true,
           participant: {
             person: {
               ...mockSDKPerson,
+              id: 'mutedPerson',
             },
           },
         },
         notJoinedPerson: {
-          ...mockSDKPerson,
-          id: 'notJoinedPerson',
+          name: 'Giacomo Edwards',
           isInMeeting: false,
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
+          isHost: false,
+          isGuest: true,
           participant: {
             person: {
               ...mockSDKPerson,
+              id: 'notJoinedPerson',
             },
           },
         },
         device: {
-          ...mockSDKPerson,
-          id: 'device',
           isInMeeting: true,
           isUser: false,
           isAudioMuted: false,
           isContentSharing: false,
+          isHost: false,
+          isGuest: false,
           participant: {
             person: {
               ...mockSDKPerson,
+              id: 'device',
             },
           },
         },
@@ -95,9 +105,15 @@ export const mockSDKMembership = {
   personId: 'personID',
   personOrgId: 'organizationID',
   personEmail: 'email@cisco.com',
+  personDisplayName: 'Simon Damiano',
   isModerator: false,
   isMonitor: false,
   created: '',
+};
+
+export const mockSDKOrganization = {
+  id: 'organizationID',
+  displayName: 'Cisco Systems, Inc.',
 };
 
 /**
@@ -143,8 +159,21 @@ export default function createMockSDK() {
           mockSDKMembership,
           {
             ...mockSDKMembership,
+            personOrgId: 'organizationID3',
+            personId: 'personID3',
+            personDisplayName: '',
+          },
+          {
+            ...mockSDKMembership,
             personOrgId: 'organizationID1',
-            personId: 'personID1',
+            personId: 'personIDCurrentUser',
+            personDisplayName: 'Zlatan The Current User',
+          },
+          {
+            ...mockSDKMembership,
+            personOrgId: 'organizationID2',
+            personId: 'personID2',
+            personDisplayName: 'Maria Rossi',
           },
         ],
       })),

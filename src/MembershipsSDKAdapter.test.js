@@ -32,7 +32,7 @@ describe('Memberships SDK Adapter', () => {
       afterEach(() => {
         meetingID = null;
       });
-      test('emits a member list on subscription', (done) => {
+      test('emits a sorted member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
           .subscribe((members) => {
             expect(members).toMatchObject([
@@ -42,6 +42,8 @@ describe('Memberships SDK Adapter', () => {
                 inMeeting: true,
                 muted: false,
                 sharing: false,
+                host: false,
+                guest: false,
               },
               {
                 ID: 'mutedPerson',
@@ -49,6 +51,8 @@ describe('Memberships SDK Adapter', () => {
                 inMeeting: true,
                 muted: true,
                 sharing: true,
+                host: true,
+                guest: true,
               },
               {
                 ID: 'notJoinedPerson',
@@ -56,6 +60,7 @@ describe('Memberships SDK Adapter', () => {
                 inMeeting: false,
                 muted: false,
                 sharing: false,
+                host: false,
               },
             ]);
             done();
@@ -83,23 +88,40 @@ describe('Memberships SDK Adapter', () => {
         roomID = null;
       });
 
-      test('emits a member list on subscription', (done) => {
+      test('emits a sorted member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(roomID, DestinationType.ROOM)
           .subscribe((members) => {
             expect(members).toMatchObject([
+              {
+                ID: 'personIDCurrentUser',
+                orgID: 'organizationID1',
+                muted: null,
+                sharing: null,
+                inMeeting: null,
+              },
+              {
+                ID: 'personID2',
+                orgID: 'organizationID2',
+                muted: null,
+                sharing: null,
+                inMeeting: null,
+                host: null,
+              },
               {
                 ID: 'personID',
                 orgID: 'organizationID',
                 muted: null,
                 sharing: null,
                 inMeeting: null,
+                host: null,
               },
               {
-                ID: 'personID1',
-                orgID: 'organizationID1',
+                ID: 'personID3',
+                orgID: 'organizationID3',
                 muted: null,
                 sharing: null,
                 inMeeting: null,
+                host: null,
               },
             ]);
             done();

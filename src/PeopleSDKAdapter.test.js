@@ -22,7 +22,7 @@ describe('People SDK Adapter', () => {
     test('emits a Person object on subscription', (done) => {
       peopleSDKAdapter.getMe().subscribe((person) => {
         expect(person).toMatchObject({
-          ID: 'id',
+          ID: 'personIDCurrentUser',
           emails: ['email@cisco.com'],
           displayName: 'Webex Components',
           firstName: 'Webex',
@@ -69,7 +69,7 @@ describe('People SDK Adapter', () => {
     test('emits a Person object on subscription', (done) => {
       peopleSDKAdapter.getPerson(personID).subscribe((person) => {
         expect(person).toEqual({
-          ID: 'id',
+          ID: 'personIDCurrentUser',
           emails: ['email@cisco.com'],
           displayName: 'Webex Components',
           firstName: 'Webex',

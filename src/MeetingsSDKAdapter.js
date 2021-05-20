@@ -1,4 +1,4 @@
-import {MeetingsAdapter, MeetingControlState} from '@webex/component-adapter-interfaces';
+import {MeetingsAdapter, MeetingControlState, MeetingState} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
 import {
   concat,
@@ -7,7 +7,6 @@ import {
   fromEvent,
   merge,
   Observable,
-  Subject,
   BehaviorSubject,
   throwError,
 } from 'rxjs';
@@ -17,7 +16,7 @@ import {
   map,
   publishReplay,
   refCount,
-  takeUntil,
+  takeWhile,
   tap,
 } from 'rxjs/operators';
 
@@ -41,6 +40,7 @@ import {
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
+const EVENT_STATE_CHANGE = 'meeting:stateChange';
 const EVENT_LOCAL_SHARE_STOP = 'meeting:stoppedSharingLocal';
 const EVENT_LOCAL_SHARE_START = 'meeting:startedSharingLocal';
 const EVENT_REMOTE_SHARE_START = 'meeting:startedSharingRemote';
@@ -355,6 +355,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           remoteVideo: null,
           remoteShare: null,
           showRoster: null,
+          state: MeetingState.NOT_JOINED,
         };
 
         return this.meetings[ID];
@@ -389,14 +390,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const localStream = new MediaStream();
 
       const localAudio = this.meetings[ID].localAudio || this.meetings[ID].disabledLocalAudio;
-      const audioTracks = localAudio && localAudio.getTracks();
-
-      audioTracks.forEach((track) => localStream.addTrack(track));
-
       const localVideo = this.meetings[ID].localVideo || this.meetings[ID].disabledLocalVideo;
-      const videoTracks = localVideo && localVideo.getTracks();
 
-      videoTracks.forEach((track) => localStream.addTrack(track));
+      if (localAudio) {
+        localAudio.getTracks().forEach((track) => localStream.addTrack(track));
+      }
+
+      if (localVideo) {
+        localVideo.getTracks().forEach((track) => localStream.addTrack(track));
+      }
 
       await sdkMeeting.join();
 
@@ -470,7 +472,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     return Observable.create((observer) => {
       observer.next({
         ID: EXIT_CONTROL,
-        icon: 'cancel',
+        icon: 'cancel_28',
         tooltip: 'Leave',
         state: MeetingControlState.ACTIVE,
       });
@@ -538,14 +540,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
       ID: AUDIO_CONTROL,
-      icon: 'microphone-muted',
+      icon: 'microphone-muted_28',
       tooltip: 'Unmute',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const unmuted = {
       ID: AUDIO_CONTROL,
-      icon: 'microphone-muted',
+      icon: 'microphone-muted_28',
       tooltip: 'Mute',
       state: MeetingControlState.INACTIVE,
       text: null,
@@ -628,14 +630,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
       ID: VIDEO_CONTROL,
-      icon: 'camera-muted',
+      icon: 'camera-muted_28',
       tooltip: 'Start video',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const unmuted = {
       ID: VIDEO_CONTROL,
-      icon: 'camera-muted',
+      icon: 'camera-muted_28',
       tooltip: 'Stop video',
       state: MeetingControlState.INACTIVE,
       text: null,
@@ -750,21 +752,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const inactiveShare = {
       ID: SHARE_CONTROL,
-      icon: 'share-screen-presence-stroke',
+      icon: 'share-screen-presence-stroke_26',
       tooltip: 'Start Share',
       state: MeetingControlState.INACTIVE,
       text: null,
     };
     const activeShare = {
       ID: SHARE_CONTROL,
-      icon: 'share-screen-presence-stroke',
+      icon: 'share-screen-presence-stroke_26',
       tooltip: 'Stop Share',
       state: MeetingControlState.ACTIVE,
       text: null,
     };
     const disabledShare = {
       ID: SHARE_CONTROL,
-      icon: 'share-screen-presence-stroke',
+      icon: 'share-screen-presence-stroke_26',
       tooltip: 'Sharing is Unavailable',
       state: MeetingControlState.DISABLED,
       text: null,
@@ -860,14 +862,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const active = {
       ID: ROSTER_CONTROL,
-      icon: 'participant-list',
+      icon: 'participant-list_28',
       tooltip: 'Hide participants panel',
       state: MeetingControlState.ACTIVE,
       text: 'Participants',
     };
     const inactive = {
       ID: ROSTER_CONTROL,
-      icon: 'participant-list',
+      icon: 'participant-list_28',
       tooltip: 'Show participants panel',
       state: MeetingControlState.INACTIVE,
       text: 'Participants',
@@ -901,7 +903,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   getMeeting(ID) {
     if (!(ID in this.getMeetingObservables)) {
-      const end$ = new Subject();
       const sdkMeeting = this.fetchMeeting(ID);
       const getMeeting$ = Observable.create((observer) => {
         if (this.meetings[ID]) {
@@ -920,7 +921,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
         tap(() => this.removeMedia(ID)),
-        tap(() => end$.next(`Completing meeting ${ID}`)),
       );
 
       const meetingWithMediaShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_START).pipe(
@@ -936,6 +936,23 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
 
+      const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
+        tap((event) => {
+          const sdkState = event.payload.currentState;
+          let state;
+
+          if (sdkState === 'ACTIVE') {
+            state = MeetingState.JOINED;
+          } else if (sdkState === 'INACTIVE') {
+            state = MeetingState.LEFT;
+          } else {
+            state = this.meetings[ID].state;
+          }
+
+          this.meetings[ID] = {...this.meetings[ID], state};
+        }),
+      );
+
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
@@ -943,6 +960,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
         meetingWithRosterToggleEvent$,
+        meetingStateChange$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
@@ -951,7 +969,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
         publishReplay(1),
         refCount(),
-        takeUntil(end$),
+        takeWhile((meeting) => meeting.state && meeting.state !== MeetingState.LEFT, true),
       );
     }
 

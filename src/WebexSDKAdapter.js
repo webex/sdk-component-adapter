@@ -1,9 +1,11 @@
+import {WebexAdapter} from '@webex/component-adapter-interfaces';
 import RoomsSDKAdapter from './RoomsSDKAdapter';
 import PeopleSDKAdapter from './PeopleSDKAdapter';
 import MeetingsSDKAdapter from './MeetingsSDKAdapter';
 import MembershipsSDKAdapter from './MembershipsSDKAdapter';
+import OrganizationsSDKAdapter from './OrganizationsSDKAdapter';
 
-export default class WebexSDKAdapter {
+export default class WebexSDKAdapter extends WebexAdapter {
   /**
    * Creates a new instance of the WebexSDKAdapter.
    * The data source for this adapter comes from an authenticated instance of the SDK.
@@ -12,11 +14,13 @@ export default class WebexSDKAdapter {
    * @param {object} sdk The primary sdk the adapter will be using.
    */
   constructor(sdk) {
+    super(sdk);
     this.activitiesAdapter = {};
     this.peopleAdapter = new PeopleSDKAdapter(sdk);
     this.roomsAdapter = new RoomsSDKAdapter(sdk);
     this.meetingsAdapter = new MeetingsSDKAdapter(sdk);
     this.membershipsAdapter = new MembershipsSDKAdapter(sdk);
+    this.organizationsAdapter = new OrganizationsSDKAdapter(sdk);
     this.sdk = sdk;
   }
 

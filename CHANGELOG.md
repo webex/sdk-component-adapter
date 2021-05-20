@@ -1,3 +1,57 @@
+## [1.33.3](https://github.com/webex/sdk-component-adapter/compare/v1.33.2...v1.33.3) (2021-05-13)
+
+
+### Bug Fixes
+
+* **MembershipSdkAdapter:** change member id ([64669cf](https://github.com/webex/sdk-component-adapter/commit/64669cfdbd8b82be7a8e5cb5ff733872e8db82c3))
+
+## [1.33.2](https://github.com/webex/sdk-component-adapter/compare/v1.33.1...v1.33.2) (2021-04-27)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** prevent JavaScript errors when access to camera/microphone is denied ([d9117c3](https://github.com/webex/sdk-component-adapter/commit/d9117c36731aa8bf0540e1b7b2aea8c7220963ea))
+
+## [1.33.1](https://github.com/webex/sdk-component-adapter/compare/v1.33.0...v1.33.1) (2021-04-20)
+
+
+### Bug Fixes
+
+* **MeetingsAdapter:** change states for meeting ([02c8263](https://github.com/webex/sdk-component-adapter/commit/02c82634922e4b890d2a90c7a2913cdcf4803259))
+
+# [1.33.0](https://github.com/webex/sdk-component-adapter/compare/v1.32.0...v1.33.0) (2021-04-20)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add boolean guest field to emitted membership members ([369ed10](https://github.com/webex/sdk-component-adapter/commit/369ed10800174ec601c5071cc26b8bb5e6203b76))
+
+# [1.32.0](https://github.com/webex/sdk-component-adapter/compare/v1.31.1...v1.32.0) (2021-04-14)
+
+
+### Bug Fixes
+
+* **dependencies:** use latest version for component adapter interfaces ([7de5c37](https://github.com/webex/sdk-component-adapter/commit/7de5c37c1399fb5eb1aa703d041b62d571d381cd))
+
+
+### Features
+
+* **OrganizationsSdkAdaper:** add organizations adapter ([fadb715](https://github.com/webex/sdk-component-adapter/commit/fadb715eee44125833a990d50b3923cbf755545c))
+
+## [1.31.1](https://github.com/webex/sdk-component-adapter/compare/v1.31.0...v1.31.1) (2021-04-14)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** set size on each control icon ([7417163](https://github.com/webex/sdk-component-adapter/commit/7417163b39693b9bf0677c8dbbe973b6e42465aa))
+
+# [1.31.0](https://github.com/webex/sdk-component-adapter/compare/v1.30.1...v1.31.0) (2021-04-13)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add boolean host field to emitted membership members ([0b5c5f9](https://github.com/webex/sdk-component-adapter/commit/0b5c5f9fd6bfab1ed8250a21c1edec3c0c580332))
+
 ## [1.30.1](https://github.com/webex/sdk-component-adapter/compare/v1.30.0...v1.30.1) (2021-04-09)
 
 

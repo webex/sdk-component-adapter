@@ -1,7 +1,9 @@
 import {
   BehaviorSubject,
+  combineLatest,
   concat,
   defer,
+  from,
   fromEvent,
   merge,
   throwError,
@@ -14,11 +16,12 @@ import {
   publishReplay,
   refCount,
 } from 'rxjs/operators';
-import {SDK_EVENT, deconstructHydraId} from '@webex/common';
+import {SDK_EVENT, constructHydraId, deconstructHydraId} from '@webex/common';
 import {
   DestinationType,
   MembershipsAdapter,
 } from '@webex/component-adapter-interfaces';
+import {hydraTypes} from '@webex/common/dist/constants';
 
 // max parameter value must be greater than 0 and less than or equal to 1000
 const MAX_MEMBERSHIPS = 1000;
@@ -32,22 +35,75 @@ const MAX_MEMBERSHIPS = 1000;
  */
 
 /**
+ * Sort the members alphabetically, with the current user first
+ *
+ * @param {Array} members List of sdk meeting members
+ * @returns {Array} Sorted list of sdk meeting members
+ */
+function sortMeetingMembers(members) {
+  return members.sort((member1, member2) => (
+    /* eslint-disable no-nested-ternary, indent */
+    member1.isSelf ? -1 // current user comes first
+    : member2.isSelf ? +1
+    : !member1.name ? +1 // empty names come last
+    : !member2.name ? -1
+    : member1.name.localeCompare(member2.name))); // alphabetical order
+    /* eslint-enable no-nested-ternary, indent */
+}
+
+/**
+ * A Webex user.
+ *
+ * @external Person
+ * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/PeopleAdapter.js#L6}
+ */
+
+/**
+ * Sort a memberships list alphabetically, with the current user first
+ *
+ * @param {Array} memberships List of sdk memberships
+ * @param {string} myID Id of the current user
+ * @returns {Array} Sorted list of sdk memberships
+ */
+function sortRoomMembers(memberships, myID) {
+  return memberships.sort((m1, m2) => (
+    /* eslint-disable no-nested-ternary, indent */
+    m1.personId === myID ? -1 // current user comes first
+    : m2.personId === myID ? 1
+    : !m2.personDisplayName ? -1 // empty names come last
+    : !m1.personDisplayName ? 1
+    : m1.personDisplayName.localeCompare(m2.personDisplayName))); // alphabetical order
+    /* eslint-enable no-nested-ternary, indent */
+}
+
+/**
  * Gets the active members in a meeting
  *
  * @private
- * @param {object} members Members object from meeting, keyed by ID
- * @returns {Array} List of active users in a meeting
+ * @param {object} sdkMembers Members object from sdk meeting, keyed by ID
+ * @returns {Array.<Member>} List of meeting members
  */
-function getMembers(members) {
-  return members ? Object.values(members)
-    .filter((member) => member.isUser)
-    .map((member) => ({
-      ID: member.id,
-      orgID: member.participant && member.participant.person && member.participant.person.orgId,
-      inMeeting: member.isInMeeting,
-      muted: member.isAudioMuted,
-      sharing: member.isContentSharing,
-    })) : [];
+function getMembers(sdkMembers) {
+  let members = Object.values(sdkMembers || {});
+
+  members = members.filter((member) => member.isUser);
+  members = sortMeetingMembers(members);
+
+  return members.map((member) => ({
+    ID:
+      member.participant
+      && member.participant.person
+      && constructHydraId(hydraTypes.PEOPLE, member.participant.person.id),
+    orgID:
+      member.participant
+      && member.participant.person
+      && constructHydraId(hydraTypes.ORGANIZATION, member.participant.person.orgId),
+    inMeeting: member.isInMeeting,
+    muted: member.isAudioMuted,
+    sharing: member.isContentSharing,
+    host: member.isHost,
+    guest: member.isGuest,
+  }));
 }
 
 /**
@@ -115,13 +171,21 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
       muted: null,
       sharing: null,
       inMeeting: null,
+      host: null,
+      guest: null,
     });
 
-    const members$ = defer(() => this.datasource.memberships.list({
+    const me$ = from(this.datasource.people.get('me'));
+
+    const memberships$ = defer(() => this.datasource.memberships.list({
       roomId: roomID,
       max: MAX_MEMBERSHIPS,
     })).pipe(
-      map((page) => page.items.map(membershipToMember)),
+      map((page) => page.items),
+    );
+
+    const members$ = combineLatest([me$, memberships$]).pipe(
+      map(([me, memberships]) => sortRoomMembers(memberships, me.id).map(membershipToMember)),
     );
 
     const createdEvent$ = fromEvent(
