@@ -49,6 +49,7 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 // Adapter Events
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
+const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -57,6 +58,7 @@ const AUDIO_CONTROL = 'mute-audio';
 const VIDEO_CONTROL = 'mute-video';
 const SHARE_CONTROL = 'share-screen';
 const ROSTER_CONTROL = 'member-roster';
+const SETTINGS_CONTROL = 'settings';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -130,6 +132,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: ROSTER_CONTROL,
       action: this.handleRoster.bind(this),
       display: this.rosterControl.bind(this),
+    };
+
+    this.meetingControls[SETTINGS_CONTROL] = {
+      ID: SETTINGS_CONTROL,
+      action: this.handleSettings.bind(this),
+      display: this.settingsControl.bind(this),
     };
   }
 
@@ -355,6 +363,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           remoteVideo: null,
           remoteShare: null,
           showRoster: null,
+          showSettings: false,
           state: MeetingState.NOT_JOINED,
         };
 
@@ -896,6 +905,70 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Toggles the showSettings flag of the given meeting ID.
+   * A settings toggle event is dispatched.
+   *
+   * @private
+   * @param {string} ID  Meeting ID
+   */
+  handleSettings(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const showSettings = !this.meetings[ID].showSettings;
+
+    this.meetings[ID].showSettings = showSettings;
+
+    sdkMeeting.emit(EVENT_SETTINGS_TOGGLE, {
+      state: showSettings
+        ? MeetingControlState.ACTIVE
+        : MeetingControlState.INACTIVE,
+    });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a settings control.
+   *
+   * @private
+   * @param {string} ID  Meeting id
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the settings control
+   */
+  settingsControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const active = {
+      ID: SETTINGS_CONTROL,
+      icon: 'settings_32',
+      tooltip: 'Hide settings panel',
+      state: MeetingControlState.ACTIVE,
+      text: 'Settings',
+    };
+    const inactive = {
+      ID: SETTINGS_CONTROL,
+      icon: 'settings_32',
+      tooltip: 'Show settings panel',
+      state: MeetingControlState.INACTIVE,
+      text: 'Settings',
+    };
+
+    let state$;
+
+    if (sdkMeeting) {
+      const initialState = (this.meetings[ID] && this.meetings[ID].showSettings)
+        ? active
+        : inactive;
+
+      state$ = new BehaviorSubject(initialState);
+
+      const settingsEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE)
+        .pipe(map(({state}) => (state === MeetingControlState.ACTIVE ? active : inactive)));
+
+      settingsEvent$.subscribe((value) => state$.next(value));
+    } else {
+      state$ = throwError(new Error(`Could not find meeting with ID "${ID}" to add settings control`));
+    }
+
+    return state$;
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -936,6 +1009,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
 
+      const meetingWithSettingsToggleEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE);
+
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
           const sdkState = event.payload.currentState;
@@ -960,6 +1035,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
         meetingWithRosterToggleEvent$,
+        meetingWithSettingsToggleEvent$,
         meetingStateChange$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
