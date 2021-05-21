@@ -1,3 +1,10 @@
+## [1.33.4](https://github.com/webex/sdk-component-adapter/compare/v1.33.3...v1.33.4) (2021-05-21)
+
+
+### Bug Fixes
+
+* **package:** update component adapter interfaces version to v1.17.0 ([1a67d6d](https://github.com/webex/sdk-component-adapter/commit/1a67d6dff1b68eddf5f070c91caa9b009d5281c7))
+
 ## [1.33.3](https://github.com/webex/sdk-component-adapter/compare/v1.33.2...v1.33.3) (2021-05-13)
 
 
