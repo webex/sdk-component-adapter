@@ -2,7 +2,6 @@ import {MeetingsAdapter, MeetingControlState, MeetingState} from '@webex/compone
 import {deconstructHydraId} from '@webex/common';
 import {
   concat,
-  defer,
   from,
   fromEvent,
   merge,
@@ -688,27 +687,24 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     }
 
     const enableSharingStream = async () => {
-      const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
-
-      this.meetings[ID].localShare = localShare;
-
-      // Due to SDK limitation around local media updates,
-      // we need to emit a custom event for video mute updates
+      // Disable the button while the SDK is enabling sharing
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
         state: MeetingControlState.DISABLED,
       });
 
+      const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
+
+      this.meetings[ID].localShare = localShare;
+
       await sdkMeeting.updateShare({stream: localShare, sendShare: true, receiveShare: true});
     };
 
     const disableSharingStream = async () => {
-      // TODO (SPARK-148910): emit should be at the end of the function.
-      // This is a workaround for a bug of async updateShare() call.
-      // The async call may need ~30s to finish execution, or even cannot finish execution.
+      // Disable the control while the SDK is stopping sharing, which could take 30 seconds or more
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
-        state: MeetingControlState.INACTIVE,
+        state: MeetingControlState.DISABLED,
       });
 
       await sdkMeeting.updateShare({
@@ -716,8 +712,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         receiveShare: true,
       });
 
-      this.stopStream(this.meetings[ID].localShare);
-      this.meetings[ID].localShare = null;
+      // The rest of the cleanup is done in the handling of the EVENT_LOCAL_SHARE_STOP event emitted by sdkMeeting.updateShare
     };
 
     const resetSharingStream = (error) => {
@@ -815,21 +810,27 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       }),
     );
 
-    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP)
-      .pipe(
-        // TODO (SPARK-152004): This is a workaround for a bug of stopping share when onended event is triggered.
-        flatMap(() => defer(() => this.meetingControls[SHARE_CONTROL].action(ID))),
-        // eslint-disable-next-line no-console
-        tap(() => console.log('EVENT_LOCAL_SHARE_STOP is triggered', this)),
-        map(() => inactiveShare),
-      );
+    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(
+      sdkMeeting,
+      EVENT_LOCAL_SHARE_STOP,
+    ).pipe(
+      // eslint-disable-next-line no-console
+      tap(() => console.info('EVENT_LOCAL_SHARE_STOP was triggered', this)),
+      tap(() => {
+        this.stopStream(this.meetings[ID].localShare);
+        this.meetings[ID].localShare = null;
+      }),
+      map(() => inactiveShare),
+    );
 
-    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START)
-      .pipe(
-        // eslint-disable-next-line no-console
-        tap(() => console.log('EVENT_LOCAL_SHARE_START is triggered')),
-        map(() => activeShare),
-      );
+    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(
+      sdkMeeting,
+      EVENT_LOCAL_SHARE_START,
+    ).pipe(
+      // eslint-disable-next-line no-console
+      tap(() => console.info('EVENT_LOCAL_SHARE_START was triggered', this)),
+      map(() => activeShare),
+    );
 
     const sharingEvents$ = merge(
       localMediaUpdateEvent$,

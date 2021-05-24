@@ -2,19 +2,21 @@ import * as rxjs from 'rxjs';
 import {flatMap, take} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
-import createMockSDK, {mockSDKMeeting} from './mockSdk';
+import createMockSDK from './mockSdk';
 
 describe('Meetings SDK Adapter', () => {
   let meeting;
   let meetingID;
   let meetingSDKAdapter;
   let mockSDK;
+  let mockSDKMeeting;
   let target;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
-    meetingSDKAdapter = new MeetingSDKAdapter(mockSDK);
     meetingID = 'meetingID';
+    mockSDKMeeting = mockSDK.meetings.getMeetingByType('id', meetingID);
+    meetingSDKAdapter = new MeetingSDKAdapter(mockSDK);
     rxjs.fromEvent = jest.fn(() => rxjs.of({}));
     meeting = {
       ID: meetingID,
@@ -34,6 +36,7 @@ describe('Meetings SDK Adapter', () => {
     meeting = null;
     rxjs.fromEvent = null;
     mockSDK = null;
+    mockSDKMeeting = null;
     meetingSDKAdapter = null;
     meetingID = null;
     target = null;
@@ -641,6 +644,7 @@ describe('Meetings SDK Adapter', () => {
   describe('shareControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       global.console.log = jest.fn();
+      meetingSDKAdapter.meetings[meetingID] = {...meeting};
 
       meetingSDKAdapter.shareControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
@@ -656,10 +660,10 @@ describe('Meetings SDK Adapter', () => {
       global.console.log = jest.fn();
       meetingSDKAdapter.fetchMeeting = jest.fn();
 
-      meetingSDKAdapter.shareControl(meetingID).subscribe(
+      meetingSDKAdapter.shareControl('inexistent-meeting-id').subscribe(
         () => {},
         (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add share control');
+          expect(error.message).toBe('Could not find meeting with ID "inexistent-meeting-id" to add share control');
           done();
         },
       );
@@ -671,11 +675,6 @@ describe('Meetings SDK Adapter', () => {
     let stopStream;
 
     beforeEach(() => {
-      meetingSDKAdapter.meetings[meetingID] = {
-        ...meeting,
-        localShare: {},
-        remoteShare: {},
-      };
       const {trueStopStream} = meetingSDKAdapter.stopStream;
 
       stopStream = trueStopStream;
@@ -701,7 +700,7 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('start share if the share track is disabled', async () => {
-      meetingSDKAdapter.meetings[meetingID].localShare = null;
+      meetingSDKAdapter.meetings[meetingID] = {...meeting};
       const {getMediaStreams} = mockSDKMeeting;
 
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.resolve([['mockStream'], 'localShare']));
@@ -713,14 +712,17 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('stop share if the share track is enabled', async () => {
-      meetingSDKAdapter.meetings[meetingID].localShare = 'localShare';
+      meetingSDKAdapter.meetings[meetingID] = {...meeting, localShare: 'localShare'};
       await meetingSDKAdapter.handleLocalShare(meetingID);
 
-      expect(mockSDKMeeting.updateShare).toHaveBeenCalled();
-      expect(meetingSDKAdapter.meetings[meetingID].localShare).toBeNull();
+      expect(mockSDKMeeting.updateShare).toHaveBeenCalledWith({
+        sendShare: false,
+        receiveShare: true,
+      });
     });
 
     test('resets sharing stream if share control is not handled properly', async () => {
+      meetingSDKAdapter.meetings[meetingID] = {...meeting, localShare: 'localShare'};
       global.console.warn = mockConsole;
       mockSDKMeeting.updateShare = jest.fn(() => Promise.reject());
       await meetingSDKAdapter.handleLocalShare(meetingID);
