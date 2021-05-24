@@ -14,7 +14,12 @@ export const mockSDKPerson = {
   orgId: 'orgID',
 };
 
-export const mockSDKMeeting = {
+/**
+ * Creates a mock instance of the Webex SDK Meeting used in unit testing
+ *
+ * @returns {object} mockSDKMeeting Instance
+ */
+export const createMockSDKMeeting = () => ({
   id: 'meetingID',
   sipuri: 'my meeting',
   members: {
@@ -97,7 +102,7 @@ export const mockSDKMeeting = {
   unmuteVideo: jest.fn(() => Promise.resolve()),
   canUpdateMedia: jest.fn(() => true),
   updateShare: jest.fn(() => Promise.resolve()),
-};
+});
 
 export const mockSDKMembership = {
   id: 'id',
@@ -122,6 +127,8 @@ export const mockSDKOrganization = {
  * @returns {object} mockSDK Instance
  */
 export default function createMockSDK() {
+  const mockSDKMeeting = createMockSDKMeeting();
+
   return {
     rooms: {
       get: jest.fn(() => Promise.resolve(mockSDKRoom)),
