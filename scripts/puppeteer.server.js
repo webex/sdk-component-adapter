@@ -11,7 +11,7 @@ function handleAudio() {
   webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].display(MEETING_ID).subscribe((data) => {
     const muteAudio = document.getElementById('mute-audio');
 
-    muteAudio.innerHTML = `${data.tooltip} audio`;
+    muteAudio.innerHTML = data.tooltip;
   });
 }
 

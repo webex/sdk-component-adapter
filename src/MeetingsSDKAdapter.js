@@ -500,10 +500,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      const isInSession = this.meetings[ID].remoteAudio !== null;
-      let audioEnabled = this.meetings[ID].localAudio !== null;
+      const isInSession = !!this.meetings[ID].remoteAudio;
+      const noAudio = !this.meetings[ID].disabledLocalAudio && !this.meetings[ID].localAudio;
+      const audioEnabled = !!this.meetings[ID].localAudio;
+      let state;
 
-      if (audioEnabled) {
+      if (noAudio) {
+        state = MeetingControlState.DISABLED;
+      } else if (audioEnabled) {
         // Mute the audio only if there is an active meeting
         if (isInSession) {
           await sdkMeeting.muteAudio();
@@ -512,7 +516,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Store the current local audio stream to avoid an extra request call
         this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
         this.meetings[ID].localAudio = null;
-        audioEnabled = false;
+        state = MeetingControlState.INACTIVE;
       } else {
         // Unmute the audio only if there is an active meeting
         if (isInSession) {
@@ -522,14 +526,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Retrieve the stored local audio stream
         this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
         this.meetings[ID].disabledLocalAudio = null;
-        audioEnabled = true;
+        state = MeetingControlState.ACTIVE;
       }
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for audio mute updates
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: AUDIO_CONTROL,
-        state: audioEnabled,
+        state,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -560,10 +564,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       state: MeetingControlState.INACTIVE,
       text: null,
     };
+    const disabled = {
+      ID: AUDIO_CONTROL,
+      icon: 'microphone-muted_28',
+      tooltip: 'No microphone available',
+      state: MeetingControlState.DISABLED,
+      text: null,
+    };
+    const states = {
+      [MeetingControlState.ACTIVE]: unmuted,
+      [MeetingControlState.INACTIVE]: muted,
+      [MeetingControlState.DISABLED]: disabled,
+    };
 
-    const getDisplayData$ = Observable.create((observer) => {
+    const initialState$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(unmuted);
+        const meeting = this.meetings[ID] || {};
+        const noAudio = !meeting.disabledLocalAudio && !meeting.localAudio;
+
+        observer.next(noAudio ? disabled : unmuted);
       } else {
         observer.error(new Error(`Could not find meeting with ID "${ID}" to add audio control`));
       }
@@ -573,10 +592,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === AUDIO_CONTROL),
-      map(({state}) => (state ? unmuted : muted)),
+      map(({state}) => states[state]),
     );
 
-    return concat(getDisplayData$, localMediaUpdateEvent$);
+    return concat(initialState$, localMediaUpdateEvent$);
   }
 
   /**
@@ -590,10 +609,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      const isInSession = this.meetings[ID].remoteVideo !== null;
-      let videoEnabled = this.meetings[ID].localVideo !== null;
+      const isInSession = !!this.meetings[ID].remoteVideo;
+      const noVideo = !this.meetings[ID].disabledLocalVideo && !this.meetings[ID].localVideo;
+      const videoEnabled = !!this.meetings[ID].localVideo;
+      let state;
 
-      if (videoEnabled) {
+      if (noVideo) {
+        state = MeetingControlState.DISABLED;
+      } else if (videoEnabled) {
         // Mute the video only if there is an active meeting
         if (isInSession) {
           await sdkMeeting.muteVideo();
@@ -602,7 +625,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Store the current local video stream to avoid an extra request call
         this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo;
         this.meetings[ID].localVideo = null;
-        videoEnabled = false;
+        state = MeetingControlState.INACTIVE;
       } else {
         // Unmute the video only if there is an active meeting
         if (isInSession) {
@@ -612,14 +635,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Retrieve the stored local video stream
         this.meetings[ID].localVideo = this.meetings[ID].disabledLocalVideo;
         this.meetings[ID].disabledLocalVideo = null;
-        videoEnabled = true;
+        state = MeetingControlState.ACTIVE;
       }
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for video mute updates
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: VIDEO_CONTROL,
-        state: videoEnabled,
+        state,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -650,10 +673,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       state: MeetingControlState.INACTIVE,
       text: null,
     };
+    const disabled = {
+      ID: VIDEO_CONTROL,
+      icon: 'camera-muted_28',
+      tooltip: 'No camera available',
+      state: MeetingControlState.DISABLED,
+      text: null,
+    };
+    const states = {
+      [MeetingControlState.ACTIVE]: unmuted,
+      [MeetingControlState.INACTIVE]: muted,
+      [MeetingControlState.DISABLED]: disabled,
+    };
 
-    const getDisplayData$ = Observable.create((observer) => {
+    const initialState$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(unmuted);
+        const meeting = this.meetings[ID] || {};
+        const noVideo = !meeting.disabledLocalVideo && !meeting.localVideo;
+
+        observer.next(noVideo ? disabled : unmuted);
       } else {
         observer.error(new Error(`Could not find meeting with ID "${ID}" to add video control`));
       }
@@ -663,10 +701,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === VIDEO_CONTROL),
-      map(({state}) => (state ? unmuted : muted)),
+      map(({state}) => states[state]),
     );
 
-    return concat(getDisplayData$, localMediaUpdateEvent$);
+    return concat(initialState$, localMediaUpdateEvent$);
   }
 
   /**
