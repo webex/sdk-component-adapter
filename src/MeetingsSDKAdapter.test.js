@@ -431,8 +431,8 @@ describe('Meetings SDK Adapter', () => {
         expect(dataDisplay).toMatchObject({
           ID: 'mute-audio',
           icon: 'microphone-muted_28',
-          tooltip: 'Mute',
-          state: 'inactive',
+          tooltip: 'No microphone available',
+          state: 'disabled',
           text: null,
         });
         done();
@@ -492,7 +492,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-audio',
-        state: false,
+        state: 'inactive',
       });
     });
 
@@ -500,7 +500,10 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID].localAudio = null;
       await meetingSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(mockSDKMeeting.unmuteAudio).toHaveBeenCalled();
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'mute-audio',
+        state: 'disabled',
+      });
     });
 
     test('localAudio property should be defined once the audio track is unmuted', async () => {
@@ -517,7 +520,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-audio',
-        state: true,
+        state: 'disabled',
       });
     });
 
@@ -539,8 +542,8 @@ describe('Meetings SDK Adapter', () => {
         expect(dataDisplay).toMatchObject({
           ID: 'mute-video',
           icon: 'camera-muted_28',
-          tooltip: 'Stop video',
-          state: 'inactive',
+          tooltip: 'No camera available',
+          state: 'disabled',
           text: null,
         });
         done();
@@ -600,7 +603,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-video',
-        state: false,
+        state: 'inactive',
       });
     });
 
@@ -608,7 +611,10 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.meetings[meetingID].localVideo = null;
       await meetingSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
+        control: 'mute-video',
+        state: 'disabled',
+      });
     });
 
     test('localVideo property should be defined once the video track is unmuted', async () => {
@@ -625,7 +631,7 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
         control: 'mute-video',
-        state: true,
+        state: 'disabled',
       });
     });
 
