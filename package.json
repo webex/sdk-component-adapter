@@ -64,6 +64,9 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "semantic-release": "^17.3.0"
   },
+  "browserslist": [
+    "last 2 versions and not dead and > 2%"
+  ],
   "babel": {
     "plugins": [
       "@babel/plugin-transform-runtime"
