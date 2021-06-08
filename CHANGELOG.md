@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/webex/sdk-component-adapter/compare/v1.34.0...v1.35.0) (2021-06-08)
+
+
+### Features
+
+* **MeetingSdkAdapter:** disable audio/video controls when no media ([863cd79](https://github.com/webex/sdk-component-adapter/commit/863cd79dcb9bab0ef24eb866638326bbbbf62f53))
+
 # [1.34.0](https://github.com/webex/sdk-component-adapter/compare/v1.33.4...v1.34.0) (2021-06-03)
 
 
