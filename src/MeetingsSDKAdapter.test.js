@@ -1,5 +1,5 @@
 import * as rxjs from 'rxjs';
-import {flatMap, take} from 'rxjs/operators';
+import {flatMap, take, last} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
 import createMockSDK from './mockSdk';
@@ -343,7 +343,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingSDKAdapter.getLocalMedia = jest.fn(() => Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'}));
 
-      meetingSDKAdapter.createMeeting(target).subscribe((newMeeting) => {
+      meetingSDKAdapter.createMeeting(target).pipe(last()).subscribe((newMeeting) => {
         expect(newMeeting).toMatchObject({...meeting, localAudio: 'localAudio', localVideo: 'localVideo'});
         done();
       });
@@ -355,8 +355,10 @@ describe('Meetings SDK Adapter', () => {
 
       meetingSDKAdapter.datasource.meetings.create = jest.fn(() => Promise.reject(errorMessage));
 
-      meetingSDKAdapter.createMeeting(target).subscribe(
-        () => {},
+      meetingSDKAdapter.createMeeting(wrongTarget).subscribe(
+        (meetingInstance) => {
+          done.fail('Unexpected message', meetingInstance);
+        },
         (error) => {
           expect(error).toBe(errorMessage);
           done();
@@ -817,6 +819,7 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter
         .createMeeting(target)
         .pipe(
+          last(),
           flatMap(() => meetingSDKAdapter.getMeeting(meetingID)),
           take(1),
         )

@@ -3,6 +3,7 @@ import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
 import WebexSDKAdapter from '../src/WebexSDKAdapter';
+import {last, tap} from 'rxjs/operators';
 
 let MEETING_ID = null;
 let webexSDKAdapter;
@@ -98,8 +99,11 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
   try {
     switch (event.target.id) {
       case 'create-meeting':
-        webexSDKAdapter.meetingsAdapter.createMeeting(destination).subscribe(({ID}) => {
-          MEETING_ID = ID;
+        webexSDKAdapter.meetingsAdapter.createMeeting(destination).pipe(
+          tap(meeting => console.log('Creating meeting:', meeting)),
+          last()
+        ).subscribe((meeting) => {
+          MEETING_ID = meeting.ID;
           getMeeting();
           handleAudio();
           handleVideo();

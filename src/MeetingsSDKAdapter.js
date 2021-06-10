@@ -10,6 +10,8 @@ import {
   throwError,
 } from 'rxjs';
 import {
+  catchError,
+  concatMap,
   flatMap,
   filter,
   map,
@@ -336,41 +338,44 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable.<Meeting>} Observable stream that emits data of the newly created meeting
    */
   createMeeting(destination) {
-    return from(this.datasource.meetings.create(destination)).pipe(
-      flatMap(({id}) => from(this.fetchMeetingTitle(destination))
-        .pipe(map((title) => ({ID: id, title})))),
-      flatMap(({ID, title}) => from(this.getLocalMedia(ID))
-        .pipe(map(({localAudio, localVideo}) => ({
-          ID,
-          title,
-          localAudio,
-          localVideo,
-        })))),
-      map(({
-        ID,
-        title,
-        localAudio,
-        localVideo,
-      }) => {
-        this.meetings[ID] = {
-          ID,
-          title,
-          localVideo,
-          localAudio,
-          localShare: null,
-          remoteAudio: null,
-          remoteVideo: null,
-          remoteShare: null,
-          showRoster: null,
-          showSettings: false,
-          state: MeetingState.NOT_JOINED,
-        };
+    const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
+      flatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(
+        map((title) => ({ID: id, title})),
+      )),
+      map((meeting) => ({
+        ...meeting,
+        localVideo: null,
+        localAudio: null,
+        localShare: null,
+        remoteAudio: null,
+        remoteVideo: null,
+        remoteShare: null,
+        showRoster: null,
+        showSettings: false,
+        state: MeetingState.NOT_JOINED,
+      })),
+      tap((meeting) => {
+        this.meetings[meeting.ID] = meeting;
+      }),
+    );
 
-        return this.meetings[ID];
-      },
-      (error) => {
+    const meeting$ = newMeeting$.pipe(
+      concatMap((meeting) => from(this.getLocalMedia(meeting.ID)).pipe(
+        map((localMedia) => ({
+          ...meeting,
+          ...localMedia,
+        })),
+      )),
+      tap((meeting) => {
+        this.meetings[meeting.ID] = meeting;
+      }),
+    );
+
+    return concat(newMeeting$, meeting$).pipe(
+      catchError((err) => {
         // eslint-disable-next-line no-console
-        console.error(`Unable to create a meeting with "${destination}"`, error);
+        console.error(`Unable to create a meeting with "${destination}"`, err);
+        throw err;
       }),
     );
   }
