@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/webex/sdk-component-adapter/compare/v1.35.0...v1.36.0) (2021-06-16)
+
+
+### Features
+
+* **MeetingSdkAdapter:** make createMeeting() emit an intermediary message without local media ([707df7e](https://github.com/webex/sdk-component-adapter/commit/707df7e1e40b7c61d0683670188e21dd53c71447))
+
 # [1.35.0](https://github.com/webex/sdk-component-adapter/compare/v1.34.0...v1.35.0) (2021-06-08)
 
 
