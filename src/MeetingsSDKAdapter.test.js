@@ -1,5 +1,9 @@
 import * as rxjs from 'rxjs';
-import {flatMap, take, last} from 'rxjs/operators';
+import {
+  take,
+  last,
+  concatMap,
+} from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
 import createMockSDK from './mockSdk';
@@ -13,6 +17,7 @@ describe('Meetings SDK Adapter', () => {
   let target;
 
   beforeEach(() => {
+    global.DOMException = jest.fn();
     mockSDK = createMockSDK();
     meetingID = 'meetingID';
     mockSDKMeeting = mockSDK.meetings.getMeetingByType('id', meetingID);
@@ -26,6 +31,8 @@ describe('Meetings SDK Adapter', () => {
       remoteAudio: null,
       remoteVideo: null,
       remoteShare: null,
+      audioPermission: null,
+      videoPermission: null,
       showRoster: null,
       title: 'my meeting',
       cameraID: null,
@@ -48,36 +55,54 @@ describe('Meetings SDK Adapter', () => {
       global.MediaStream = jest.fn((instance) => instance);
     });
 
-    test('returns local media in a proper shape', async () => {
-      expect(await meetingSDKAdapter.getLocalMedia(meetingID)).toEqual({
-        localAudio: ['localAudio'],
-        localVideo: ['localVideo'],
+    test('returns local media in a proper shape', (done) => {
+      meetingSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe((dataDisplay) => {
+        expect(dataDisplay).toMatchObject({
+          localAudio: ['localAudio'],
+          localVideo: ['localVideo'],
+          audioPermission: 'ALLOWED',
+          videoPermission: 'ALLOWED',
+        });
+        done();
       });
     });
 
-    test('throws errors if the local media is not retrieved successfully', async () => {
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+    test('throws errors if the local media is not retrieved successfully', (done) => {
       global.console.error = jest.fn();
-      await meetingSDKAdapter.getLocalMedia(meetingID);
+      const mockConsole = global.console.error;
 
-      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local media stream for meeting',
-        'meetingID', 'with mediaDirection', expect.anything(), 'and audioVideo', undefined, 'reason:', undefined);
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      meetingSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe(
+        () => {
+          expect(mockConsole).toHaveBeenCalledWith(
+            'Unable to retrieve local media stream for meeting',
+            'meetingID',
+            'with mediaDirection',
+            expect.anything(),
+            'and audioVideo',
+            undefined,
+            'reason:',
+            undefined,
+          );
+          done();
+        },
+      );
     });
 
-    test('nullifies local Audio if the local media is not retrieved successfully', async () => {
+    test('nullifies local Audio if the local media is not retrieved successfully', (done) => {
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
-      global.console.error = jest.fn();
-      const localMedia = await meetingSDKAdapter.getLocalMedia(meetingID);
-
-      expect(localMedia.localAudio).toBeNull();
+      meetingSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe((localMedia) => {
+        expect(localMedia.localAudio).toBeNull();
+        done();
+      });
     });
 
-    test('nullifies local Video if the local media is not retrieved successfully', async () => {
+    test('nullifies local Video if the local media is not retrieved successfully', (done) => {
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
-      global.console.error = jest.fn();
-      const localMedia = await meetingSDKAdapter.getLocalMedia(meetingID);
-
-      expect(localMedia.localVideo).toBeNull();
+      meetingSDKAdapter.getLocalMedia(meetingID).subscribe((localMedia) => {
+        expect(localMedia.localVideo).toBeNull();
+        done();
+      });
     });
   });
 
@@ -86,29 +111,70 @@ describe('Meetings SDK Adapter', () => {
       mockSDKMeeting.getMediaStreams = jest.fn((constraint) => Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']]));
     });
 
-    test('throws errors and nullifies local Audio if not retrieved successfully', async () => {
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+    test('logs errors and returns a null stream and error status if stream cannot be retrieved', (done) => {
       global.console.error = jest.fn();
-      const localAudio = await meetingSDKAdapter.getStream(meetingID, {sendAudio: true});
-
-      expect(localAudio).toBeNull();
-      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local media stream for meeting',
-        'meetingID', 'with mediaDirection', {sendAudio: true}, 'and audioVideo', undefined, 'reason:', undefined);
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      meetingSDKAdapter.getStream(meetingID, {sendAudio: true}).pipe(last()).subscribe(
+        ({permission, stream}) => {
+          expect(stream).toBeNull();
+          expect(permission).toBe('ERROR');
+          expect(global.console.error).toHaveBeenCalledWith(
+            'Unable to retrieve local media stream for meeting',
+            'meetingID',
+            'with mediaDirection',
+            {sendAudio: true},
+            'and audioVideo',
+            undefined,
+            'reason:',
+            undefined,
+          );
+          done();
+        },
+      );
     });
 
-    test('throws errors and nullifies local Video if not retrieved successfully', async () => {
+    test('throws errors, nullifies local video and sets permissions to denied, dismissed or error if not retrieved successfully', (done) => {
+      const permissions = [
+        'DENIED',
+        'DISMISSED',
+        'ERROR',
+      ];
+
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
       global.console.error = jest.fn();
-      const localVideo = await meetingSDKAdapter.getStream(meetingID, {sendVideo: true});
-
-      expect(localVideo).toBeNull();
-      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local media stream for meeting',
-        'meetingID', 'with mediaDirection', {sendVideo: true}, 'and audioVideo', undefined, 'reason:', undefined);
+      meetingSDKAdapter.getStream(meetingID, {sendVideo: true}).pipe(
+        last(),
+      ).subscribe(
+        ({permission, stream}) => {
+          expect(stream).toBeNull();
+          expect(permissions.indexOf(permission)).toBeGreaterThan(-1);
+          done();
+        },
+        (error) => {
+          done.fail(error);
+        },
+      );
     });
 
-    test('returns local media in a proper shape', async () => {
-      expect(await meetingSDKAdapter.getStream(meetingID, {sendAudio: true})).toEqual(['localAudio']);
-      expect(await meetingSDKAdapter.getStream(meetingID, {sendVideo: true})).toEqual(['localVideo']);
+    test('returns local media in a proper shape', (done) => {
+      meetingSDKAdapter.getStream(meetingID, {sendAudio: true})
+        .pipe(last())
+        .subscribe((localMedia) => {
+          expect(localMedia).toMatchObject({
+            stream: ['localAudio'],
+            permission: 'ALLOWED',
+          });
+          done();
+        });
+      meetingSDKAdapter.getStream(meetingID, {sendVideo: true}).pipe(
+        last(),
+      ).subscribe((localMedia) => {
+        expect(localMedia).toMatchObject({
+          stream: ['localVideo'],
+          permission: 'ALLOWED',
+        });
+        done();
+      });
     });
   });
 
@@ -336,10 +402,21 @@ describe('Meetings SDK Adapter', () => {
 
     test('returns a new meeting in a proper shape', (done) => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
-      meetingSDKAdapter.getLocalMedia = jest.fn(() => Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'}));
+      meetingSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
+        localAudio: ['localAudio'],
+        localVideo: ['localVideo'],
+        audioPermission: 'ALLOWED',
+        videoPermission: 'ALLOWED',
+      }));
 
       meetingSDKAdapter.createMeeting(target).pipe(last()).subscribe((newMeeting) => {
-        expect(newMeeting).toMatchObject({...meeting, localAudio: 'localAudio', localVideo: 'localVideo'});
+        expect(newMeeting).toMatchObject({
+          ...meeting,
+          localAudio: ['localAudio'],
+          localVideo: ['localVideo'],
+          audioPermission: 'ALLOWED',
+          videoPermission: 'ALLOWED',
+        });
         done();
       });
     });
@@ -845,8 +922,19 @@ describe('Meetings SDK Adapter', () => {
       stopStream = trueStopStream;
       meetingSDKAdapter.stopStream = jest.fn();
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
-      meetingSDKAdapter.getLocalMedia = jest.fn(() => Promise.resolve({localAudio: 'localAudio', localVideo: 'localVideo'}));
-      meeting = {...meeting, localAudio: 'localAudio', localVideo: 'localVideo'};
+      meetingSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
+        localAudio: ['localAudio'],
+        localVideo: ['localVideo'],
+        audioPermission: 'ALLOWED',
+        videoPermission: 'ALLOWED',
+      }));
+      meeting = {
+        ...meeting,
+        localAudio: ['localAudio'],
+        localVideo: ['localVideo'],
+        audioPermission: 'ALLOWED',
+        videoPermission: 'ALLOWED',
+      };
     });
 
     afterEach(() => {
@@ -858,7 +946,7 @@ describe('Meetings SDK Adapter', () => {
         .createMeeting(target)
         .pipe(
           last(),
-          flatMap(() => meetingSDKAdapter.getMeeting(meetingID)),
+          concatMap(() => meetingSDKAdapter.getMeeting(meetingID)),
           take(1),
         )
         .subscribe((getMeeting) => {
@@ -870,7 +958,7 @@ describe('Meetings SDK Adapter', () => {
     test('stops listening to events when unsubscribing', () => {
       const subscription = meetingSDKAdapter
         .createMeeting(target)
-        .pipe(flatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
+        .pipe(concatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
         .subscribe();
 
       subscription.unsubscribe();
@@ -883,7 +971,7 @@ describe('Meetings SDK Adapter', () => {
 
       meetingSDKAdapter
         .createMeeting(target)
-        .pipe(flatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
+        .pipe(concatMap(() => meetingSDKAdapter.getMeeting(meetingID)))
         .subscribe(
           () => {},
           (error) => {
