@@ -9,12 +9,14 @@ import {
   BehaviorSubject,
   throwError,
   defer,
+  of,
 } from 'rxjs';
 import {
   catchError,
   concatMap,
   flatMap,
   filter,
+  last,
   map,
   publishReplay,
   refCount,
@@ -168,28 +170,41 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Returns a promise to the local device media streams.
+   * Returns an observable that emits local device media streams and their user permission status
    *
    * @private
    * @param {string} ID ID to retrieve the SDK meeting object to add the local media to
-   * @returns {Promise.<MediaStream>} Promise to requested media stream
+   * @returns {Observable} Observable that emits local media streams and their user permission status
    */
-  async getLocalMedia(ID) {
-    const localMedia = {localAudio: null, localVideo: null};
+  getLocalMedia(ID) {
+    const audio$ = mediaSettings.sendAudio
+      ? this.getStream(ID, {sendAudio: true}).pipe(
+        map(({permission, stream}) => ({
+          localAudio: stream,
+          audioPermission: permission,
+          localVideo: null,
+          videoPermission: null,
+        })),
+      )
+      : of({permission: null, stream: null});
+    const video$ = mediaSettings.sendVideo
+      ? audio$.pipe(
+        last(),
+        concatMap((audio) => this.getStream(ID, {sendVideo: true}).pipe(
+          map(({permission, stream}) => ({
+            ...audio,
+            localVideo: stream,
+            videoPermission: permission,
+          })),
+        )),
+      )
+      : of({permission: null, stream: null});
 
-    if (mediaSettings.sendAudio) {
-      localMedia.localAudio = await this.getStream(ID, {sendAudio: true});
-    }
-
-    if (mediaSettings.sendVideo) {
-      localMedia.localVideo = await this.getStream(ID, {sendVideo: true});
-    }
-
-    return localMedia;
+    return concat(audio$, video$);
   }
 
   /**
-   * Returns a promise to a local media stream based on the given mediaDirection, audioVideo options.
+   * Returns an observable that emits local device media streams and their user permission status based on the given constraints.
    *
    * @see {@link MediaStream|https://developer.mozilla.org/en-US/docs/Web/API/MediaStream}.
    *
@@ -197,21 +212,37 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting for which to fetch streams
    * @param {object} mediaDirection A configurable options object for joining a meetings
    * @param {object} audioVideo audio/video object to set audioinput and videoinput devices
-   * @returns {Promise.<MediaStream>} Promise to requested media stream
+   * @returns {Observable} Observable that emits local media streams and their user permission status
    */
-  async getStream(ID, mediaDirection, audioVideo) {
-    let localStream = null;
+  getStream(ID, mediaDirection, audioVideo) {
+    return new Observable(async (subscriber) => {
+      try {
+        const sdkMeeting = this.fetchMeeting(ID);
 
-    try {
-      const sdkMeeting = this.fetchMeeting(ID);
+        subscriber.next({permission: 'ASKING', stream: null});
 
-      [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Unable to retrieve local media stream for meeting', ID, 'with mediaDirection', mediaDirection, 'and audioVideo', audioVideo, 'reason:', error);
-    }
+        const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
 
-    return localStream;
+        subscriber.next({permission: 'ALLOWED', stream: localStream});
+      } catch (error) {
+        let perm;
+
+        // eslint-disable-next-line no-console
+        console.error('Unable to retrieve local media stream for meeting', ID, 'with mediaDirection', mediaDirection, 'and audioVideo', audioVideo, 'reason:', error);
+
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+          if (error.message === 'Permission dismissed') {
+            perm = 'DISMISSED';
+          } else {
+            perm = 'DENIED';
+          }
+        } else {
+          perm = 'ERROR';
+        }
+        subscriber.next({permission: perm, stream: null});
+      }
+      subscriber.complete();
+    });
   }
 
   /**
@@ -383,12 +414,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       )),
       map((meeting) => ({
         ...meeting,
-        localVideo: null,
         localAudio: null,
+        localVideo: null,
         localShare: null,
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
+        audioPermission: null,
+        videoPermission: null,
         showRoster: null,
         showSettings: false,
         state: MeetingState.NOT_JOINED,
@@ -400,7 +433,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     );
 
     const meeting$ = newMeeting$.pipe(
-      concatMap((meeting) => from(this.getLocalMedia(meeting.ID)).pipe(
+      concatMap((meeting) => this.getLocalMedia(meeting.ID).pipe(
         map((localMedia) => ({
           ...meeting,
           ...localMedia,
@@ -898,7 +931,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       EVENT_LOCAL_SHARE_STOP,
     ).pipe(
       // eslint-disable-next-line no-console
-      tap(() => console.info('EVENT_LOCAL_SHARE_STOP was triggered', this)),
+      tap(() => console.info('EVENT_LOCAL_SHARE_STOP was triggered')),
       map(() => inactiveShare),
     );
 
@@ -907,7 +940,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       EVENT_LOCAL_SHARE_START,
     ).pipe(
       // eslint-disable-next-line no-console
-      tap(() => console.info('EVENT_LOCAL_SHARE_START was triggered', this)),
+      tap(() => console.info('EVENT_LOCAL_SHARE_START was triggered')),
       map(() => activeShare),
     );
 
