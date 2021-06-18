@@ -859,10 +859,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     ).pipe(
       // eslint-disable-next-line no-console
       tap(() => console.info('EVENT_LOCAL_SHARE_STOP was triggered', this)),
-      tap(() => {
-        this.stopStream(this.meetings[ID].localShare);
-        this.meetings[ID].localShare = null;
-      }),
       map(() => inactiveShare),
     );
 
@@ -1049,6 +1045,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_STOP})),
         );
 
+      const meetingWithLocalShareStoppedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP)
+        .pipe(
+          tap(() => {
+            this.meetings[ID].localShare = null;
+            this.stopStream(this.meetings[ID].localShare);
+          }),
+        );
+
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
       const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
@@ -1076,6 +1080,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$,
+        meetingWithLocalShareStoppedEvent$,
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
         meetingWithRosterToggleEvent$,
