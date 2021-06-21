@@ -413,6 +413,19 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('joinWithoutCameraControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.joinWithoutCameraControl().subscribe((dataDisplay) => {
+        expect(dataDisplay).toMatchObject({
+          ID: 'join-meeting-without-camera',
+          text: 'Proceed without camera',
+          tooltip: 'Proceed without camera',
+        });
+        done();
+      });
+    });
+  });
+
   describe('exitControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingSDKAdapter.exitControl().subscribe((dataDisplay) => {
