@@ -8,6 +8,7 @@ import {
   Observable,
   BehaviorSubject,
   throwError,
+  defer,
 } from 'rxjs';
 import {
   catchError,
@@ -51,6 +52,7 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
+const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -60,6 +62,7 @@ const VIDEO_CONTROL = 'mute-video';
 const SHARE_CONTROL = 'share-screen';
 const ROSTER_CONTROL = 'member-roster';
 const SETTINGS_CONTROL = 'settings';
+const SWITCH_CAMERA_CONTROL = 'switch-camera';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -140,6 +143,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       action: this.handleSettings.bind(this),
       display: this.settingsControl.bind(this),
     };
+
+    this.meetingControls[SWITCH_CAMERA_CONTROL] = {
+      ID: SWITCH_CAMERA_CONTROL,
+      action: this.switchCamera.bind(this),
+      display: this.switchCameraControl.bind(this),
+    };
   }
 
   /**
@@ -180,28 +189,57 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Returns a promise to a local media stream based on the given constraints.
+   * Returns a promise to a local media stream based on the given mediaDirection, audioVideo options.
    *
    * @see {@link MediaStream|https://developer.mozilla.org/en-US/docs/Web/API/MediaStream}.
    *
    * @private
    * @param {string} ID ID of the meeting for which to fetch streams
-   * @param {object} constraint Media stream constraints
+   * @param {object} mediaDirection A configurable options object for joining a meetings
+   * @param {object} audioVideo audio/video object to set audioinput and videoinput devices
    * @returns {Promise.<MediaStream>} Promise to requested media stream
    */
-  async getStream(ID, constraint) {
+  async getStream(ID, mediaDirection, audioVideo) {
     let localStream = null;
 
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
-      [localStream] = await sdkMeeting.getMediaStreams(constraint);
+      [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(`Unable to retrieve local media stream for meeting "${ID}" with constraint "${constraint}"`, error);
+      console.error('Unable to retrieve local media stream for meeting', ID, 'with mediaDirection', mediaDirection, 'and audioVideo', audioVideo, 'reason:', error);
     }
 
     return localStream;
+  }
+
+  /**
+   * Returns available media devices.
+   *
+   * @param {string} ID ID of the meeting
+   * @param {'videoinput'|'audioinput'|'audiooutput'} type String specifying the device type.
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDeviceInfo/kind|MDN}
+   * @returns {MediaDeviceInfo[]} Array containing media devices.
+   * @private
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async getAvailableDevices(ID, type) {
+    let devices;
+
+    try {
+      const sdkMeeting = this.fetchMeeting(ID);
+
+      devices = await sdkMeeting.getDevices();
+      devices = devices.filter((device) => device.kind === type);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to retrieve devices for meeting "${ID}"`, error);
+
+      devices = [];
+    }
+
+    return devices;
   }
 
   /**
@@ -290,6 +328,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       remoteAudio: null,
       remoteVideo: null,
       remoteShare: null,
+      cameraID: null,
     };
   }
 
@@ -353,6 +392,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         showRoster: null,
         showSettings: false,
         state: MeetingState.NOT_JOINED,
+        cameraID: null,
       })),
       tap((meeting) => {
         this.meetings[meeting.ID] = meeting;
@@ -1009,6 +1049,75 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Switches the camera control.
+   *
+   * @param {string} ID Meeting ID
+   * @param {string} cameraID ID of the camera to switch to
+   * @private
+   */
+  async switchCamera(ID, cameraID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    this.meetings[ID].localVideo = await this.getStream(
+      ID,
+      {sendVideo: true},
+      {video: {deviceId: cameraID}},
+    );
+    this.meetings[ID].cameraID = cameraID;
+    sdkMeeting.emit(EVENT_CAMERA_SWITCH, {cameraID});
+  }
+
+  /**
+   * Returns an observable that emits the display data of the switch camera control.
+   *
+   * @param {string} ID Meeting ID
+   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of the switch camera control
+   * @private
+   */
+  switchCameraControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const availableCameras$ = defer(() => this.getAvailableDevices(ID, 'videoinput'));
+
+    const initialControl$ = new Observable((observer) => {
+      if (sdkMeeting) {
+        observer.next({
+          ID: SWITCH_CAMERA_CONTROL,
+          tooltip: 'Video Devices',
+          options: null,
+          selected: null,
+        });
+        observer.complete();
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch camera control`));
+      }
+    });
+
+    const controlWithOptions$ = initialControl$.pipe(
+      concatMap((control) => availableCameras$.pipe(
+        map((availableCameras) => ({
+          ...control,
+          options: availableCameras && availableCameras.map((camera) => ({
+            value: camera.deviceId,
+            label: camera.label,
+            camera,
+          })),
+        })),
+      )),
+    );
+
+    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH).pipe(
+      concatMap(({cameraID}) => controlWithOptions$.pipe(
+        map((control) => ({
+          ...control,
+          selected: cameraID,
+        })),
+      )),
+    );
+
+    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -1059,6 +1168,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithSettingsToggleEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE);
 
+      const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
+
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
           const sdkState = event.payload.currentState;
@@ -1086,6 +1197,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithRosterToggleEvent$,
         meetingWithSettingsToggleEvent$,
         meetingStateChange$,
+        meetingWithSwitchCameraEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);

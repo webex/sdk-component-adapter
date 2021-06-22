@@ -3,7 +3,7 @@ import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
 import WebexSDKAdapter from '../src/WebexSDKAdapter';
-import {last, tap} from 'rxjs/operators';
+import {last, tap, first} from 'rxjs/operators';
 
 let MEETING_ID = null;
 let webexSDKAdapter;
@@ -38,6 +38,20 @@ function handleRoster() {
 
     memberRoster.innerText = display.tooltip;
   });
+}
+
+function setSelectOptions(select, options) {
+  options.forEach((option, key)  => { select[key] = new Option(option.label, option.value); });
+}
+
+function handleCameraSelect() {
+  const switchCameraSelect = document.getElementById('switch-camera');
+  webexSDKAdapter.meetingsAdapter.meetingControls['switch-camera']
+    .display(MEETING_ID).pipe(
+      first(display => Array.isArray(display.options)))
+    .subscribe((display) => {
+      setSelectOptions(switchCameraSelect, display.options);
+    });
 }
 
 function handleSettings() {
@@ -110,6 +124,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleShare();
           handleRoster();
           handleSettings();
+          handleCameraSelect();
         });
         break;
       case 'join-meeting':
@@ -147,6 +162,16 @@ document.getElementById('actions').addEventListener('click', async (event) => {
     }
   } catch (error) {
     console.error('Unable to perform an action:', error);
+  }
+});
+
+document.getElementById('switch-camera').addEventListener('change', async () => {
+  try {
+    const switchCameraSelect = document.getElementById('switch-camera');
+    const cameraID = switchCameraSelect.value;
+    await webexSDKAdapter.meetingsAdapter.meetingControls['switch-camera'].action(MEETING_ID, cameraID);
+  } catch (error) {
+    console.error('Unable to switch camera:', error);
   }
 });
 
