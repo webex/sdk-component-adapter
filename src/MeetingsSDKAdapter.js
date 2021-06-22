@@ -2,7 +2,6 @@ import {MeetingsAdapter, MeetingControlState, MeetingState} from '@webex/compone
 import {deconstructHydraId} from '@webex/common';
 import {
   concat,
-  defer,
   from,
   fromEvent,
   merge,
@@ -11,6 +10,8 @@ import {
   throwError,
 } from 'rxjs';
 import {
+  catchError,
+  concatMap,
   flatMap,
   filter,
   map,
@@ -49,6 +50,7 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 // Adapter Events
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
+const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -57,6 +59,7 @@ const AUDIO_CONTROL = 'mute-audio';
 const VIDEO_CONTROL = 'mute-video';
 const SHARE_CONTROL = 'share-screen';
 const ROSTER_CONTROL = 'member-roster';
+const SETTINGS_CONTROL = 'settings';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -130,6 +133,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: ROSTER_CONTROL,
       action: this.handleRoster.bind(this),
       display: this.rosterControl.bind(this),
+    };
+
+    this.meetingControls[SETTINGS_CONTROL] = {
+      ID: SETTINGS_CONTROL,
+      action: this.handleSettings.bind(this),
+      display: this.settingsControl.bind(this),
     };
   }
 
@@ -329,40 +338,44 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable.<Meeting>} Observable stream that emits data of the newly created meeting
    */
   createMeeting(destination) {
-    return from(this.datasource.meetings.create(destination)).pipe(
-      flatMap(({id}) => from(this.fetchMeetingTitle(destination))
-        .pipe(map((title) => ({ID: id, title})))),
-      flatMap(({ID, title}) => from(this.getLocalMedia(ID))
-        .pipe(map(({localAudio, localVideo}) => ({
-          ID,
-          title,
-          localAudio,
-          localVideo,
-        })))),
-      map(({
-        ID,
-        title,
-        localAudio,
-        localVideo,
-      }) => {
-        this.meetings[ID] = {
-          ID,
-          title,
-          localVideo,
-          localAudio,
-          localShare: null,
-          remoteAudio: null,
-          remoteVideo: null,
-          remoteShare: null,
-          showRoster: null,
-          state: MeetingState.NOT_JOINED,
-        };
+    const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
+      flatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(
+        map((title) => ({ID: id, title})),
+      )),
+      map((meeting) => ({
+        ...meeting,
+        localVideo: null,
+        localAudio: null,
+        localShare: null,
+        remoteAudio: null,
+        remoteVideo: null,
+        remoteShare: null,
+        showRoster: null,
+        showSettings: false,
+        state: MeetingState.NOT_JOINED,
+      })),
+      tap((meeting) => {
+        this.meetings[meeting.ID] = meeting;
+      }),
+    );
 
-        return this.meetings[ID];
-      },
-      (error) => {
+    const meeting$ = newMeeting$.pipe(
+      concatMap((meeting) => from(this.getLocalMedia(meeting.ID)).pipe(
+        map((localMedia) => ({
+          ...meeting,
+          ...localMedia,
+        })),
+      )),
+      tap((meeting) => {
+        this.meetings[meeting.ID] = meeting;
+      }),
+    );
+
+    return concat(newMeeting$, meeting$).pipe(
+      catchError((err) => {
         // eslint-disable-next-line no-console
-        console.error(`Unable to create a meeting with "${destination}"`, error);
+        console.error(`Unable to create a meeting with "${destination}"`, err);
+        throw err;
       }),
     );
   }
@@ -492,10 +505,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      const isInSession = this.meetings[ID].remoteAudio !== null;
-      let audioEnabled = this.meetings[ID].localAudio !== null;
+      const isInSession = !!this.meetings[ID].remoteAudio;
+      const noAudio = !this.meetings[ID].disabledLocalAudio && !this.meetings[ID].localAudio;
+      const audioEnabled = !!this.meetings[ID].localAudio;
+      let state;
 
-      if (audioEnabled) {
+      if (noAudio) {
+        state = MeetingControlState.DISABLED;
+      } else if (audioEnabled) {
         // Mute the audio only if there is an active meeting
         if (isInSession) {
           await sdkMeeting.muteAudio();
@@ -504,7 +521,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Store the current local audio stream to avoid an extra request call
         this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
         this.meetings[ID].localAudio = null;
-        audioEnabled = false;
+        state = MeetingControlState.INACTIVE;
       } else {
         // Unmute the audio only if there is an active meeting
         if (isInSession) {
@@ -514,14 +531,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Retrieve the stored local audio stream
         this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
         this.meetings[ID].disabledLocalAudio = null;
-        audioEnabled = true;
+        state = MeetingControlState.ACTIVE;
       }
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for audio mute updates
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: AUDIO_CONTROL,
-        state: audioEnabled,
+        state,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -552,10 +569,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       state: MeetingControlState.INACTIVE,
       text: null,
     };
+    const disabled = {
+      ID: AUDIO_CONTROL,
+      icon: 'microphone-muted_28',
+      tooltip: 'No microphone available',
+      state: MeetingControlState.DISABLED,
+      text: null,
+    };
+    const states = {
+      [MeetingControlState.ACTIVE]: unmuted,
+      [MeetingControlState.INACTIVE]: muted,
+      [MeetingControlState.DISABLED]: disabled,
+    };
 
-    const getDisplayData$ = Observable.create((observer) => {
+    const initialState$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(unmuted);
+        const meeting = this.meetings[ID] || {};
+        const noAudio = !meeting.disabledLocalAudio && !meeting.localAudio;
+
+        observer.next(noAudio ? disabled : unmuted);
       } else {
         observer.error(new Error(`Could not find meeting with ID "${ID}" to add audio control`));
       }
@@ -565,10 +597,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === AUDIO_CONTROL),
-      map(({state}) => (state ? unmuted : muted)),
+      map(({state}) => states[state]),
     );
 
-    return concat(getDisplayData$, localMediaUpdateEvent$);
+    return concat(initialState$, localMediaUpdateEvent$);
   }
 
   /**
@@ -582,10 +614,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
 
     try {
-      const isInSession = this.meetings[ID].remoteVideo !== null;
-      let videoEnabled = this.meetings[ID].localVideo !== null;
+      const isInSession = !!this.meetings[ID].remoteVideo;
+      const noVideo = !this.meetings[ID].disabledLocalVideo && !this.meetings[ID].localVideo;
+      const videoEnabled = !!this.meetings[ID].localVideo;
+      let state;
 
-      if (videoEnabled) {
+      if (noVideo) {
+        state = MeetingControlState.DISABLED;
+      } else if (videoEnabled) {
         // Mute the video only if there is an active meeting
         if (isInSession) {
           await sdkMeeting.muteVideo();
@@ -594,7 +630,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Store the current local video stream to avoid an extra request call
         this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo;
         this.meetings[ID].localVideo = null;
-        videoEnabled = false;
+        state = MeetingControlState.INACTIVE;
       } else {
         // Unmute the video only if there is an active meeting
         if (isInSession) {
@@ -604,14 +640,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         // Retrieve the stored local video stream
         this.meetings[ID].localVideo = this.meetings[ID].disabledLocalVideo;
         this.meetings[ID].disabledLocalVideo = null;
-        videoEnabled = true;
+        state = MeetingControlState.ACTIVE;
       }
 
       // Due to SDK limitation around local media updates,
       // we need to emit a custom event for video mute updates
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: VIDEO_CONTROL,
-        state: videoEnabled,
+        state,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -642,10 +678,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       state: MeetingControlState.INACTIVE,
       text: null,
     };
+    const disabled = {
+      ID: VIDEO_CONTROL,
+      icon: 'camera-muted_28',
+      tooltip: 'No camera available',
+      state: MeetingControlState.DISABLED,
+      text: null,
+    };
+    const states = {
+      [MeetingControlState.ACTIVE]: unmuted,
+      [MeetingControlState.INACTIVE]: muted,
+      [MeetingControlState.DISABLED]: disabled,
+    };
 
-    const getDisplayData$ = Observable.create((observer) => {
+    const initialState$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        observer.next(unmuted);
+        const meeting = this.meetings[ID] || {};
+        const noVideo = !meeting.disabledLocalVideo && !meeting.localVideo;
+
+        observer.next(noVideo ? disabled : unmuted);
       } else {
         observer.error(new Error(`Could not find meeting with ID "${ID}" to add video control`));
       }
@@ -655,10 +706,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
       filter((event) => event.control === VIDEO_CONTROL),
-      map(({state}) => (state ? unmuted : muted)),
+      map(({state}) => states[state]),
     );
 
-    return concat(getDisplayData$, localMediaUpdateEvent$);
+    return concat(initialState$, localMediaUpdateEvent$);
   }
 
   /**
@@ -679,27 +730,24 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     }
 
     const enableSharingStream = async () => {
-      const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
-
-      this.meetings[ID].localShare = localShare;
-
-      // Due to SDK limitation around local media updates,
-      // we need to emit a custom event for video mute updates
+      // Disable the button while the SDK is enabling sharing
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
         state: MeetingControlState.DISABLED,
       });
 
+      const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
+
+      this.meetings[ID].localShare = localShare;
+
       await sdkMeeting.updateShare({stream: localShare, sendShare: true, receiveShare: true});
     };
 
     const disableSharingStream = async () => {
-      // TODO (SPARK-148910): emit should be at the end of the function.
-      // This is a workaround for a bug of async updateShare() call.
-      // The async call may need ~30s to finish execution, or even cannot finish execution.
+      // Disable the control while the SDK is stopping sharing, which could take 30 seconds or more
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
-        state: MeetingControlState.INACTIVE,
+        state: MeetingControlState.DISABLED,
       });
 
       await sdkMeeting.updateShare({
@@ -707,8 +755,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         receiveShare: true,
       });
 
-      this.stopStream(this.meetings[ID].localShare);
-      this.meetings[ID].localShare = null;
+      // The rest of the cleanup is done in the handling of the EVENT_LOCAL_SHARE_STOP event emitted by sdkMeeting.updateShare
     };
 
     const resetSharingStream = (error) => {
@@ -806,21 +853,27 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       }),
     );
 
-    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP)
-      .pipe(
-        // TODO (SPARK-152004): This is a workaround for a bug of stopping share when onended event is triggered.
-        flatMap(() => defer(() => this.meetingControls[SHARE_CONTROL].action(ID))),
-        // eslint-disable-next-line no-console
-        tap(() => console.log('EVENT_LOCAL_SHARE_STOP is triggered', this)),
-        map(() => inactiveShare),
-      );
+    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(
+      sdkMeeting,
+      EVENT_LOCAL_SHARE_STOP,
+    ).pipe(
+      // eslint-disable-next-line no-console
+      tap(() => console.info('EVENT_LOCAL_SHARE_STOP was triggered', this)),
+      tap(() => {
+        this.stopStream(this.meetings[ID].localShare);
+        this.meetings[ID].localShare = null;
+      }),
+      map(() => inactiveShare),
+    );
 
-    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START)
-      .pipe(
-        // eslint-disable-next-line no-console
-        tap(() => console.log('EVENT_LOCAL_SHARE_START is triggered')),
-        map(() => activeShare),
-      );
+    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(
+      sdkMeeting,
+      EVENT_LOCAL_SHARE_START,
+    ).pipe(
+      // eslint-disable-next-line no-console
+      tap(() => console.info('EVENT_LOCAL_SHARE_START was triggered', this)),
+      map(() => activeShare),
+    );
 
     const sharingEvents$ = merge(
       localMediaUpdateEvent$,
@@ -896,6 +949,70 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Toggles the showSettings flag of the given meeting ID.
+   * A settings toggle event is dispatched.
+   *
+   * @private
+   * @param {string} ID  Meeting ID
+   */
+  handleSettings(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const showSettings = !this.meetings[ID].showSettings;
+
+    this.meetings[ID].showSettings = showSettings;
+
+    sdkMeeting.emit(EVENT_SETTINGS_TOGGLE, {
+      state: showSettings
+        ? MeetingControlState.ACTIVE
+        : MeetingControlState.INACTIVE,
+    });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a settings control.
+   *
+   * @private
+   * @param {string} ID  Meeting id
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the settings control
+   */
+  settingsControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const active = {
+      ID: SETTINGS_CONTROL,
+      icon: 'settings_32',
+      tooltip: 'Hide settings panel',
+      state: MeetingControlState.ACTIVE,
+      text: 'Settings',
+    };
+    const inactive = {
+      ID: SETTINGS_CONTROL,
+      icon: 'settings_32',
+      tooltip: 'Show settings panel',
+      state: MeetingControlState.INACTIVE,
+      text: 'Settings',
+    };
+
+    let state$;
+
+    if (sdkMeeting) {
+      const initialState = (this.meetings[ID] && this.meetings[ID].showSettings)
+        ? active
+        : inactive;
+
+      state$ = new BehaviorSubject(initialState);
+
+      const settingsEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE)
+        .pipe(map(({state}) => (state === MeetingControlState.ACTIVE ? active : inactive)));
+
+      settingsEvent$.subscribe((value) => state$.next(value));
+    } else {
+      state$ = throwError(new Error(`Could not find meeting with ID "${ID}" to add settings control`));
+    }
+
+    return state$;
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -936,6 +1053,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
 
+      const meetingWithSettingsToggleEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE);
+
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
           const sdkState = event.payload.currentState;
@@ -960,6 +1079,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
         meetingWithRosterToggleEvent$,
+        meetingWithSettingsToggleEvent$,
         meetingStateChange$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 

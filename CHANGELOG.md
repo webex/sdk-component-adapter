@@ -1,3 +1,29 @@
+# [1.36.0](https://github.com/webex/sdk-component-adapter/compare/v1.35.0...v1.36.0) (2021-06-16)
+
+
+### Features
+
+* **MeetingSdkAdapter:** make createMeeting() emit an intermediary message without local media ([707df7e](https://github.com/webex/sdk-component-adapter/commit/707df7e1e40b7c61d0683670188e21dd53c71447))
+
+# [1.35.0](https://github.com/webex/sdk-component-adapter/compare/v1.34.0...v1.35.0) (2021-06-08)
+
+
+### Features
+
+* **MeetingSdkAdapter:** disable audio/video controls when no media ([863cd79](https://github.com/webex/sdk-component-adapter/commit/863cd79dcb9bab0ef24eb866638326bbbbf62f53))
+
+# [1.34.0](https://github.com/webex/sdk-component-adapter/compare/v1.33.4...v1.34.0) (2021-06-03)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** share button doesn't update the display ([b53ded7](https://github.com/webex/sdk-component-adapter/commit/b53ded78bd9662d776f21d2f5ebe77833db652e7))
+
+
+### Features
+
+* **MeetingSdkAdapter:** add settings control ([cd19dd6](https://github.com/webex/sdk-component-adapter/commit/cd19dd6988fc4f366d939a13782b7375a45c6aa5))
+
 ## [1.33.4](https://github.com/webex/sdk-component-adapter/compare/v1.33.3...v1.33.4) (2021-05-21)
 
 

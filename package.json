@@ -1,6 +1,6 @@
 {
   "name": "@webex/sdk-component-adapter",
-  "version": "1.33.4",
+  "version": "1.36.0",
   "main": "dist/webexSDKComponentAdapter.esm.js",
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
@@ -64,6 +64,9 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "semantic-release": "^17.3.0"
   },
+  "browserslist": [
+    "last 2 versions and not dead and > 2%"
+  ],
   "babel": {
     "plugins": [
       "@babel/plugin-transform-runtime"

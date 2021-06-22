@@ -3,6 +3,7 @@ import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
 import WebexSDKAdapter from '../src/WebexSDKAdapter';
+import {last, tap} from 'rxjs/operators';
 
 let MEETING_ID = null;
 let webexSDKAdapter;
@@ -11,7 +12,7 @@ function handleAudio() {
   webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].display(MEETING_ID).subscribe((data) => {
     const muteAudio = document.getElementById('mute-audio');
 
-    muteAudio.innerHTML = `${data.tooltip} audio`;
+    muteAudio.innerHTML = data.tooltip;
   });
 }
 
@@ -36,6 +37,14 @@ function handleRoster() {
     const memberRoster = document.getElementById('member-roster');
 
     memberRoster.innerText = display.tooltip;
+  });
+}
+
+function handleSettings() {
+  webexSDKAdapter.meetingsAdapter.meetingControls['settings'].display(MEETING_ID).subscribe((display) => {
+    const settings = document.getElementById('settings');
+
+    settings.innerText = display.tooltip;
   });
 }
 
@@ -90,13 +99,17 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
   try {
     switch (event.target.id) {
       case 'create-meeting':
-        webexSDKAdapter.meetingsAdapter.createMeeting(destination).subscribe(({ID}) => {
-          MEETING_ID = ID;
+        webexSDKAdapter.meetingsAdapter.createMeeting(destination).pipe(
+          tap(meeting => console.log('Creating meeting:', meeting)),
+          last()
+        ).subscribe((meeting) => {
+          MEETING_ID = meeting.ID;
           getMeeting();
           handleAudio();
           handleVideo();
           handleShare();
           handleRoster();
+          handleSettings();
         });
         break;
       case 'join-meeting':
@@ -127,6 +140,9 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         break;
       case 'member-roster':
         await webexSDKAdapter.meetingsAdapter.meetingControls['member-roster'].action(MEETING_ID);
+        break;
+      case 'settings':
+        await webexSDKAdapter.meetingsAdapter.meetingControls['settings'].action(MEETING_ID);
         break;
     }
   } catch (error) {
