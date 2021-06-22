@@ -28,6 +28,7 @@ describe('Meetings SDK Adapter', () => {
       remoteShare: null,
       showRoster: null,
       title: 'my meeting',
+      cameraID: null,
     };
     target = 'target';
   });
@@ -59,10 +60,8 @@ describe('Meetings SDK Adapter', () => {
       global.console.error = jest.fn();
       await meetingSDKAdapter.getLocalMedia(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith(
-        expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
-        undefined,
-      );
+      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local media stream for meeting',
+        'meetingID', 'with mediaDirection', expect.anything(), 'and audioVideo', undefined, 'reason:', undefined);
     });
 
     test('nullifies local Audio if the local media is not retrieved successfully', async () => {
@@ -93,10 +92,8 @@ describe('Meetings SDK Adapter', () => {
       const localAudio = await meetingSDKAdapter.getStream(meetingID, {sendAudio: true});
 
       expect(localAudio).toBeNull();
-      expect(global.console.error).toHaveBeenCalledWith(
-        expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
-        undefined,
-      );
+      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local media stream for meeting',
+        'meetingID', 'with mediaDirection', {sendAudio: true}, 'and audioVideo', undefined, 'reason:', undefined);
     });
 
     test('throws errors and nullifies local Video if not retrieved successfully', async () => {
@@ -105,10 +102,8 @@ describe('Meetings SDK Adapter', () => {
       const localVideo = await meetingSDKAdapter.getStream(meetingID, {sendVideo: true});
 
       expect(localVideo).toBeNull();
-      expect(global.console.error).toHaveBeenCalledWith(
-        expect.stringContaining('Unable to retrieve local media stream for meeting "meetingID"'),
-        undefined,
-      );
+      expect(global.console.error).toHaveBeenCalledWith('Unable to retrieve local media stream for meeting',
+        'meetingID', 'with mediaDirection', {sendVideo: true}, 'and audioVideo', undefined, 'reason:', undefined);
     });
 
     test('returns local media in a proper shape', async () => {
@@ -794,6 +789,49 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:roster:toggle', {
         state: 'inactive',
+      });
+    });
+  });
+
+  describe('switchCameraControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.switchCameraControl(meetingID)
+        .pipe(take(1)).subscribe((dataDisplay) => {
+          expect(dataDisplay).toMatchObject({
+            ID: 'switch-camera',
+            tooltip: 'Video Devices',
+            options: null,
+            selected: null,
+          });
+          done();
+        });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.fetchMeeting = jest.fn();
+
+      meetingSDKAdapter.switchCameraControl(meetingID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add switch camera control');
+          done();
+        },
+      );
+    });
+  });
+
+  describe('switchCamera()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.meetings[meetingID] = {
+        cameraID: null,
+      };
+    });
+
+    test('emits the switch camera events with cameraID', async () => {
+      await meetingSDKAdapter.switchCamera(meetingID, 'cameraID');
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:camera:switch', {
+        cameraID: 'cameraID',
       });
     });
   });
