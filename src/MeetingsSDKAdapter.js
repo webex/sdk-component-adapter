@@ -8,6 +8,7 @@ import {
   Observable,
   BehaviorSubject,
   throwError,
+  defer,
 } from 'rxjs';
 import {
   catchError,
@@ -51,6 +52,7 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
+const EVENT_SPEAKER_SWITCH = 'adapter:speaker:switch';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -60,6 +62,7 @@ const VIDEO_CONTROL = 'mute-video';
 const SHARE_CONTROL = 'share-screen';
 const ROSTER_CONTROL = 'member-roster';
 const SETTINGS_CONTROL = 'settings';
+const SWITCH_SPEAKER_CONTROL = 'switch-speaker';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -140,6 +143,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       action: this.handleSettings.bind(this),
       display: this.settingsControl.bind(this),
     };
+
+    this.meetingControls[SWITCH_SPEAKER_CONTROL] = {
+      ID: SWITCH_SPEAKER_CONTROL,
+      action: this.switchSpeaker.bind(this),
+      display: this.switchSpeakerControl.bind(this),
+    };
   }
 
   /**
@@ -202,6 +211,34 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     }
 
     return localStream;
+  }
+
+  /**
+   * Returns available media devices.
+   *
+   * @param {string} ID ID of the meeting
+   * @param {'videoinput'|'audioinput'|'audiooutput'} type  String specifying the device type.
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDeviceInfo/kind|MDN}
+   * @returns {MediaDeviceInfo[]|null} Array containing media devices or null if devices can't be read.
+   * @private
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async getAvailableDevices(ID, type) {
+    let devices = null;
+
+    try {
+      const sdkMeeting = this.fetchMeeting(ID);
+
+      devices = await sdkMeeting.getDevices();
+      devices = devices.filter((device) => device.kind === type);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to retrieve devices for meeting "${ID}"`, error);
+
+      return [];
+    }
+
+    return devices;
   }
 
   /**
@@ -290,6 +327,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       remoteAudio: null,
       remoteVideo: null,
       remoteShare: null,
+      speakerID: null,
     };
   }
 
@@ -353,6 +391,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         showRoster: null,
         showSettings: false,
         state: MeetingState.NOT_JOINED,
+        speakerID: null,
       })),
       tap((meeting) => {
         this.meetings[meeting.ID] = meeting;
@@ -1013,6 +1052,70 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Switches the speaker control.
+   *
+   * @param {string} ID  Meeting ID
+   * @param {string} speakerID  ID of the speaker device to switch to
+   * @private
+   */
+  async switchSpeaker(ID, speakerID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    this.meetings[ID].speakerID = speakerID;
+    sdkMeeting.emit(EVENT_SPEAKER_SWITCH, {speakerID});
+  }
+
+  /**
+   * Returns an observable that emits the display data of the speaker switcher control.
+   *
+   * @param {string} ID  Meeting ID
+   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of speaker switcher control
+   * @private
+   */
+  switchSpeakerControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const availableSpeakers$ = defer(() => this.getAvailableDevices(ID, 'audiooutput'));
+
+    const initialControl$ = new Observable((observer) => {
+      if (sdkMeeting) {
+        observer.next({
+          ID: SWITCH_SPEAKER_CONTROL,
+          tooltip: 'Available speakers',
+          options: null,
+          selected: null,
+        });
+        observer.complete();
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch speaker control`));
+      }
+    });
+
+    const controlWithOptions$ = initialControl$.pipe(
+      concatMap((control) => availableSpeakers$.pipe(
+        map((availableSpeakers) => ({
+          ...control,
+          options: availableSpeakers && availableSpeakers.map((speaker) => ({
+            value: speaker.deviceId,
+            label: speaker.label,
+            speaker,
+          })),
+        })),
+      )),
+    );
+
+    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH).pipe(
+      concatMap(({speakerID}) => controlWithOptions$.pipe(
+        map((control) => ({
+          ...control,
+          selected: speakerID,
+        })),
+      )),
+    );
+
+    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -1055,6 +1158,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithSettingsToggleEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE);
 
+      const meetingWithSwitchSpeakerEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH);
+
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
           const sdkState = event.payload.currentState;
@@ -1081,6 +1186,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithRosterToggleEvent$,
         meetingWithSettingsToggleEvent$,
         meetingStateChange$,
+        meetingWithSwitchSpeakerEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);

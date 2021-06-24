@@ -34,6 +34,13 @@
             <button id="settings">Settings</button>
           </fieldset>
         </form>
+        <form id="devices">
+          <fieldset>
+            <legend>Media Devices</legend>
+            <label for="switch-speaker">Choose preferred speaker:</label>
+            <select id="switch-speaker"></select>
+          </fieldset>
+        </form>
         <form id="members">
           <fieldset>
             <legend>Members</legend>
@@ -44,7 +51,7 @@
         <div style="display: flex; justify-content: space-between;">
           <div>
             <h2>Local Stream:</h2>
-            <audio id="local-audio" autoplay playsinline muted></audio>
+            <audio id="local-audio" autoplay playsinline></audio>
             <video style="width:25rem" id="local-video" autoplay playsinline></video>
           </div>
           <h2 id="meeting-title"></h2>

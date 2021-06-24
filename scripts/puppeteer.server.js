@@ -3,7 +3,7 @@ import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
 import WebexSDKAdapter from '../src/WebexSDKAdapter';
-import {last, tap} from 'rxjs/operators';
+import {last, tap, first} from 'rxjs/operators';
 
 let MEETING_ID = null;
 let webexSDKAdapter;
@@ -35,8 +35,20 @@ function handleShare() {
 function handleRoster() {
   webexSDKAdapter.meetingsAdapter.meetingControls['member-roster'].display(MEETING_ID).subscribe((display) => {
     const memberRoster = document.getElementById('member-roster');
-
+ 
     memberRoster.innerText = display.tooltip;
+  });
+}
+
+function setSelectOptions(select, options) {
+  options.forEach((option, key)  => { select[key] = new Option(option.label, option.value); });
+}
+
+function handleSpeakerSelect() {
+  const switchSpeakerSelect = document.getElementById('switch-speaker');
+  webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].display(MEETING_ID).pipe(
+    first(display => Array.isArray(display.options))).subscribe((display) => {
+    setSelectOptions(switchSpeakerSelect, display.options);
   });
 }
 
@@ -110,6 +122,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleShare();
           handleRoster();
           handleSettings();
+          handleSpeakerSelect();
         });
         break;
       case 'join-meeting':
@@ -147,6 +160,20 @@ document.getElementById('actions').addEventListener('click', async (event) => {
     }
   } catch (error) {
     console.error('Unable to perform an action:', error);
+  }
+});
+
+document.getElementById('switch-speaker').addEventListener('change', async () => {
+  try {
+    const switchSpeakerSelect = document.getElementById('switch-speaker');
+    const speakerID = switchSpeakerSelect.value;
+    const nodeAudio = document.getElementById('remote-audio');
+    if (nodeAudio && nodeAudio.setSinkId !== 'undefined') {
+      nodeAudio.setSinkId(speakerID);
+    }
+    await webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].action(MEETING_ID, speakerID);
+  } catch (error) {
+    console.log('Unable to switch speaker:', error);
   }
 });
 

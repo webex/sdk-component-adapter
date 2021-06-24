@@ -28,6 +28,7 @@ describe('Meetings SDK Adapter', () => {
       remoteShare: null,
       showRoster: null,
       title: 'my meeting',
+      speakerID: null,
     };
     target = 'target';
   });
@@ -794,6 +795,49 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:roster:toggle', {
         state: 'inactive',
+      });
+    });
+  });
+
+  describe('switchSpeakerControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.switchSpeakerControl(meetingID)
+        .pipe(take(1)).subscribe((dataDisplay) => {
+          expect(dataDisplay).toMatchObject({
+            ID: 'switch-speaker',
+            tooltip: 'Available speakers',
+            options: null,
+            selected: null,
+          });
+          done();
+        });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.fetchMeeting = jest.fn();
+
+      meetingSDKAdapter.switchSpeakerControl(meetingID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add switch speaker control');
+          done();
+        },
+      );
+    });
+  });
+
+  describe('switchSpeaker()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.meetings[meetingID] = {
+        speakerID: null,
+      };
+    });
+
+    test('emits the switch speaker events with speakerID', async () => {
+      await meetingSDKAdapter.switchSpeaker(meetingID, 'speakerID');
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:speaker:switch', {
+        speakerID: 'speakerID',
       });
     });
   });
