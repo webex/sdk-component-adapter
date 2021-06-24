@@ -1,3 +1,10 @@
+## [1.36.1](https://github.com/webex/sdk-component-adapter/compare/v1.36.0...v1.36.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** share button doesn't update the display ([16f0900](https://github.com/webex/sdk-component-adapter/commit/16f0900f235a3cb20de2a1f62be2199616e69cbb))
+
 # [1.36.0](https://github.com/webex/sdk-component-adapter/compare/v1.35.0...v1.36.0) (2021-06-16)
 
 
