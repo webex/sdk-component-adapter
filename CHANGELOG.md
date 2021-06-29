@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/webex/sdk-component-adapter/compare/v1.36.1...v1.37.0) (2021-06-29)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add camera selection control ([5e65024](https://github.com/webex/sdk-component-adapter/commit/5e65024724b69ee6c061cc024d05ff556440d4a1))
+
 ## [1.36.1](https://github.com/webex/sdk-component-adapter/compare/v1.36.0...v1.36.1) (2021-06-24)
 
 
