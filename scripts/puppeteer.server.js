@@ -64,6 +64,14 @@ function handleMicrophoneSelect() {
     });
 }
 
+function handleSpeakerSelect() {
+  const switchSpeakerSelect = document.getElementById('switch-speaker');
+  webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].display(MEETING_ID).pipe(
+    first(display => Array.isArray(display.options))).subscribe((display) => {
+    setSelectOptions(switchSpeakerSelect, display.options);
+  });
+}
+
 function handleSettings() {
   webexSDKAdapter.meetingsAdapter.meetingControls['settings'].display(MEETING_ID).subscribe((display) => {
     const settings = document.getElementById('settings');
@@ -136,6 +144,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleSettings();
           handleCameraSelect();
           handleMicrophoneSelect();
+          handleSpeakerSelect();
         });
         break;
       case 'join-meeting':
@@ -193,6 +202,20 @@ document.getElementById('switch-microphone').addEventListener('change', async ()
     await webexSDKAdapter.meetingsAdapter.meetingControls['switch-microphone'].action(MEETING_ID, microphoneID);
   } catch (error) {
     console.error('Unable to switch microphone:', error);
+  }
+});
+
+document.getElementById('switch-speaker').addEventListener('change', async () => {
+  try {
+    const switchSpeakerSelect = document.getElementById('switch-speaker');
+    const speakerID = switchSpeakerSelect.value;
+    const nodeAudio = document.getElementById('remote-audio');
+    await webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].action(MEETING_ID, speakerID);
+    if (nodeAudio?.setSinkId) {
+      nodeAudio.setSinkId(speakerID);
+    }
+  } catch (error) {
+    console.log('Unable to switch speaker:', error);
   }
 });
 

@@ -56,6 +56,7 @@ const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
 const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
 const EVENT_MICROPHONE_SWITCH = 'adapter:microphone:switch';
+const EVENT_SPEAKER_SWITCH = 'adapter:speaker:switch';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -67,6 +68,7 @@ const ROSTER_CONTROL = 'member-roster';
 const SETTINGS_CONTROL = 'settings';
 const SWITCH_CAMERA_CONTROL = 'switch-camera';
 const SWITCH_MICROPHONE_CONTROL = 'switch-microphone';
+const SWITCH_SPEAKER_CONTROL = 'switch-speaker';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -158,6 +160,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: SWITCH_MICROPHONE_CONTROL,
       action: this.switchMicrophone.bind(this),
       display: this.switchMicrophoneControl.bind(this),
+    };
+
+    this.meetingControls[SWITCH_SPEAKER_CONTROL] = {
+      ID: SWITCH_SPEAKER_CONTROL,
+      action: this.switchSpeaker.bind(this),
+      display: this.switchSpeakerControl.bind(this),
     };
   }
 
@@ -369,6 +377,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       remoteShare: null,
       cameraID: null,
       microphoneID: null,
+      speakerID: null,
     };
   }
 
@@ -436,6 +445,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         state: MeetingState.NOT_JOINED,
         cameraID: null,
         microphoneID: null,
+        speakerID: null,
       })),
       tap((meeting) => {
         this.meetings[meeting.ID] = meeting;
@@ -1119,7 +1129,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     } else {
       throw new Error('Could not change camera, permission not granted:', permission);
     }
-    sdkMeeting.emit(EVENT_CAMERA_SWITCH, {cameraID});
   }
 
   /**
@@ -1131,7 +1140,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchMicrophone(ID, microphoneID) {
     const sdkMeeting = this.fetchMeeting(ID);
-
     const {stream: localAudio, permission} = await this.getStream(
       ID,
       {sendAudio: true},
@@ -1151,6 +1159,20 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     } else {
       throw new Error('Could not change microphone, permission not granted:', permission);
     }
+  }
+
+  /**
+   * Switches the speaker control.
+   *
+   * @param {string} ID  Meeting ID
+   * @param {string} speakerID  ID of the speaker device to switch to
+   * @private
+   */
+  async switchSpeaker(ID, speakerID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    this.meetings[ID].speakerID = speakerID;
+    sdkMeeting.emit(EVENT_SPEAKER_SWITCH, {speakerID});
   }
 
   /**
@@ -1254,6 +1276,56 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Returns an observable that emits the display data of the speaker switcher control.
+   *
+   * @param {string} ID  Meeting ID
+   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of speaker switcher control
+   * @private
+   */
+  switchSpeakerControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const availableSpeakers$ = defer(() => this.getAvailableDevices(ID, 'audiooutput'));
+
+    const initialControl$ = new Observable((observer) => {
+      if (sdkMeeting) {
+        observer.next({
+          ID: SWITCH_SPEAKER_CONTROL,
+          tooltip: 'Speaker Devices',
+          options: null,
+          selected: null,
+        });
+        observer.complete();
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch speaker control`));
+      }
+    });
+
+    const controlWithOptions$ = initialControl$.pipe(
+      concatMap((control) => availableSpeakers$.pipe(
+        map((availableSpeakers) => ({
+          ...control,
+          options: availableSpeakers && availableSpeakers.map((speaker) => ({
+            value: speaker.deviceId,
+            label: speaker.label,
+            speaker,
+          })),
+        })),
+      )),
+    );
+
+    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH).pipe(
+      concatMap(({speakerID}) => controlWithOptions$.pipe(
+        map((control) => ({
+          ...control,
+          selected: speakerID,
+        })),
+      )),
+    );
+
+    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -1302,6 +1374,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
 
+      const meetingWithSwitchSpeakerEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH);
+
       const meetingWithSettingsToggleEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE);
 
       const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
@@ -1337,6 +1411,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingStateChange$,
         meetingWithSwitchCameraEvent$,
         meetingWithSwitchMicrophoneEvent$,
+        meetingWithSwitchSpeakerEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
