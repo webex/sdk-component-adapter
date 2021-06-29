@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/webex/sdk-component-adapter/compare/v1.37.0...v1.38.0) (2021-06-29)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** set audio/video permissions ([38ce4e7](https://github.com/webex/sdk-component-adapter/commit/38ce4e7cfe813f5144f79d80454744c0df44cd11))
+
 # [1.37.0](https://github.com/webex/sdk-component-adapter/compare/v1.36.1...v1.37.0) (2021-06-29)
 
 
