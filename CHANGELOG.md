@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/webex/sdk-component-adapter/compare/v1.38.0...v1.38.1) (2021-06-29)
+
+
+### Bug Fixes
+
+* **src:** remove retro file ([6002708](https://github.com/webex/sdk-component-adapter/commit/600270874bed3c54d718b23e6365d5b6ca930778))
+
 # [1.38.0](https://github.com/webex/sdk-component-adapter/compare/v1.37.0...v1.38.0) (2021-06-29)
 
 
