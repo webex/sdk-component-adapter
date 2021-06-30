@@ -36,6 +36,7 @@ describe('Meetings SDK Adapter', () => {
       showRoster: null,
       title: 'my meeting',
       cameraID: null,
+      microphoneID: null,
     };
     target = 'target';
   });
@@ -909,6 +910,49 @@ describe('Meetings SDK Adapter', () => {
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:camera:switch', {
         cameraID: 'cameraID',
+      });
+    });
+  });
+
+  describe('switchMicrophoneControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.switchMicrophoneControl(meetingID)
+        .pipe(take(1)).subscribe((dataDisplay) => {
+          expect(dataDisplay).toMatchObject({
+            ID: 'switch-microphone',
+            tooltip: 'Microphone Devices',
+            options: null,
+            selected: null,
+          });
+          done();
+        });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.fetchMeeting = jest.fn();
+
+      meetingSDKAdapter.switchMicrophoneControl(meetingID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add switch microphone control');
+          done();
+        },
+      );
+    });
+  });
+
+  describe('switchMicrophone()', () => {
+    beforeEach(() => {
+      meetingSDKAdapter.meetings[meetingID] = {
+        microphoneID: null,
+      };
+    });
+
+    test('emits the switch microphone events with microphoneID', async () => {
+      await meetingSDKAdapter.switchMicrophone(meetingID, 'microphoneID');
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:microphone:switch', {
+        microphoneID: 'microphoneID',
       });
     });
   });

@@ -55,6 +55,7 @@ const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
 const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
+const EVENT_MICROPHONE_SWITCH = 'adapter:microphone:switch';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -65,6 +66,7 @@ const SHARE_CONTROL = 'share-screen';
 const ROSTER_CONTROL = 'member-roster';
 const SETTINGS_CONTROL = 'settings';
 const SWITCH_CAMERA_CONTROL = 'switch-camera';
+const SWITCH_MICROPHONE_CONTROL = 'switch-microphone';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -150,6 +152,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: SWITCH_CAMERA_CONTROL,
       action: this.switchCamera.bind(this),
       display: this.switchCameraControl.bind(this),
+    };
+
+    this.meetingControls[SWITCH_MICROPHONE_CONTROL] = {
+      ID: SWITCH_MICROPHONE_CONTROL,
+      action: this.switchMicrophone.bind(this),
+      display: this.switchMicrophoneControl.bind(this),
     };
   }
 
@@ -360,6 +368,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       remoteVideo: null,
       remoteShare: null,
       cameraID: null,
+      microphoneID: null,
     };
   }
 
@@ -426,6 +435,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         showSettings: false,
         state: MeetingState.NOT_JOINED,
         cameraID: null,
+        microphoneID: null,
       })),
       tap((meeting) => {
         this.meetings[meeting.ID] = meeting;
@@ -1106,6 +1116,30 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Switches the microphone control.
+   *
+   * @param {string} ID Meeting ID
+   * @param {string} microphoneID ID of the microphone to switch to
+   * @private
+   */
+  async switchMicrophone(ID, microphoneID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    const {stream: localAudio, permission} = await this.getStream(
+      ID,
+      {sendAudio: true},
+      {audio: {deviceId: microphoneID}},
+    ).toPromise();
+
+    if (localAudio) {
+      Object.assign(this.meetings[ID], {localAudio, microphoneID});
+      sdkMeeting.emit(EVENT_MICROPHONE_SWITCH, {microphoneID});
+    } else {
+      throw new Error('Could not change microphone, permission not granted:', permission);
+    }
+  }
+
+  /**
    * Returns an observable that emits the display data of the switch camera control.
    *
    * @param {string} ID Meeting ID
@@ -1148,6 +1182,56 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         map((control) => ({
           ...control,
           selected: cameraID,
+        })),
+      )),
+    );
+
+    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
+  }
+
+  /**
+   * Returns an observable that emits the display data of the switch microphone control.
+   *
+   * @param {string} ID Meeting ID
+   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of the switch microphone control
+   * @private
+   */
+  switchMicrophoneControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const availableMicrophones$ = defer(() => this.getAvailableDevices(ID, 'audioinput'));
+
+    const initialControl$ = new Observable((observer) => {
+      if (sdkMeeting) {
+        observer.next({
+          ID: SWITCH_MICROPHONE_CONTROL,
+          tooltip: 'Microphone Devices',
+          options: null,
+          selected: null,
+        });
+        observer.complete();
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch microphone control`));
+      }
+    });
+
+    const controlWithOptions$ = initialControl$.pipe(
+      concatMap((control) => availableMicrophones$.pipe(
+        map((availableMicrophones) => ({
+          ...control,
+          options: availableMicrophones && availableMicrophones.map((microphone) => ({
+            value: microphone.deviceId,
+            label: microphone.label,
+            microphone,
+          })),
+        })),
+      )),
+    );
+
+    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_MICROPHONE_SWITCH).pipe(
+      concatMap(({microphoneID}) => controlWithOptions$.pipe(
+        map((control) => ({
+          ...control,
+          selected: microphoneID,
         })),
       )),
     );
@@ -1208,6 +1292,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
 
+      const meetingWithSwitchMicrophoneEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
+
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
           const sdkState = event.payload.currentState;
@@ -1236,6 +1322,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithSettingsToggleEvent$,
         meetingStateChange$,
         meetingWithSwitchCameraEvent$,
+        meetingWithSwitchMicrophoneEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);

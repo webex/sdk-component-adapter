@@ -54,6 +54,16 @@ function handleCameraSelect() {
     });
 }
 
+function handleMicrophoneSelect() {
+  const switchMicrophoneSelect = document.getElementById('switch-microphone');
+  webexSDKAdapter.meetingsAdapter.meetingControls['switch-microphone']
+    .display(MEETING_ID).pipe(
+      first(display => Array.isArray(display.options)))
+    .subscribe((display) => {
+      setSelectOptions(switchMicrophoneSelect, display.options);
+    });
+}
+
 function handleSettings() {
   webexSDKAdapter.meetingsAdapter.meetingControls['settings'].display(MEETING_ID).subscribe((display) => {
     const settings = document.getElementById('settings');
@@ -125,6 +135,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleRoster();
           handleSettings();
           handleCameraSelect();
+          handleMicrophoneSelect();
         });
         break;
       case 'join-meeting':
@@ -172,6 +183,16 @@ document.getElementById('switch-camera').addEventListener('change', async () => 
     await webexSDKAdapter.meetingsAdapter.meetingControls['switch-camera'].action(MEETING_ID, cameraID);
   } catch (error) {
     console.error('Unable to switch camera:', error);
+  }
+});
+
+document.getElementById('switch-microphone').addEventListener('change', async () => {
+  try {
+    const switchMicrophoneSelect = document.getElementById('switch-microphone');
+    const microphoneID = switchMicrophoneSelect.value;
+    await webexSDKAdapter.meetingsAdapter.meetingControls['switch-microphone'].action(MEETING_ID, microphoneID);
+  } catch (error) {
+    console.error('Unable to switch microphone:', error);
   }
 });
 
