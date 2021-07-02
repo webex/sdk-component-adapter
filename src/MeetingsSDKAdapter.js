@@ -1190,8 +1190,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const meetingWithLocalShareStoppedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP)
         .pipe(
           tap(() => {
-            this.meetings[ID].localShare = null;
             this.stopStream(this.meetings[ID].localShare);
+            this.meetings[ID].localShare = null;
           }),
         );
 
