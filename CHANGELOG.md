@@ -1,3 +1,10 @@
+## [1.38.2](https://github.com/webex/sdk-component-adapter/compare/v1.38.1...v1.38.2) (2021-07-03)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** stop share stream before setting it to null ([ab2033d](https://github.com/webex/sdk-component-adapter/commit/ab2033d4f92b48a55f27a9f548fc9619836f76b1))
+
 ## [1.38.1](https://github.com/webex/sdk-component-adapter/compare/v1.38.0...v1.38.1) (2021-06-29)
 
 
