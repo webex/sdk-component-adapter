@@ -1108,6 +1108,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     if (localVideo) {
       Object.assign(this.meetings[ID], {localVideo, cameraID});
+      if (this.meetings[ID].state === MeetingState.JOINED) {
+        await sdkMeeting.updateVideo({
+          stream: localVideo,
+          receiveVideo: mediaSettings.receiveVideo,
+          sendVideo: mediaSettings.sendVideo,
+        });
+      }
       sdkMeeting.emit(EVENT_CAMERA_SWITCH, {cameraID});
     } else {
       throw new Error('Could not change camera, permission not granted:', permission);
