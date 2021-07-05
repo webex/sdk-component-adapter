@@ -1,3 +1,10 @@
+## [1.38.3](https://github.com/webex/sdk-component-adapter/compare/v1.38.2...v1.38.3) (2021-07-05)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** update switch-camera control to use observable returned by getStream ([00b229b](https://github.com/webex/sdk-component-adapter/commit/00b229bf7a4f83027c4e11c8957ea4515fea921a))
+
 ## [1.38.2](https://github.com/webex/sdk-component-adapter/compare/v1.38.1...v1.38.2) (2021-07-03)
 
 
