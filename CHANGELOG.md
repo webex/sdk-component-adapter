@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/webex/sdk-component-adapter/compare/v1.38.3...v1.39.0) (2021-07-05)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add microphone selection control ([acedefa](https://github.com/webex/sdk-component-adapter/commit/acedefaad3ffadf1ad94800e3c93edc17ba26a9f))
+
 ## [1.38.3](https://github.com/webex/sdk-component-adapter/compare/v1.38.2...v1.38.3) (2021-07-05)
 
 
