@@ -1090,13 +1090,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchCamera(ID, cameraID) {
     const sdkMeeting = this.fetchMeeting(ID);
-
-    this.meetings[ID].localVideo = await this.getStream(
+    const {stream: localVideo, permission} = await this.getStream(
       ID,
       {sendVideo: true},
       {video: {deviceId: cameraID}},
-    );
-    this.meetings[ID].cameraID = cameraID;
+    ).toPromise();
+
+    if (localVideo) {
+      Object.assign(this.meetings[ID], {localVideo, cameraID});
+      sdkMeeting.emit(EVENT_CAMERA_SWITCH, {cameraID});
+    } else {
+      throw new Error('Could not change camera, permission not granted:', permission);
+    }
     sdkMeeting.emit(EVENT_CAMERA_SWITCH, {cameraID});
   }
 
