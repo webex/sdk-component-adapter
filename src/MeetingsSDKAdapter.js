@@ -1140,6 +1140,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     if (localAudio) {
       Object.assign(this.meetings[ID], {localAudio, microphoneID});
+      if (this.meetings[ID].state === MeetingState.JOINED) {
+        await sdkMeeting.updateAudio({
+          stream: localAudio,
+          receiveAudio: mediaSettings.receiveAudio,
+          sendAudio: mediaSettings.sendAudio,
+        });
+      }
       sdkMeeting.emit(EVENT_MICROPHONE_SWITCH, {microphoneID});
     } else {
       throw new Error('Could not change microphone, permission not granted:', permission);
