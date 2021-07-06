@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/webex/sdk-component-adapter/compare/v1.39.0...v1.40.0) (2021-07-06)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** allow switching camera after joining the meeting ([9271813](https://github.com/webex/sdk-component-adapter/commit/9271813d7e4f5290b9a6c874e7d0ae47e4916cb7))
+
 # [1.39.0](https://github.com/webex/sdk-component-adapter/compare/v1.38.3...v1.39.0) (2021-07-05)
 
 
