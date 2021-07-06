@@ -81,7 +81,7 @@ function getMeeting() {
       document.getElementById('remote-video').srcObject = meeting.remoteVideo;
       document.getElementById('local-audio').srcObject = meeting.localAudio;
       document.getElementById('local-video').srcObject = meeting.localVideo;
-      document.getElementById('local-share').srcObject = meeting.localShare;
+      document.getElementById('local-share').srcObject = meeting.localShare.stream;
       document.getElementById('remote-share').srcObject = meeting.remoteShare;
       document.getElementById('meeting-title').innerHTML = meeting.title;
     },

@@ -41,6 +41,21 @@ import {
  * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/MeetingsAdapter.js#L58}
  */
 
+/**
+ * Enum for meeting local share state.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export const MeetingStreamState = {
+  ENABLED: 'enabled', // media stream is actively sending data
+  DISABLED: 'disabled', // media stream is muted
+  ENABLING: 'enabling', // temporary state between DISABLED and ENABLED
+  DISABLING: 'disabling', // temporary state between ENABLED and DISABLED
+  STOPPED: 'stopped', // media stream has been stopped and can no longer be used
+  NOT_AVAILABLE: 'not-available', // media stream cannot be obtained
+};
+
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
@@ -310,7 +325,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         this.meetings[ID] = {...meeting, remoteVideo: stream};
         break;
       case MEDIA_TYPE_LOCAL_SHARE:
-        this.meetings[ID] = {...meeting, localShare: stream};
+        this.meetings[ID] = {...meeting, localShare: {stream, state: MeetingStreamState.ENABLING}};
         break;
       case MEDIA_TYPE_REMOTE_SHARE:
         this.meetings[ID] = {...meeting, remoteShareStream: stream};
@@ -356,14 +371,17 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     if (this.meetings && this.meetings[ID]) {
       this.stopStream(this.meetings[ID].localAudio);
       this.stopStream(this.meetings[ID].localVideo);
-      this.stopStream(this.meetings[ID].localShare);
+      this.stopStream(this.meetings[ID].localShare.stream);
     }
 
     this.meetings[ID] = {
       ...this.meetings[ID],
       localAudio: null,
       localVideo: null,
-      localShare: null,
+      localShare: {
+        stream: null,
+        state: MeetingStreamState.DISABLED,
+      },
       remoteAudio: null,
       remoteVideo: null,
       remoteShare: null,
@@ -425,7 +443,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         ...meeting,
         localAudio: null,
         localVideo: null,
-        localShare: null,
+        localShare: {
+          stream: null,
+          state: MeetingStreamState.DISABLED,
+        },
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
@@ -813,6 +834,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     }
 
     const enableSharingStream = async () => {
+      this.meetings[ID].localShare.state = MeetingStreamState.ENABLING;
+
       // Disable the button while the SDK is enabling sharing
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
@@ -821,12 +844,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
 
-      this.meetings[ID].localShare = localShare;
+      this.meetings[ID].localShare.stream = localShare;
 
       await sdkMeeting.updateShare({stream: localShare, sendShare: true, receiveShare: true});
     };
 
     const disableSharingStream = async () => {
+      this.meetings[ID].localShare.state = MeetingStreamState.DISABLING;
+
       // Disable the control while the SDK is stopping sharing, which could take 30 seconds or more
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
@@ -842,7 +867,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
 
     const resetSharingStream = (error) => {
-      if (this.meetings[ID] && this.meetings[ID].localShare) {
+      if (this.meetings[ID] && this.meetings[ID].localShare.stream) {
         // eslint-disable-next-line no-console
         console.warn(`Unable to update local share stream for meeting "${ID}"`, error);
         this.stopStream(this.meetings[ID].localShare);
@@ -861,7 +886,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     // Will stop sharing stream and reset UI state when error happens
     //
     try {
-      if (this.meetings[ID].localShare) {
+      if (this.meetings[ID].localShare.stream) {
         await disableSharingStream();
       } else {
         await enableSharingStream();
@@ -1290,11 +1315,19 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_STOP})),
         );
 
+      const meetingWithLocalShareStartedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START)
+        .pipe(
+          tap(() => {
+            this.meetings[ID].localShare.state = MeetingStreamState.ENABLED;
+          }),
+        );
+
       const meetingWithLocalShareStoppedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP)
         .pipe(
           tap(() => {
-            this.stopStream(this.meetings[ID].localShare);
-            this.meetings[ID].localShare = null;
+            this.meetings[ID].localShare.stream = null;
+            this.meetings[ID].localShare.state = MeetingStreamState.DISABLED;
+            this.stopStream(this.meetings[ID].localShare.stream);
           }),
         );
 
@@ -1329,6 +1362,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$,
+        meetingWithLocalShareStartedEvent$,
         meetingWithLocalShareStoppedEvent$,
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
