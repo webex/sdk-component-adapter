@@ -1,3 +1,11 @@
+# [1.41.0](https://github.com/webex/sdk-component-adapter/compare/v1.40.0...v1.41.0) (2021-07-09)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add speaker selection control ([fe9da04](https://github.com/webex/sdk-component-adapter/commit/fe9da04020b8a83a988c6702cd05124d993afc46))
+* **MeetingsSdkAdapter:** allow switching microphone after joining the meeting ([a4352ad](https://github.com/webex/sdk-component-adapter/commit/a4352ad0e22fa264e9f86bd43a237a70634dcaec))
+
 # [1.40.0](https://github.com/webex/sdk-component-adapter/compare/v1.39.0...v1.40.0) (2021-07-06)
 
 
