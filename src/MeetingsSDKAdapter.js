@@ -146,7 +146,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     this.meetingControls[SETTINGS_CONTROL] = {
       ID: SETTINGS_CONTROL,
-      action: this.handleSettings.bind(this),
+      action: this.toggleSettings.bind(this),
       display: this.settingsControl.bind(this),
     };
 
@@ -1044,7 +1044,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    * @param {string} ID  Meeting ID
    */
-  handleSettings(ID) {
+  toggleSettings(ID) {
     const sdkMeeting = this.fetchMeeting(ID);
     const showSettings = !this.meetings[ID].showSettings;
 
