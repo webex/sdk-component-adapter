@@ -76,6 +76,9 @@
     ]
   },
   "jest": {
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
     "preset": "jest-puppeteer",
     "reporters": [
       "default",

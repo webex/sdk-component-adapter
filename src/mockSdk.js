@@ -14,6 +14,11 @@ export const mockSDKPerson = {
   orgId: 'orgID',
 };
 
+export const mockSDKMediaStreams = {
+  localAudio: new MediaStream(),
+  localVideo: new MediaStream(),
+};
+
 /**
  * Creates a mock instance of the Webex SDK Meeting used in unit testing
  *
@@ -91,7 +96,11 @@ export const createMockSDKMeeting = () => ({
   },
   addMedia: jest.fn(() => Promise.resolve()),
   emit: jest.fn(() => Promise.resolve()),
-  getMediaStreams: jest.fn((constraint) => Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']])),
+  getMediaStreams: jest.fn((constraint) => Promise.resolve([
+    constraint.sendAudio
+      ? mockSDKMediaStreams.localAudio
+      : mockSDKMediaStreams.localVideo,
+  ])),
   muteAudio: jest.fn(() => Promise.resolve()),
   muteVideo: jest.fn(() => Promise.resolve()),
   register: jest.fn(() => Promise.resolve()),

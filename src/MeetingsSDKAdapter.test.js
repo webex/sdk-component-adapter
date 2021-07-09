@@ -6,7 +6,7 @@ import {
 } from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
-import createMockSDK from './mockSdk';
+import createMockSDK, {mockSDKMediaStreams} from './mockSdk';
 
 describe('Meetings SDK Adapter', () => {
   let meeting;
@@ -60,8 +60,8 @@ describe('Meetings SDK Adapter', () => {
     test('returns local media in a proper shape', (done) => {
       meetingSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
-          localAudio: ['localAudio'],
-          localVideo: ['localVideo'],
+          localAudio: mockSDKMediaStreams.localAudio,
+          localVideo: mockSDKMediaStreams.localVideo,
           audioPermission: 'ALLOWED',
           videoPermission: 'ALLOWED',
         });
@@ -110,7 +110,11 @@ describe('Meetings SDK Adapter', () => {
 
   describe('getStream()', () => {
     afterEach(() => {
-      mockSDKMeeting.getMediaStreams = jest.fn((constraint) => Promise.resolve([constraint.sendAudio ? ['localAudio'] : ['localVideo']]));
+      mockSDKMeeting.getMediaStreams = jest.fn((constraint) => Promise.resolve([
+        constraint.sendAudio
+          ? mockSDKMediaStreams.localAudio
+          : mockSDKMediaStreams.localVideo,
+      ]));
     });
 
     test('logs errors and returns a null stream and error status if stream cannot be retrieved', (done) => {
@@ -163,7 +167,7 @@ describe('Meetings SDK Adapter', () => {
         .pipe(last())
         .subscribe((localMedia) => {
           expect(localMedia).toMatchObject({
-            stream: ['localAudio'],
+            stream: mockSDKMediaStreams.localAudio,
             permission: 'ALLOWED',
           });
           done();
@@ -172,7 +176,7 @@ describe('Meetings SDK Adapter', () => {
         last(),
       ).subscribe((localMedia) => {
         expect(localMedia).toMatchObject({
-          stream: ['localVideo'],
+          stream: mockSDKMediaStreams.localVideo,
           permission: 'ALLOWED',
         });
         done();
@@ -192,8 +196,8 @@ describe('Meetings SDK Adapter', () => {
       event = {
         type: 'local',
         stream: {
-          getAudioTracks: jest.fn(() => ['localAudio']),
-          getVideoTracks: jest.fn(() => ['localVideo']),
+          getAudioTracks: jest.fn(() => mockSDKMediaStreams.localAudio),
+          getVideoTracks: jest.fn(() => mockSDKMediaStreams.localVideo),
         },
       };
 
@@ -405,8 +409,8 @@ describe('Meetings SDK Adapter', () => {
     test('returns a new meeting in a proper shape', (done) => {
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
-        localAudio: ['localAudio'],
-        localVideo: ['localVideo'],
+        localAudio: mockSDKMediaStreams.localAudio,
+        localVideo: mockSDKMediaStreams.localVideo,
         audioPermission: 'ALLOWED',
         videoPermission: 'ALLOWED',
       }));
@@ -414,8 +418,8 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.createMeeting(target).pipe(last()).subscribe((newMeeting) => {
         expect(newMeeting).toMatchObject({
           ...meeting,
-          localAudio: ['localAudio'],
-          localVideo: ['localVideo'],
+          localAudio: mockSDKMediaStreams.localAudio,
+          localVideo: mockSDKMediaStreams.localVideo,
           audioPermission: 'ALLOWED',
           videoPermission: 'ALLOWED',
         });
@@ -1011,15 +1015,15 @@ describe('Meetings SDK Adapter', () => {
       meetingSDKAdapter.stopStream = jest.fn();
       meetingSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
-        localAudio: ['localAudio'],
-        localVideo: ['localVideo'],
+        localAudio: mockSDKMediaStreams.localAudio,
+        localVideo: mockSDKMediaStreams.localVideo,
         audioPermission: 'ALLOWED',
         videoPermission: 'ALLOWED',
       }));
       meeting = {
         ...meeting,
-        localAudio: ['localAudio'],
-        localVideo: ['localVideo'],
+        localAudio: mockSDKMediaStreams.localAudio,
+        localVideo: mockSDKMediaStreams.localVideo,
         audioPermission: 'ALLOWED',
         videoPermission: 'ALLOWED',
       };
