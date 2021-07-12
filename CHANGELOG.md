@@ -1,3 +1,10 @@
+## [1.41.1](https://github.com/webex/sdk-component-adapter/compare/v1.41.0...v1.41.1) (2021-07-12)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** rename handleSettings to toggleSettings ([a0852ea](https://github.com/webex/sdk-component-adapter/commit/a0852eaf20ac6db60c53b6f984da0ebe009223ac))
+
 # [1.41.0](https://github.com/webex/sdk-component-adapter/compare/v1.40.0...v1.41.0) (2021-07-09)
 
 
