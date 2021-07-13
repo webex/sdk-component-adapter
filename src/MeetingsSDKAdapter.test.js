@@ -26,7 +26,9 @@ describe('Meetings SDK Adapter', () => {
     meeting = {
       ID: meetingID,
       localAudio: null,
-      localShare: null,
+      localShare: {
+        stream: null,
+      },
       localVideo: null,
       remoteAudio: null,
       remoteVideo: null,
@@ -792,13 +794,13 @@ describe('Meetings SDK Adapter', () => {
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.resolve([['mockStream'], 'localShare']));
       await meetingSDKAdapter.handleLocalShare(meetingID);
 
-      expect(meetingSDKAdapter.meetings[meetingID].localShare).toEqual('localShare');
+      expect(meetingSDKAdapter.meetings[meetingID].localShare.stream).toEqual('localShare');
       expect(mockSDKMeeting.updateShare).toHaveBeenCalled();
       mockSDKMeeting.getMediaStreams = getMediaStreams;
     });
 
     test('stop share if the share track is enabled', async () => {
-      meetingSDKAdapter.meetings[meetingID] = {...meeting, localShare: 'localShare'};
+      meetingSDKAdapter.meetings[meetingID] = {...meeting, localShare: {stream: 'localShare'}};
       await meetingSDKAdapter.handleLocalShare(meetingID);
 
       expect(mockSDKMeeting.updateShare).toHaveBeenCalledWith({
@@ -808,7 +810,7 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('resets sharing stream if share control is not handled properly', async () => {
-      meetingSDKAdapter.meetings[meetingID] = {...meeting, localShare: 'localShare'};
+      meetingSDKAdapter.meetings[meetingID] = {...meeting, localShare: {stream: 'localShare'}};
       global.console.warn = mockConsole;
       mockSDKMeeting.updateShare = jest.fn(() => Promise.reject());
       await meetingSDKAdapter.handleLocalShare(meetingID);
