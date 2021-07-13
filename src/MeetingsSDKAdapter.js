@@ -239,6 +239,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
         const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
 
+        for (const track of localStream.getTracks()) {
+          if (track.kind === 'video' && !mediaDirection.sendVideo) {
+            localStream.removeTrack(track);
+          }
+          if (track.kind === 'audio' && !mediaDirection.sendAudio) {
+            localStream.removeTrack(track);
+          }
+        }
+
         subscriber.next({permission: 'ALLOWED', stream: localStream});
       } catch (error) {
         let perm;
