@@ -1,3 +1,10 @@
+## [1.41.2](https://github.com/webex/sdk-component-adapter/compare/v1.41.1...v1.41.2) (2021-07-13)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** modify meeting tests to use MediaStream-like objects ([e739a9d](https://github.com/webex/sdk-component-adapter/commit/e739a9dd7d149e7123da98b4e092c95c69ec81ad))
+
 ## [1.41.1](https://github.com/webex/sdk-component-adapter/compare/v1.41.0...v1.41.1) (2021-07-12)
 
 
