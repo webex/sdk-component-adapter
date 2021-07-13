@@ -1,3 +1,10 @@
+## [1.41.3](https://github.com/webex/sdk-component-adapter/compare/v1.41.2...v1.41.3) (2021-07-13)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** keep only audio (video) tracks in audio (video) streams ([312a05f](https://github.com/webex/sdk-component-adapter/commit/312a05f4010fbde0900a78b8dbe7dcf8f07a0ca0))
+
 ## [1.41.2](https://github.com/webex/sdk-component-adapter/compare/v1.41.1...v1.41.2) (2021-07-13)
 
 
