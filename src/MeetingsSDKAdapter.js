@@ -14,6 +14,7 @@ import {
 import {
   catchError,
   concatMap,
+  distinctUntilChanged,
   flatMap,
   filter,
   last,
@@ -684,7 +685,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the audio control
    */
   audioControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
       ID: AUDIO_CONTROL,
       icon: 'microphone-muted_28',
@@ -706,31 +706,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       state: MeetingControlState.DISABLED,
       text: null,
     };
-    const states = {
-      [MeetingControlState.ACTIVE]: unmuted,
-      [MeetingControlState.INACTIVE]: muted,
-      [MeetingControlState.DISABLED]: disabled,
-    };
 
-    const initialState$ = Observable.create((observer) => {
-      if (sdkMeeting) {
-        const meeting = this.meetings[ID];
-        const noAudio = !meeting.disabledLocalAudio && !meeting.localAudio.stream;
-
-        observer.next(noAudio ? disabled : unmuted);
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add audio control`));
-      }
-
-      observer.complete();
-    });
-
-    const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
-      filter((event) => event.control === AUDIO_CONTROL),
-      map(({state}) => states[state]),
+    return this.getMeeting(ID).pipe(
+      map(({localAudio: {stream}, disabledLocalAudio}) => (
+        (stream && unmuted) || (disabledLocalAudio && muted) || disabled
+      )),
+      distinctUntilChanged(),
     );
-
-    return concat(initialState$, localMediaUpdateEvent$);
   }
 
   /**
@@ -793,7 +775,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the video control
    */
   videoControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
     const muted = {
       ID: VIDEO_CONTROL,
       icon: 'camera-muted_28',
@@ -815,31 +796,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       state: MeetingControlState.DISABLED,
       text: null,
     };
-    const states = {
-      [MeetingControlState.ACTIVE]: unmuted,
-      [MeetingControlState.INACTIVE]: muted,
-      [MeetingControlState.DISABLED]: disabled,
-    };
 
-    const initialState$ = Observable.create((observer) => {
-      if (sdkMeeting) {
-        const meeting = this.meetings[ID];
-        const noVideo = !meeting.disabledLocalVideo && !meeting.localVideo.stream;
-
-        observer.next(noVideo ? disabled : unmuted);
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add video control`));
-      }
-
-      observer.complete();
-    });
-
-    const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
-      filter((event) => event.control === VIDEO_CONTROL),
-      map(({state}) => states[state]),
+    return this.getMeeting(ID).pipe(
+      map(({localVideo: {stream}, disabledLocalVideo}) => (
+        (stream && unmuted) || (disabledLocalVideo && muted) || disabled
+      )),
+      distinctUntilChanged(),
     );
-
-    return concat(initialState$, localMediaUpdateEvent$);
   }
 
   /**
