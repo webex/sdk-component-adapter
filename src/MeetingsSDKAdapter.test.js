@@ -40,6 +40,7 @@ describe('Meetings SDK Adapter', () => {
       speakerID: null,
     };
     target = 'target';
+    meetingSDKAdapter.meetings[meetingID] = meeting;
   });
 
   afterEach(() => {
@@ -520,12 +521,10 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingSDKAdapter.audioControl(meetingID).subscribe(
+      meetingSDKAdapter.audioControl('inexistent').subscribe(
         () => {},
         (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add audio control');
+          expect(error.message).toBe('Could not find meeting with ID "inexistent"');
           done();
         },
       );
@@ -631,12 +630,10 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingSDKAdapter.videoControl(meetingID).subscribe(
+      meetingSDKAdapter.videoControl('inexistent').subscribe(
         () => {},
         (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add video control');
+          expect(error.message).toBe('Could not find meeting with ID "inexistent"');
           done();
         },
       );
