@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/webex/sdk-component-adapter/compare/v1.41.3...v1.42.0) (2021-07-14)
+
+
+### Features
+
+* **MeetingSdkAdapter:** transform localShare into an object ([f5d1c61](https://github.com/webex/sdk-component-adapter/commit/f5d1c6184a715c7e12420049e45755627651156b))
+
 ## [1.41.3](https://github.com/webex/sdk-component-adapter/compare/v1.41.2...v1.41.3) (2021-07-13)
 
 
