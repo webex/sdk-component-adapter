@@ -1393,7 +1393,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
 
-      const meetingWithSwitchMicrophoneEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
+      const meetingWithSwitchMicrophoneEvent$ = fromEvent(sdkMeeting, EVENT_MICROPHONE_SWITCH);
 
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
