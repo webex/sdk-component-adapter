@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "@webex/common": "^1.105.0",
-    "@webex/component-adapter-interfaces": "^1.17.0"
+    "@webex/component-adapter-interfaces": "^1.17.0",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
