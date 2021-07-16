@@ -1204,6 +1204,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         observer.next({
           ID: SWITCH_CAMERA_CONTROL,
           tooltip: 'Video Devices',
+          noOptionMessage: 'No available devices',
           options: null,
           selected: null,
         });
@@ -1254,6 +1255,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         observer.next({
           ID: SWITCH_MICROPHONE_CONTROL,
           tooltip: 'Microphone Devices',
+          noOptionMessage: 'No available devices',
           options: null,
           selected: null,
         });
@@ -1304,6 +1306,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         observer.next({
           ID: SWITCH_SPEAKER_CONTROL,
           tooltip: 'Speaker Devices',
+          noOptionMessage: 'No available devices',
           options: null,
           selected: null,
         });
