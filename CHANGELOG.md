@@ -1,3 +1,10 @@
+## [1.43.1](https://github.com/webex/sdk-component-adapter/compare/v1.43.0...v1.43.1) (2021-07-16)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** handle switch microphone control events in getMeeting() ([a64064d](https://github.com/webex/sdk-component-adapter/commit/a64064dae9339cadfea8538c09b275e4eea987e4))
+
 # [1.43.0](https://github.com/webex/sdk-component-adapter/compare/v1.42.0...v1.43.0) (2021-07-16)
 
 
