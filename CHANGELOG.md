@@ -1,3 +1,16 @@
+# [1.44.0](https://github.com/webex/sdk-component-adapter/compare/v1.43.1...v1.44.0) (2021-07-16)
+
+
+### Bug Fixes
+
+* **dropdown-controls:** select initial value ([8fdb304](https://github.com/webex/sdk-component-adapter/commit/8fdb304d86368eb7ed0cd8728f58640405e6bae9))
+* **MeetingSdkAdapter:** stop local sharing stream immediately after clicking the stop share button ([911f450](https://github.com/webex/sdk-component-adapter/commit/911f45007fbaac7d7ab3c23d6925ec42aae982ed))
+
+
+### Features
+
+* **package:** configure winston logger ([9f88804](https://github.com/webex/sdk-component-adapter/commit/9f88804932c893dc450e1e8f2f15f27f46402d4f))
+
 ## [1.43.1](https://github.com/webex/sdk-component-adapter/compare/v1.43.0...v1.43.1) (2021-07-16)
 
 
