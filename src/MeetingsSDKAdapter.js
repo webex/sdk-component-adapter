@@ -196,10 +196,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const audio$ = mediaSettings.sendAudio
       ? this.getStream(ID, {sendAudio: true}).pipe(
         map(({permission, stream}) => ({
-          localAudio: stream,
-          audioPermission: permission,
-          localVideo: null,
-          videoPermission: null,
+          localAudio: {
+            stream,
+            permission,
+          },
+          localVideo: {
+            stream: null,
+            permission: null,
+          },
         })),
       )
       : of({permission: null, stream: null});
@@ -209,8 +213,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         concatMap((audio) => this.getStream(ID, {sendVideo: true}).pipe(
           map(({permission, stream}) => ({
             ...audio,
-            localVideo: stream,
-            videoPermission: permission,
+            localVideo: {
+              stream,
+              permission,
+            },
           })),
         )),
       )
@@ -316,8 +322,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           ...meeting,
           // Attach the media streams only if the streams are unmuted
           // `disableLocalAudio/Video` change inside handle media stream methods
-          localAudio: meeting.disabledLocalAudio ? null : new MediaStream(stream.getAudioTracks()),
-          localVideo: meeting.disabledLocalVideo ? null : new MediaStream(stream.getVideoTracks()),
+          localAudio: {
+            ...meeting.localAudio,
+            stream: meeting.disabledLocalAudio ? null : new MediaStream(stream.getAudioTracks()),
+          },
+          localVideo: {
+            ...meeting.localVideo,
+            stream: meeting.disabledLocalVideo ? null : new MediaStream(stream.getVideoTracks()),
+          },
         };
         break;
       case MEDIA_TYPE_REMOTE_AUDIO:
@@ -371,15 +383,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   removeMedia(ID) {
     if (this.meetings && this.meetings[ID]) {
-      this.stopStream(this.meetings[ID].localAudio);
-      this.stopStream(this.meetings[ID].localVideo);
+      this.stopStream(this.meetings[ID].localAudio.stream);
+      this.stopStream(this.meetings[ID].localVideo.stream);
       this.stopStream(this.meetings[ID].localShare.stream);
     }
 
     this.meetings[ID] = {
       ...this.meetings[ID],
-      localAudio: null,
-      localVideo: null,
+      localAudio: {
+        stream: null,
+        permission: null,
+      },
+      localVideo: {
+        stream: null,
+        permission: null,
+      },
       localShare: {
         stream: null,
       },
@@ -443,16 +461,20 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       )),
       map((meeting) => ({
         ...meeting,
-        localAudio: null,
-        localVideo: null,
+        localAudio: {
+          stream: null,
+          permission: null,
+        },
+        localVideo: {
+          stream: null,
+          permission: null,
+        },
         localShare: {
           stream: null,
         },
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
-        audioPermission: null,
-        videoPermission: null,
         showRoster: null,
         showSettings: false,
         state: MeetingState.NOT_JOINED,
@@ -508,8 +530,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
       const localStream = new MediaStream();
 
-      const localAudio = this.meetings[ID].localAudio || this.meetings[ID].disabledLocalAudio;
-      const localVideo = this.meetings[ID].localVideo || this.meetings[ID].disabledLocalVideo;
+      const localAudio = this.meetings[ID].localAudio.stream
+        || this.meetings[ID].disabledLocalAudio;
+      const localVideo = this.meetings[ID].localVideo.stream
+        || this.meetings[ID].disabledLocalVideo;
 
       if (localAudio) {
         localAudio.getTracks().forEach((track) => localStream.addTrack(track));
@@ -525,11 +549,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       await sdkMeeting.addMedia({localStream, mediaSettings});
 
       // Mute either streams after join if user had muted them before joining
-      if (this.meetings[ID].localAudio === null) {
+      if (this.meetings[ID].localAudio.stream === null) {
         await sdkMeeting.muteAudio();
       }
 
-      if (this.meetings[ID].localVideo === null) {
+      if (this.meetings[ID].localVideo.stream === null) {
         await sdkMeeting.muteVideo();
       }
     } catch (error) {
@@ -612,8 +636,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     try {
       const isInSession = !!this.meetings[ID].remoteAudio;
-      const noAudio = !this.meetings[ID].disabledLocalAudio && !this.meetings[ID].localAudio;
-      const audioEnabled = !!this.meetings[ID].localAudio;
+      const noAudio = !this.meetings[ID].disabledLocalAudio && !this.meetings[ID].localAudio.stream;
+      const audioEnabled = !!this.meetings[ID].localAudio.stream;
       let state;
 
       if (noAudio) {
@@ -625,8 +649,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
 
         // Store the current local audio stream to avoid an extra request call
-        this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio;
-        this.meetings[ID].localAudio = null;
+        this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio.stream;
+        this.meetings[ID].localAudio.stream = null;
         state = MeetingControlState.INACTIVE;
       } else {
         // Unmute the audio only if there is an active meeting
@@ -635,7 +659,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
 
         // Retrieve the stored local audio stream
-        this.meetings[ID].localAudio = this.meetings[ID].disabledLocalAudio;
+        this.meetings[ID].localAudio.stream = this.meetings[ID].disabledLocalAudio;
         this.meetings[ID].disabledLocalAudio = null;
         state = MeetingControlState.ACTIVE;
       }
@@ -690,8 +714,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const initialState$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        const meeting = this.meetings[ID] || {};
-        const noAudio = !meeting.disabledLocalAudio && !meeting.localAudio;
+        const meeting = this.meetings[ID];
+        const noAudio = !meeting.disabledLocalAudio && !meeting.localAudio.stream;
 
         observer.next(noAudio ? disabled : unmuted);
       } else {
@@ -721,8 +745,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     try {
       const isInSession = !!this.meetings[ID].remoteVideo;
-      const noVideo = !this.meetings[ID].disabledLocalVideo && !this.meetings[ID].localVideo;
-      const videoEnabled = !!this.meetings[ID].localVideo;
+      const noVideo = !this.meetings[ID].disabledLocalVideo && !this.meetings[ID].localVideo.stream;
+      const videoEnabled = !!this.meetings[ID].localVideo.stream;
       let state;
 
       if (noVideo) {
@@ -734,8 +758,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
 
         // Store the current local video stream to avoid an extra request call
-        this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo;
-        this.meetings[ID].localVideo = null;
+        this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo.stream;
+        this.meetings[ID].localVideo.stream = null;
         state = MeetingControlState.INACTIVE;
       } else {
         // Unmute the video only if there is an active meeting
@@ -744,7 +768,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
 
         // Retrieve the stored local video stream
-        this.meetings[ID].localVideo = this.meetings[ID].disabledLocalVideo;
+        this.meetings[ID].localVideo.stream = this.meetings[ID].disabledLocalVideo;
         this.meetings[ID].disabledLocalVideo = null;
         state = MeetingControlState.ACTIVE;
       }
@@ -799,8 +823,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     const initialState$ = Observable.create((observer) => {
       if (sdkMeeting) {
-        const meeting = this.meetings[ID] || {};
-        const noVideo = !meeting.disabledLocalVideo && !meeting.localVideo;
+        const meeting = this.meetings[ID];
+        const noVideo = !meeting.disabledLocalVideo && !meeting.localVideo.stream;
 
         observer.next(noVideo ? disabled : unmuted);
       } else {
@@ -1123,17 +1147,19 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchCamera(ID, cameraID) {
     const sdkMeeting = this.fetchMeeting(ID);
-    const {stream: localVideo, permission} = await this.getStream(
+    const {stream, permission} = await this.getStream(
       ID,
       {sendVideo: true},
       {video: {deviceId: cameraID}},
     ).toPromise();
 
-    if (localVideo) {
-      Object.assign(this.meetings[ID], {localVideo, cameraID});
+    if (stream) {
+      this.meetings[ID].localVideo.stream = stream;
+      this.meetings[ID].cameraID = cameraID;
+
       if (this.meetings[ID].state === MeetingState.JOINED) {
         await sdkMeeting.updateVideo({
-          stream: localVideo,
+          stream,
           receiveVideo: mediaSettings.receiveVideo,
           sendVideo: mediaSettings.sendVideo,
         });
@@ -1153,17 +1179,20 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchMicrophone(ID, microphoneID) {
     const sdkMeeting = this.fetchMeeting(ID);
-    const {stream: localAudio, permission} = await this.getStream(
+
+    const {stream, permission} = await this.getStream(
       ID,
       {sendAudio: true},
       {audio: {deviceId: microphoneID}},
     ).toPromise();
 
-    if (localAudio) {
-      Object.assign(this.meetings[ID], {localAudio, microphoneID});
+    if (stream) {
+      this.meetings[ID].localAudio.stream = stream;
+      this.meetings[ID].microphoneID = microphoneID;
+
       if (this.meetings[ID].state === MeetingState.JOINED) {
         await sdkMeeting.updateAudio({
-          stream: localAudio,
+          stream,
           receiveAudio: mediaSettings.receiveAudio,
           sendAudio: mediaSettings.sendAudio,
         });
