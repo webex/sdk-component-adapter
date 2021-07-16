@@ -1234,7 +1234,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           ID: SWITCH_CAMERA_CONTROL,
           tooltip: 'Video Devices',
           options: null,
-          selected: null,
+          selected: this.meetings[ID].cameraID,
         });
         observer.complete();
       } else {
@@ -1246,6 +1246,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       concatMap((control) => availableCameras$.pipe(
         map((availableCameras) => ({
           ...control,
+          selected: this.meetings[ID].cameraID,
           options: availableCameras && availableCameras.map((camera) => ({
             value: camera.deviceId,
             label: camera.label,
@@ -1284,7 +1285,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           ID: SWITCH_MICROPHONE_CONTROL,
           tooltip: 'Microphone Devices',
           options: null,
-          selected: null,
+          selected: this.meetings[ID].microphoneID,
         });
         observer.complete();
       } else {
@@ -1296,6 +1297,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       concatMap((control) => availableMicrophones$.pipe(
         map((availableMicrophones) => ({
           ...control,
+          selected: this.meetings[ID].microphoneID,
           options: availableMicrophones && availableMicrophones.map((microphone) => ({
             value: microphone.deviceId,
             label: microphone.label,
@@ -1334,7 +1336,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           ID: SWITCH_SPEAKER_CONTROL,
           tooltip: 'Speaker Devices',
           options: null,
-          selected: null,
+          selected: this.meetings[ID].speakerID,
         });
         observer.complete();
       } else {
@@ -1346,6 +1348,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       concatMap((control) => availableSpeakers$.pipe(
         map((availableSpeakers) => ({
           ...control,
+          selected: this.meetings[ID].speakerID,
           options: availableSpeakers && availableSpeakers.map((speaker) => ({
             value: speaker.deviceId,
             label: speaker.label,
