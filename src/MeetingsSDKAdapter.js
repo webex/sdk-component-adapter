@@ -43,7 +43,6 @@ import {
 
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
-const EVENT_MEDIA_STOPPED = 'media:stopped';
 const EVENT_STATE_CHANGE = 'meeting:stateChange';
 const EVENT_LOCAL_SHARE_STOP = 'meeting:stoppedSharingLocal';
 const EVENT_LOCAL_SHARE_START = 'meeting:startedSharingLocal';
@@ -572,12 +571,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
-      await sdkMeeting.leave();
+      this.removeMedia(ID);
 
-      // Due to SDK limitations, We need to emit a media stopped event for remote media types
-      sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_REMOTE_AUDIO});
-      sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_REMOTE_VIDEO});
-      sdkMeeting.emit(EVENT_MEDIA_STOPPED, {type: MEDIA_TYPE_LOCAL_SHARE});
+      await sdkMeeting.leave();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to leave from the meeting "${ID}"`, error);
@@ -1396,10 +1392,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         map((event) => this.attachMedia(ID, event)),
       );
 
-      const meetingWithMediaStoppedEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_STOPPED).pipe(
-        tap(() => this.removeMedia(ID)),
-      );
-
       const meetingWithMediaShareEvent$ = fromEvent(sdkMeeting, EVENT_REMOTE_SHARE_START).pipe(
         tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_START})),
       );
@@ -1442,7 +1434,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingsWithEvents$ = merge(
         meetingWithMediaReadyEvent$,
-        meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$,
         meetingWithLocalShareStoppedEvent$,
         meetingWithMediaShareEvent$,
