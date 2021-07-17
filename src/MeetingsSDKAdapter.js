@@ -60,6 +60,7 @@ const EVENT_SPEAKER_SWITCH = 'adapter:speaker:switch';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
+const JOIN_WITHOUT_CAMERA_CONTROL = 'join-meeting-without-camera';
 const EXIT_CONTROL = 'leave-meeting';
 const AUDIO_CONTROL = 'mute-audio';
 const VIDEO_CONTROL = 'mute-video';
@@ -112,6 +113,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ID: JOIN_CONTROL,
       action: this.joinMeeting.bind(this),
       display: this.joinControl.bind(this),
+    };
+
+    this.meetingControls[JOIN_WITHOUT_CAMERA_CONTROL] = {
+      ID: JOIN_WITHOUT_CAMERA_CONTROL,
+      action: this.joinMeeting.bind(this),
+      display: this.joinWithoutCameraControl.bind(this),
     };
 
     this.meetingControls[AUDIO_CONTROL] = {
@@ -598,6 +605,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         text: 'Join meeting',
         tooltip: 'Join meeting',
         state: MeetingControlState.ACTIVE,
+      });
+
+      observer.complete();
+    });
+  }
+
+  /**
+   * Returns an observable that emits the display data of a meeting control.
+   *
+   * @private
+   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the join without camera control
+   */
+  // eslint-disable-next-line class-methods-use-this
+  joinWithoutCameraControl() {
+    return Observable.create((observer) => {
+      observer.next({
+        ID: JOIN_WITHOUT_CAMERA_CONTROL,
+        text: 'Proceed without camera',
+        tooltip: 'Proceed without camera',
       });
 
       observer.complete();
