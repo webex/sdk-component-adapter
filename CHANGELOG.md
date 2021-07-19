@@ -1,3 +1,10 @@
+## [1.44.2](https://github.com/webex/sdk-component-adapter/compare/v1.44.1...v1.44.2) (2021-07-19)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** use getMeeting for audio and video controls ([b1bf081](https://github.com/webex/sdk-component-adapter/commit/b1bf0815b14119adf891cdf000014b983ab03733))
+
 ## [1.44.1](https://github.com/webex/sdk-component-adapter/compare/v1.44.0...v1.44.1) (2021-07-19)
 
 
