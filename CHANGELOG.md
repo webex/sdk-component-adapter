@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/webex/sdk-component-adapter/compare/v1.44.0...v1.44.1) (2021-07-19)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** make getMeeting observable also emit messages emitted by createMeeting ([4e9dc62](https://github.com/webex/sdk-component-adapter/commit/4e9dc629dd6da167b25e02ed35300ac914b68422))
+
 # [1.44.0](https://github.com/webex/sdk-component-adapter/compare/v1.43.1...v1.44.0) (2021-07-16)
 
 
