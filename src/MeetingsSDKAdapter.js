@@ -51,6 +51,7 @@ const EVENT_REMOTE_SHARE_START = 'meeting:startedSharingRemote';
 const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 
 // Adapter Events
+const EVENT_MEETING_UPDATED = 'adapter:meeting:updated';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
@@ -482,9 +483,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         microphoneID: null,
         speakerID: null,
       })),
-      tap((meeting) => {
-        this.meetings[meeting.ID] = meeting;
-      }),
     );
 
     const meeting$ = newMeeting$.pipe(
@@ -494,12 +492,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           ...localMedia,
         })),
       )),
-      tap((meeting) => {
-        this.meetings[meeting.ID] = meeting;
-      }),
     );
 
     return concat(newMeeting$, meeting$).pipe(
+      tap((meeting) => {
+        const sdkMeeting = this.fetchMeeting(meeting.ID);
+
+        this.meetings[meeting.ID] = meeting;
+        sdkMeeting.emit(EVENT_MEETING_UPDATED);
+      }),
       catchError((err) => {
         // eslint-disable-next-line no-console
         console.error(`Unable to create a meeting with "${destination}"`, err);
@@ -1391,6 +1392,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         observer.complete();
       });
 
+      const meetingUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED);
+
       const meetingWithMediaReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
         filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
         map((event) => this.attachMedia(ID, event)),
@@ -1441,6 +1444,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       );
 
       const meetingsWithEvents$ = merge(
+        meetingUpdateEvent$,
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
         meetingWithLocalUpdateEvent$,
