@@ -25,6 +25,8 @@ import {
   tap,
 } from 'rxjs/operators';
 
+import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
+
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
  * A video conference in Webex over WebRTC.
@@ -54,7 +56,6 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 // Adapter Events
 const EVENT_MEETING_UPDATED = 'adapter:meeting:updated';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
-const EVENT_ROSTER_TOGGLE = 'adapter:roster:toggle';
 const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
 const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
 const EVENT_MICROPHONE_SWITCH = 'adapter:microphone:switch';
@@ -140,11 +141,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       display: this.exitControl.bind(this),
     };
 
-    this.meetingControls[ROSTER_CONTROL] = {
-      ID: ROSTER_CONTROL,
-      action: this.handleRoster.bind(this),
-      display: this.rosterControl.bind(this),
-    };
+    this.meetingControls[ROSTER_CONTROL] = new RosterControl(this, ROSTER_CONTROL);
 
     this.meetingControls[SETTINGS_CONTROL] = {
       ID: SETTINGS_CONTROL,
@@ -983,61 +980,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    * @param {string} ID ID of the meeting to toggle roster
    */
-  handleRoster(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const showRoster = !this.meetings[ID].showRoster;
-
-    this.meetings[ID].showRoster = showRoster;
-
-    sdkMeeting.emit(EVENT_ROSTER_TOGGLE, {
-      state: showRoster
-        ? MeetingControlState.ACTIVE
-        : MeetingControlState.INACTIVE,
-    });
-  }
-
-  /**
-   * Returns an observable that emits the display data of a roster control.
-   *
-   * @private
-   * @param {string} ID ID of the meeting to toggle roster
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the roster control
-   */
-  rosterControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const active = {
-      ID: ROSTER_CONTROL,
-      icon: 'participant-list_28',
-      tooltip: 'Hide participants panel',
-      state: MeetingControlState.ACTIVE,
-      text: 'Participants',
-    };
-    const inactive = {
-      ID: ROSTER_CONTROL,
-      icon: 'participant-list_28',
-      tooltip: 'Show participants panel',
-      state: MeetingControlState.INACTIVE,
-      text: 'Participants',
-    };
-
-    let state$;
-
-    if (sdkMeeting) {
-      const initialControl = (this.meetings[ID] && this.meetings[ID].showRoster)
-        ? active
-        : inactive;
-
-      state$ = new BehaviorSubject(initialControl);
-
-      const rosterEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE)
-        .pipe(map(({state}) => (state === MeetingControlState.ACTIVE ? active : inactive)));
-
-      rosterEvent$.subscribe((value) => state$.next(value));
-    } else {
-      state$ = throwError(new Error(`Could not find meeting with ID "${ID}" to add roster control`));
-    }
-
-    return state$;
+  toggleRoster(ID) {
+    return this.updateMeeting(ID, ({showRoster}) => ({showRoster: !showRoster}));
   }
 
   /**
@@ -1379,7 +1323,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
-      const meetingWithRosterToggleEvent$ = fromEvent(sdkMeeting, EVENT_ROSTER_TOGGLE);
+      const meetingWithUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED);
 
       const meetingWithSwitchSpeakerEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH);
 
@@ -1414,7 +1358,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithLocalShareStoppedEvent$,
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
-        meetingWithRosterToggleEvent$,
+        meetingWithUpdateEvent$,
         meetingWithSettingsToggleEvent$,
         meetingStateChange$,
         meetingWithSwitchCameraEvent$,
@@ -1433,5 +1377,36 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     }
 
     return this.getMeetingObservables[ID];
+  }
+
+  /**
+   * A callback that returns an updated meeting
+   *
+   * @callback UpdateMeetingCallback
+   * @param {Meeting} meeting  Original meeting object
+   * @returns {Promise<Meeting>} Updated meeting object
+   */
+
+  /**
+   * Updates a meeting and notifies listeners
+   *
+   * @private
+   * @async
+   * @param {string} ID  Id of the meeting to update.
+   * @param {UpdateMeetingCallback} updater  Function to update the meeting
+   */
+
+  async updateMeeting(ID, updater) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const meeting = this.meetings[ID];
+
+    if (!sdkMeeting || !meeting) {
+      throw new Error(`Could not find meeting with ID "${ID}"`);
+    }
+
+    const updates = await updater(meeting);
+    const updatedMeeting = {...meeting, ...updates};
+
+    sdkMeeting.emit(EVENT_MEETING_UPDATED, updatedMeeting);
   }
 }
