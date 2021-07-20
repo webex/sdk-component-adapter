@@ -854,58 +854,29 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('rosterControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingSDKAdapter.rosterControl(meetingID).subscribe((dataDisplay) => {
-        try {
-          expect(dataDisplay).toMatchObject({
-            ID: 'member-roster',
-            icon: 'participant-list_28',
-            tooltip: 'Show participants panel',
-            state: 'inactive',
-            text: 'Participants',
-          });
-          done();
-        } catch (error) {
-          done(error);
-        }
-      });
+  describe('toggleRoster()', () => {
+    test('shows roster is roster is hidden', async () => {
+      meetingSDKAdapter.meetings[meetingID].showRoster = false;
+      await meetingSDKAdapter.toggleRoster(meetingID);
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showRoster: true});
     });
 
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingSDKAdapter.rosterControl(meetingID).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add roster control');
-          done();
-        },
-      );
-    });
-  });
-
-  describe('handleRoster()', () => {
-    beforeEach(() => {
-      meetingSDKAdapter.meetings[meetingID] = {
-        showRoster: null,
-      };
-    });
-
-    test('emits the roster toggle event with active state', async () => {
-      await meetingSDKAdapter.handleRoster(meetingID);
-
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:roster:toggle', {
-        state: 'active',
-      });
-    });
-
-    test('emits the roster toggle event with inactive state', async () => {
+    test('hides roster if roster is shown', async () => {
       meetingSDKAdapter.meetings[meetingID].showRoster = true;
-      await meetingSDKAdapter.handleRoster(meetingID);
+      await meetingSDKAdapter.toggleRoster(meetingID);
 
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:roster:toggle', {
-        state: 'inactive',
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showRoster: false});
+    });
+
+    test('returns a rejected promise if meeting does not exist', (done) => {
+      meetingSDKAdapter.toggleRoster('inexistent').catch((error) => {
+        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
+        done();
       });
     });
   });
