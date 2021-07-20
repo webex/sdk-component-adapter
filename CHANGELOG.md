@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/webex/sdk-component-adapter/compare/v1.44.2...v1.45.0) (2021-07-20)
+
+
+### Features
+
+* **MeetingSdkAdapter:** remove media before leave meeting ([e4357c5](https://github.com/webex/sdk-component-adapter/commit/e4357c55591d1e5b2f32326e84d6ad2bbfd9107b))
+
 ## [1.44.2](https://github.com/webex/sdk-component-adapter/compare/v1.44.1...v1.44.2) (2021-07-19)
 
 
