@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/webex/sdk-component-adapter/compare/v1.45.1...v1.46.0) (2021-07-21)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add no devices messages to dropdown controls ([e4348c7](https://github.com/webex/sdk-component-adapter/commit/e4348c706c2cf61db6b2d228ffa5cc2a769bbc9e))
+
 ## [1.45.1](https://github.com/webex/sdk-component-adapter/compare/v1.45.0...v1.45.1) (2021-07-21)
 
 
