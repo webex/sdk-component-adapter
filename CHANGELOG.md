@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/webex/sdk-component-adapter/compare/v1.46.0...v1.47.0) (2021-07-21)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement roster control in its own file and create the tests accordingly ([fbfaa8b](https://github.com/webex/sdk-component-adapter/commit/fbfaa8be7c734399e9f2d90d70002988d5aa99f9))
+
 # [1.46.0](https://github.com/webex/sdk-component-adapter/compare/v1.45.1...v1.46.0) (2021-07-21)
 
 
