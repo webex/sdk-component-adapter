@@ -133,9 +133,12 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
       case 'create-meeting':
         webexSDKAdapter.meetingsAdapter.createMeeting(destination).pipe(
           tap(meeting => console.log('Creating meeting:', meeting)),
+          tap((meeting) => MEETING_ID = meeting.ID),
+          tap((meeting) => {
+            document.getElementById('proceed-without-camera').disabled = !meeting.localVideo.ignoreMediaAccessPrompt;
+          }),
           last()
-        ).subscribe((meeting) => {
-          MEETING_ID = meeting.ID;
+        ).subscribe(() => {
           getMeeting();
           handleAudio();
           handleVideo();
@@ -178,6 +181,9 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         break;
       case 'settings':
         await webexSDKAdapter.meetingsAdapter.meetingControls['settings'].action(MEETING_ID);
+        break;
+      case 'proceed-without-camera': 
+        await webexSDKAdapter.meetingsAdapter.meetingControls['proceed-without-camera'].action(MEETING_ID);
         break;
     }
   } catch (error) {
