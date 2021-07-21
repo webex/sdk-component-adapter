@@ -40,6 +40,7 @@ describe('Meetings SDK Adapter', () => {
       remoteVideo: null,
       remoteShare: null,
       showRoster: null,
+      showSettings: false,
       title: 'my meeting',
       cameraID: null,
       microphoneID: null,
@@ -875,6 +876,31 @@ describe('Meetings SDK Adapter', () => {
 
     test('returns a rejected promise if meeting does not exist', (done) => {
       meetingSDKAdapter.toggleRoster('inexistent').catch((error) => {
+        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
+        done();
+      });
+    });
+  });
+
+  describe('toggleSettings()', () => {
+    test('shows settings if settings is hidden', async () => {
+      meetingSDKAdapter.meetings[meetingID].showSettings = false;
+      await meetingSDKAdapter.toggleSettings(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showSettings: true});
+    });
+
+    test('hides settings if settings is shown', async () => {
+      meetingSDKAdapter.meetings[meetingID].showSettings = true;
+      await meetingSDKAdapter.toggleSettings(meetingID);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showSettings: false});
+    });
+
+    test('returns a rejected promise if meeting does not exist', (done) => {
+      meetingSDKAdapter.toggleSettings('inexistent').catch((error) => {
         expect(error.message).toBe('Could not find meeting with ID "inexistent"');
         done();
       });

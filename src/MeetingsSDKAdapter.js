@@ -6,8 +6,6 @@ import {
   fromEvent,
   merge,
   Observable,
-  BehaviorSubject,
-  throwError,
   defer,
   of,
 } from 'rxjs';
@@ -26,6 +24,7 @@ import {
 } from 'rxjs/operators';
 
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
+import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -56,7 +55,6 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 // Adapter Events
 const EVENT_MEETING_UPDATED = 'adapter:meeting:updated';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
-const EVENT_SETTINGS_TOGGLE = 'adapter:settings:toggle';
 const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
 const EVENT_MICROPHONE_SWITCH = 'adapter:microphone:switch';
 const EVENT_SPEAKER_SWITCH = 'adapter:speaker:switch';
@@ -142,12 +140,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
 
     this.meetingControls[ROSTER_CONTROL] = new RosterControl(this, ROSTER_CONTROL);
-
-    this.meetingControls[SETTINGS_CONTROL] = {
-      ID: SETTINGS_CONTROL,
-      action: this.toggleSettings.bind(this),
-      display: this.settingsControl.bind(this),
-    };
+    this.meetingControls[SETTINGS_CONTROL] = new SettingsControl(this, SETTINGS_CONTROL);
 
     this.meetingControls[SWITCH_CAMERA_CONTROL] = {
       ID: SWITCH_CAMERA_CONTROL,
@@ -497,7 +490,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         const sdkMeeting = this.fetchMeeting(meeting.ID);
 
         this.meetings[meeting.ID] = meeting;
-        sdkMeeting.emit(EVENT_MEETING_UPDATED);
+        sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
       }),
       catchError((err) => {
         // eslint-disable-next-line no-console
@@ -974,7 +967,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Attempts to toggle roster to the given meeting ID.
    * A roster toggle event is dispatched.
    *
-   * @private
    * @param {string} ID ID of the meeting to toggle roster
    */
   toggleRoster(ID) {
@@ -985,64 +977,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Toggles the showSettings flag of the given meeting ID.
    * A settings toggle event is dispatched.
    *
-   * @private
    * @param {string} ID  Meeting ID
    */
   toggleSettings(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const showSettings = !this.meetings[ID].showSettings;
-
-    this.meetings[ID].showSettings = showSettings;
-
-    sdkMeeting.emit(EVENT_SETTINGS_TOGGLE, {
-      state: showSettings
-        ? MeetingControlState.ACTIVE
-        : MeetingControlState.INACTIVE,
-    });
-  }
-
-  /**
-   * Returns an observable that emits the display data of a settings control.
-   *
-   * @private
-   * @param {string} ID  Meeting id
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the settings control
-   */
-  settingsControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const active = {
-      ID: SETTINGS_CONTROL,
-      icon: 'settings_32',
-      tooltip: 'Hide settings panel',
-      state: MeetingControlState.ACTIVE,
-      text: 'Settings',
-    };
-    const inactive = {
-      ID: SETTINGS_CONTROL,
-      icon: 'settings_32',
-      tooltip: 'Show settings panel',
-      state: MeetingControlState.INACTIVE,
-      text: 'Settings',
-    };
-
-    let state$;
-
-    if (sdkMeeting) {
-      const initialState = (this.meetings[ID] && this.meetings[ID].showSettings)
-        ? active
-        : inactive;
-
-      state$ = new BehaviorSubject(initialState);
-
-      const settingsEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE)
-        .pipe(map(({state}) => (state === MeetingControlState.ACTIVE ? active : inactive)));
-
-      settingsEvent$.subscribe((value) => state$.next(value));
-    } else {
-      state$ = throwError(new Error(`Could not find meeting with ID "${ID}" to add settings control`));
-    }
-
-    return state$;
+    return this.updateMeeting(ID, ({showSettings}) => ({showSettings: !showSettings}));
   }
 
   /**
@@ -1299,7 +1237,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         observer.complete();
       });
 
-      const meetingUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED);
+      const meetingUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED).pipe(
+        tap((meeting) => {
+          this.meetings[ID] = meeting;
+        }),
+      );
 
       const meetingWithMediaReadyEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_READY).pipe(
         filter((event) => MEDIA_EVENT_TYPES.includes(event.type)),
@@ -1323,11 +1265,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
-      const meetingWithUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED);
-
       const meetingWithSwitchSpeakerEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH);
-
-      const meetingWithSettingsToggleEvent$ = fromEvent(sdkMeeting, EVENT_SETTINGS_TOGGLE);
 
       const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
 
@@ -1358,8 +1296,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithLocalShareStoppedEvent$,
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
-        meetingWithUpdateEvent$,
-        meetingWithSettingsToggleEvent$,
         meetingStateChange$,
         meetingWithSwitchCameraEvent$,
         meetingWithSwitchMicrophoneEvent$,
