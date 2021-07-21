@@ -3,6 +3,7 @@ import {
   take,
   last,
   concatMap,
+  first,
 } from 'rxjs/operators';
 
 import MeetingSDKAdapter from './MeetingsSDKAdapter';
@@ -1042,6 +1043,41 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:speaker:switch', {
         speakerID: 'speakerID',
       });
+    });
+  });
+
+  describe('proceedWithoutCameraControl()', () => {
+    test('returns the display data of a meeting control in a proper shape', (done) => {
+      meetingSDKAdapter.proceedWithoutCameraControl(meetingID)
+        .pipe(first()).subscribe((dataDisplay) => {
+          expect(dataDisplay).toMatchObject({
+            ID: 'proceed-without-camera',
+            text: 'Proceed without camera',
+            tooltip: 'Ignore media access prompt and proceed without camera',
+          });
+          done();
+        });
+    });
+
+    test('throws errors if sdk meeting object is not defined', (done) => {
+      meetingSDKAdapter.proceedWithoutCameraControl('inexistent').subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe('Could not find meeting with ID "inexistent" to add proceed without camera control');
+          done();
+        },
+      );
+    });
+  });
+
+  describe('ignoreVideoAccessPrompt()', () => {
+    test('calls ignoreMediaAccessPrompt() on the meeting object if defined', () => {
+      meetingSDKAdapter.meetings[meetingID].localVideo.ignoreMediaAccessPrompt = jest.fn();
+
+      meetingSDKAdapter.ignoreVideoAccessPrompt(meetingID);
+
+      expect(meetingSDKAdapter.meetings[meetingID].localVideo.ignoreMediaAccessPrompt)
+        .toHaveBeenCalled();
     });
   });
 

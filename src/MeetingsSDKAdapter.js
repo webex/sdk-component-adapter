@@ -71,6 +71,7 @@ const SETTINGS_CONTROL = 'settings';
 const SWITCH_CAMERA_CONTROL = 'switch-camera';
 const SWITCH_MICROPHONE_CONTROL = 'switch-microphone';
 const SWITCH_SPEAKER_CONTROL = 'switch-speaker';
+const PROCEED_WITHOUT_CAMERA_CONTROL = 'proceed-without-camera';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -169,6 +170,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       action: this.switchSpeaker.bind(this),
       display: this.switchSpeakerControl.bind(this),
     };
+    this.meetingControls[PROCEED_WITHOUT_CAMERA_CONTROL] = {
+      ID: PROCEED_WITHOUT_CAMERA_CONTROL,
+      action: this.ignoreVideoAccessPrompt.bind(this),
+      display: this.proceedWithoutCameraControl.bind(this),
+    };
   }
 
   /**
@@ -213,11 +219,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       ? audio$.pipe(
         last(),
         concatMap((audio) => this.getStream(ID, {sendVideo: true}).pipe(
-          map(({permission, stream}) => ({
+          map(({permission, stream, ignore}) => ({
             ...audio,
             localVideo: {
               stream,
               permission,
+              ignoreMediaAccessPrompt: ignore,
             },
           })),
         )),
@@ -240,10 +247,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   getStream(ID, mediaDirection, audioVideo) {
     return new Observable(async (subscriber) => {
+      let ignored = false;
+
       try {
         const sdkMeeting = this.fetchMeeting(ID);
 
-        subscriber.next({permission: 'ASKING', stream: null});
+        const ignore = () => {
+          ignored = true;
+          subscriber.next({permission: 'IGNORED', stream: null});
+          subscriber.complete();
+        };
+
+        subscriber.next({permission: 'ASKING', stream: null, ignore});
 
         const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
 
@@ -256,25 +271,30 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           }
         }
 
-        subscriber.next({permission: 'ALLOWED', stream: localStream});
-      } catch (error) {
-        let perm;
-
-        // eslint-disable-next-line no-console
-        console.error('Unable to retrieve local media stream for meeting', ID, 'with mediaDirection', mediaDirection, 'and audioVideo', audioVideo, 'reason:', error);
-
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          if (error.message === 'Permission dismissed') {
-            perm = 'DISMISSED';
-          } else {
-            perm = 'DENIED';
-          }
-        } else {
-          perm = 'ERROR';
+        if (!ignored) {
+          subscriber.next({permission: 'ALLOWED', stream: localStream});
+          subscriber.complete();
         }
-        subscriber.next({permission: perm, stream: null});
+      } catch (error) {
+        if (!ignored) {
+          let perm;
+
+          // eslint-disable-next-line no-console
+          console.error('Unable to retrieve local media stream for meeting', ID, 'with mediaDirection', mediaDirection, 'and audioVideo', audioVideo, 'reason:', error);
+
+          if (error instanceof DOMException && error.name === 'NotAllowedError') {
+            if (error.message === 'Permission dismissed') {
+              perm = 'DISMISSED';
+            } else {
+              perm = 'DENIED';
+            }
+          } else {
+            perm = 'ERROR';
+          }
+          subscriber.next({permission: perm, stream: null});
+          subscriber.complete();
+        }
       }
-      subscriber.complete();
     });
   }
 
@@ -1331,6 +1351,48 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     );
 
     return concat(initialControl$, controlWithOptions$, controlFromEvent$);
+  }
+
+  /**
+   * Returns an observable that emits the display data of the proceed without camera control.
+   *
+   * @param {string} ID  Meeting ID
+   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of proceed without camera control
+   * @private
+   */
+  proceedWithoutCameraControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    const control$ = new Observable((observer) => {
+      if (sdkMeeting) {
+        observer.next({
+          ID: PROCEED_WITHOUT_CAMERA_CONTROL,
+          text: 'Proceed without camera',
+          tooltip: 'Ignore media access prompt and proceed without camera',
+        });
+        observer.complete();
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add proceed without camera control`));
+      }
+    });
+
+    return control$;
+  }
+
+  /**
+   * Allows user to join meeting without allowing camera access
+   *
+   * @param {string} ID Meeting ID
+   */
+  ignoreVideoAccessPrompt(ID) {
+    const meeting = this.meetings[ID];
+
+    if (meeting.localVideo.ignoreMediaAccessPrompt) {
+      meeting.localVideo.ignoreMediaAccessPrompt();
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Can not ignore video prompt in current state:', meeting.localVideo.permission);
+    }
   }
 
   /**
