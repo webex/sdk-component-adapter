@@ -834,8 +834,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
 
     const disableSharingStream = async () => {
-      this.stopStream(this.meetings[ID].localShare);
-      this.meetings[ID].localShare = null;
+      this.stopStream(this.meetings[ID].localShare.stream);
+      this.meetings[ID].localShare.stream = null;
 
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
@@ -854,9 +854,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       // eslint-disable-next-line no-console
       console.warn(`Unable to update local share stream for meeting "${ID}"`, error);
 
-      if (this.meetings[ID] && this.meetings[ID].localShare) {
-        this.stopStream(this.meetings[ID].localShare);
-        this.meetings[ID].localShare = null;
+      if (this.meetings[ID] && this.meetings[ID].localShare.stream) {
+        this.stopStream(this.meetings[ID].localShare.stream);
+        this.meetings[ID].localShare.stream = null;
       }
 
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
