@@ -1,3 +1,10 @@
+## [1.45.1](https://github.com/webex/sdk-component-adapter/compare/v1.45.0...v1.45.1) (2021-07-21)
+
+
+### Bug Fixes
+
+* **MeetingSdkAdapter:** access the local share stream correctly in handleLocalShare() ([3bd829b](https://github.com/webex/sdk-component-adapter/commit/3bd829bb17f838ad00af2321e0c3728145fe31d8))
+
 # [1.45.0](https://github.com/webex/sdk-component-adapter/compare/v1.44.2...v1.45.0) (2021-07-20)
 
 
