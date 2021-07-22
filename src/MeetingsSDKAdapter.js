@@ -437,7 +437,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     if (type === HYDRA_ID_TYPE_PEOPLE) {
       const {displayName} = await this.datasource.people.get(id);
 
-      meetingTitle = `${displayName}'s Personal Room`;
+      meetingTitle = displayName;
     } else if (type === HYDRA_ID_TYPE_ROOM) {
       // One must use a Hydra ID when calling `get` on rooms.
       // It has both the convo ID and cluster name in it.
@@ -451,7 +451,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         if (people.items) {
           const {displayName} = people.items[0];
 
-          meetingTitle = `${displayName}'s Personal Room`;
+          meetingTitle = displayName;
         }
         // eslint-disable-next-line no-empty
       } catch (error) {}

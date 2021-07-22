@@ -493,7 +493,7 @@ describe('Meetings SDK Adapter', () => {
 
       meetingSDKAdapter.datasource.people.get = jest.fn(() => Promise.resolve({displayName: 'displayName'}));
 
-      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual("displayName's Personal Room");
+      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual('displayName');
     });
 
     test("returns room's title if the destination is a personID", async () => {
@@ -509,7 +509,7 @@ describe('Meetings SDK Adapter', () => {
 
       meetingSDKAdapter.datasource.people.list = jest.fn(() => Promise.resolve({items: [{displayName: 'displayName'}]}));
 
-      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual("displayName's Personal Room");
+      expect(await meetingSDKAdapter.fetchMeetingTitle(meetingTitle)).toEqual('displayName');
     });
   });
 
