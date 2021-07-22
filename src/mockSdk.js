@@ -111,6 +111,7 @@ export const createMockSDKMeeting = () => ({
         : mockSDKMediaStreams.localVideo,
     ]);
   }),
+  leave: jest.fn(() => Promise.resolve()),
   muteAudio: jest.fn(() => Promise.resolve()),
   muteVideo: jest.fn(() => Promise.resolve()),
   register: jest.fn(() => Promise.resolve()),

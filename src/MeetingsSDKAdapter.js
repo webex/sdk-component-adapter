@@ -21,6 +21,7 @@ import {
   tap,
 } from 'rxjs/operators';
 
+import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import {chainWith} from './utils';
@@ -134,12 +135,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       display: this.shareControl.bind(this),
     };
 
-    this.meetingControls[EXIT_CONTROL] = {
-      ID: EXIT_CONTROL,
-      action: this.leaveMeeting.bind(this),
-      display: this.exitControl.bind(this),
-    };
-
+    this.meetingControls[EXIT_CONTROL] = new ExitControl(this, EXIT_CONTROL);
     this.meetingControls[ROSTER_CONTROL] = new RosterControl(this, ROSTER_CONTROL);
     this.meetingControls[SETTINGS_CONTROL] = new SettingsControl(this, SETTINGS_CONTROL);
 
@@ -632,26 +628,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         ID: JOIN_CONTROL,
         text: 'Join meeting',
         tooltip: 'Join meeting',
-        state: MeetingControlState.ACTIVE,
-      });
-
-      observer.complete();
-    });
-  }
-
-  /**
-   * Returns an observable that emits the display data of a meeting control.
-   *
-   * @private
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the exit control
-   */
-  // eslint-disable-next-line class-methods-use-this
-  exitControl() {
-    return Observable.create((observer) => {
-      observer.next({
-        ID: EXIT_CONTROL,
-        icon: 'cancel_28',
-        tooltip: 'Leave',
         state: MeetingControlState.ACTIVE,
       });
 
