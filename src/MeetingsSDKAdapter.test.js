@@ -472,17 +472,25 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('exitControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.exitControl().subscribe((dataDisplay) => {
-        expect(dataDisplay).toMatchObject({
-          ID: 'leave-meeting',
-          icon: 'cancel_28',
-          tooltip: 'Leave',
-          state: 'active',
-        });
-        done();
-      });
+  describe('leaveMeeting()', () => {
+    test('calls removeMedia() sdk adapter method and sdk leave method', async () => {
+      meetingsSDKAdapter.removeMedia = jest.fn();
+      await meetingsSDKAdapter.leaveMeeting(meetingID);
+      expect(meetingsSDKAdapter.removeMedia).toHaveBeenCalledWith(meetingID);
+      expect(mockSDKMeeting.leave).toHaveBeenCalled();
+    });
+
+    test('logs error if the SDK cannot leave the meeting', async () => {
+      const sdkError = new Error('sdk leave error');
+
+      mockSDKMeeting.leave = jest.fn(() => Promise.reject(sdkError));
+      global.console.error = jest.fn();
+      await meetingsSDKAdapter.leaveMeeting(meetingID);
+
+      expect(global.console.error).toHaveBeenCalledWith(
+        'Unable to leave from the meeting "meetingID"',
+        sdkError,
+      );
     });
   });
 
