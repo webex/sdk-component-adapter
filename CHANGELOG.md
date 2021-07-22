@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/webex/sdk-component-adapter/compare/v1.48.0...v1.49.0) (2021-07-22)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement settings control in its own file and create the tests accordingly ([9d085a2](https://github.com/webex/sdk-component-adapter/commit/9d085a2eb2c5f583b7e0d936e17dae29f9dccfe1))
+
 # [1.48.0](https://github.com/webex/sdk-component-adapter/compare/v1.47.0...v1.48.0) (2021-07-22)
 
 
