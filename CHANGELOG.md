@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/webex/sdk-component-adapter/compare/v1.47.0...v1.48.0) (2021-07-22)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** implement proceed without camera control ([208e69b](https://github.com/webex/sdk-component-adapter/commit/208e69b78c041c6a9673367349394c7cb5314084))
+
 # [1.47.0](https://github.com/webex/sdk-component-adapter/compare/v1.46.0...v1.47.0) (2021-07-21)
 
 
