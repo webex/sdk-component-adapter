@@ -14,7 +14,6 @@ import {
   concatMap,
   distinctUntilChanged,
   filter,
-  last,
   map,
   publishReplay,
   refCount,
@@ -71,6 +70,7 @@ const SWITCH_CAMERA_CONTROL = 'switch-camera';
 const SWITCH_MICROPHONE_CONTROL = 'switch-microphone';
 const SWITCH_SPEAKER_CONTROL = 'switch-speaker';
 const PROCEED_WITHOUT_CAMERA_CONTROL = 'proceed-without-camera';
+const PROCEED_WITHOUT_MICROPHONE_CONTROL = 'proceed-without-microphone';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -160,10 +160,17 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       action: this.switchSpeaker.bind(this),
       display: this.switchSpeakerControl.bind(this),
     };
+
     this.meetingControls[PROCEED_WITHOUT_CAMERA_CONTROL] = {
       ID: PROCEED_WITHOUT_CAMERA_CONTROL,
       action: this.ignoreVideoAccessPrompt.bind(this),
       display: this.proceedWithoutCameraControl.bind(this),
+    };
+
+    this.meetingControls[PROCEED_WITHOUT_MICROPHONE_CONTROL] = {
+      ID: PROCEED_WITHOUT_MICROPHONE_CONTROL,
+      action: this.ignoreAudioAccessPrompt.bind(this),
+      display: this.proceedWithoutMicrophoneControl.bind(this),
     };
   }
 
@@ -191,37 +198,31 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable} Observable that emits local media streams and their user permission status
    */
   getLocalMedia(ID) {
-    const audio$ = mediaSettings.sendAudio
-      ? this.getStream(ID, {sendAudio: true}).pipe(
-        map(({permission, stream}) => ({
-          localAudio: {
+    const {sendAudio, sendVideo} = mediaSettings;
+
+    return this.getStreamWithPermission(sendAudio, ID, {sendAudio: true}).pipe(
+      map(({permission, stream, ignore}) => ({
+        localAudio: {
+          stream,
+          permission,
+          ignoreMediaAccessPrompt: ignore,
+        },
+        localVideo: {
+          stream: null,
+          permission: null,
+        },
+      })),
+      chainWith((audio) => this.getStreamWithPermission(sendVideo, ID, {sendVideo: true}).pipe(
+        map(({permission, stream, ignore}) => ({
+          ...audio,
+          localVideo: {
             stream,
             permission,
-          },
-          localVideo: {
-            stream: null,
-            permission: null,
+            ignoreMediaAccessPrompt: ignore,
           },
         })),
-      )
-      : of({permission: null, stream: null});
-    const video$ = mediaSettings.sendVideo
-      ? audio$.pipe(
-        last(),
-        concatMap((audio) => this.getStream(ID, {sendVideo: true}).pipe(
-          map(({permission, stream, ignore}) => ({
-            ...audio,
-            localVideo: {
-              stream,
-              permission,
-              ignoreMediaAccessPrompt: ignore,
-            },
-          })),
-        )),
-      )
-      : of({permission: null, stream: null});
-
-    return concat(audio$, video$);
+      )),
+    );
   }
 
   /**
@@ -286,6 +287,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
       }
     });
+  }
+
+  /**
+   * Returns an observable that emits local device media streams and their user permission status
+   *
+   * @private
+   * @param {boolean} condition Meeting mediaSettings propery condition for sending streams
+   * @param {string} ID Meeting ID
+   * @param {object} mediaDirection A configurable options object for joining a meetings
+   * @param {object} audioVideo audio/video object to set audioinput and videoinput devices
+   * @returns {Observable} Observable that emits local media streams and their user permission status
+   */
+  getStreamWithPermission(condition, ID, mediaDirection, audioVideo) {
+    return condition
+      ? this.getStream(ID, mediaDirection, audioVideo)
+      : of({permission: null, stream: null});
   }
 
   /**
@@ -1271,6 +1288,48 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     } else {
       // eslint-disable-next-line no-console
       console.error('Can not ignore video prompt in current state:', meeting.localVideo.permission);
+    }
+  }
+
+  /**
+   * Returns an observable that emits the display data of the proceed without microphone control.
+   *
+   * @param {string} ID  Meeting ID
+   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of proceed without microphone control
+   * @private
+   */
+  proceedWithoutMicrophoneControl(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    const control$ = new Observable((observer) => {
+      if (sdkMeeting) {
+        observer.next({
+          ID: PROCEED_WITHOUT_MICROPHONE_CONTROL,
+          text: 'Proceed without microphone',
+          tooltip: 'Ignore media access prompt and proceed without microphone',
+        });
+        observer.complete();
+      } else {
+        observer.error(new Error(`Could not find meeting with ID "${ID}" to add proceed without microphone control`));
+      }
+    });
+
+    return control$;
+  }
+
+  /**
+   * Allows user to join meeting without allowing microphone access
+   *
+   * @param {string} ID Meeting ID
+   */
+  ignoreAudioAccessPrompt(ID) {
+    const meeting = this.meetings[ID];
+
+    if (meeting.localAudio.ignoreMediaAccessPrompt) {
+      meeting.localAudio.ignoreMediaAccessPrompt();
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Can not ignore audio prompt in current state:', meeting.localAudio.permission);
     }
   }
 
