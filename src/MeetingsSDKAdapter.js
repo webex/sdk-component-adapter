@@ -13,7 +13,6 @@ import {
   catchError,
   concatMap,
   distinctUntilChanged,
-  flatMap,
   filter,
   last,
   map,
@@ -25,6 +24,7 @@ import {
 
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
+import {chainWith} from './utils';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -468,7 +468,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
-      flatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(
+      concatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(
         map((title) => ({ID: id, title})),
       )),
       map((meeting) => ({
@@ -496,16 +496,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       })),
     );
 
-    const meeting$ = newMeeting$.pipe(
-      concatMap((meeting) => this.getLocalMedia(meeting.ID).pipe(
+    return newMeeting$.pipe(
+      chainWith((meeting) => this.getLocalMedia(meeting.ID).pipe(
         map((localMedia) => ({
           ...meeting,
           ...localMedia,
         })),
       )),
-    );
-
-    return concat(newMeeting$, meeting$).pipe(
       tap((meeting) => {
         const sdkMeeting = this.fetchMeeting(meeting.ID);
 
