@@ -1,3 +1,10 @@
+## [1.49.1](https://github.com/webex/sdk-component-adapter/compare/v1.49.0...v1.49.1) (2021-07-23)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** chain dependent observables on createMeeting ([6a6ce40](https://github.com/webex/sdk-component-adapter/commit/6a6ce404f35f692ba708d45e7a59a30aa7d01ff4))
+
 # [1.49.0](https://github.com/webex/sdk-component-adapter/compare/v1.48.0...v1.49.0) (2021-07-22)
 
 
