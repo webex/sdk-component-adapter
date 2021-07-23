@@ -136,6 +136,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           tap((meeting) => MEETING_ID = meeting.ID),
           tap((meeting) => {
             document.getElementById('proceed-without-camera').disabled = !meeting.localVideo.ignoreMediaAccessPrompt;
+            document.getElementById('proceed-without-microphone').disabled = !meeting.localAudio.ignoreMediaAccessPrompt;
           }),
           last()
         ).subscribe(() => {
@@ -185,6 +186,9 @@ document.getElementById('actions').addEventListener('click', async (event) => {
       case 'proceed-without-camera': 
         await webexSDKAdapter.meetingsAdapter.meetingControls['proceed-without-camera'].action(MEETING_ID);
         break;
+      case 'proceed-without-microphone': 
+        await webexSDKAdapter.meetingsAdapter.meetingControls['proceed-without-microphone'].action(MEETING_ID);
+        break
     }
   } catch (error) {
     console.error('Unable to perform an action:', error);
