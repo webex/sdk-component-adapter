@@ -238,6 +238,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   getStream(ID, mediaDirection, audioVideo) {
     return new Observable(async (subscriber) => {
       let ignored = false;
+      let isAsking;
 
       try {
         const sdkMeeting = this.fetchMeeting(ID);
@@ -248,9 +249,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           subscriber.complete();
         };
 
-        subscriber.next({permission: 'ASKING', stream: null, ignore});
+        // wait a bit for the prompt to appear before emitting ASKING
+        isAsking = true;
+        setTimeout(() => {
+          if (isAsking) {
+            // media access promise was neither fulfilled nor rejected, so the browser prompt is probably showing
+            subscriber.next({permission: 'ASKING', stream: null, ignore});
+          }
+        }, 2000);
 
         const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
+
+        isAsking = false;
 
         for (const track of localStream.getTracks()) {
           if (track.kind === 'video' && !mediaDirection.sendVideo) {
@@ -266,6 +276,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           subscriber.complete();
         }
       } catch (error) {
+        isAsking = false;
+
         if (!ignored) {
           let perm;
 
