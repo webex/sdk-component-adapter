@@ -14,9 +14,15 @@ export const mockSDKPerson = {
   orgId: 'orgID',
 };
 
-export const mockSDKMediaStreams = {
-  localAudio: new MediaStream(),
-  localVideo: new MediaStream(),
+export const createMockSDKMediaStreams = () => {
+  const localAudio = new MediaStream([{kind: 'audio'}]);
+  const localVideo = new MediaStream([{kind: 'video'}]);
+
+  return {
+    localAudio,
+    localVideo,
+    localAudioVideo: new MediaStream([...localAudio.getTracks(), ...localVideo.getTracks()]),
+  };
 };
 
 /**
@@ -96,11 +102,15 @@ export const createMockSDKMeeting = () => ({
   },
   addMedia: jest.fn(() => Promise.resolve()),
   emit: jest.fn(() => Promise.resolve()),
-  getMediaStreams: jest.fn((constraint) => Promise.resolve([
-    constraint.sendAudio
-      ? mockSDKMediaStreams.localAudio
-      : mockSDKMediaStreams.localVideo,
-  ])),
+  getMediaStreams: jest.fn((constraint) => {
+    const mockSDKMediaStreams = createMockSDKMediaStreams();
+
+    return Promise.resolve([
+      constraint.sendAudio
+        ? mockSDKMediaStreams.localAudio
+        : mockSDKMediaStreams.localVideo,
+    ]);
+  }),
   muteAudio: jest.fn(() => Promise.resolve()),
   muteVideo: jest.fn(() => Promise.resolve()),
   register: jest.fn(() => Promise.resolve()),
