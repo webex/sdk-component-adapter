@@ -6,7 +6,6 @@ import {
   fromEvent,
   merge,
   Observable,
-  defer,
   of,
 } from 'rxjs';
 import {
@@ -29,6 +28,7 @@ import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import SwitchCameraControl from './MeetingsSDKAdapter/controls/SwitchCameraControl';
 import SwitchMicrophoneControl from './MeetingsSDKAdapter/controls/SwitchMicrophoneControl';
+import SwitchSpeakerControl from './MeetingsSDKAdapter/controls/SwitchSpeakerControl';
 import {chainWith, deepMerge} from './utils';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
@@ -62,7 +62,6 @@ const EVENT_MEETING_UPDATED = 'adapter:meeting:updated';
 const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
 const EVENT_MICROPHONE_SWITCH = 'adapter:microphone:switch';
-const EVENT_SPEAKER_SWITCH = 'adapter:speaker:switch';
 
 // Meeting controls
 const JOIN_CONTROL = 'join-meeting';
@@ -137,24 +136,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     this.meetingControls[SETTINGS_CONTROL] = new SettingsControl(this, SETTINGS_CONTROL);
     this.meetingControls[SWITCH_CAMERA_CONTROL] = new
     SwitchCameraControl(this, SWITCH_CAMERA_CONTROL);
-
+    this.meetingControls[SWITCH_SPEAKER_CONTROL] = new
+    SwitchSpeakerControl(this, SWITCH_SPEAKER_CONTROL);
     this.meetingControls[SWITCH_MICROPHONE_CONTROL] = new
     SwitchMicrophoneControl(this, SWITCH_MICROPHONE_CONTROL);
-
-    this.meetingControls[SWITCH_SPEAKER_CONTROL] = {
-      ID: SWITCH_SPEAKER_CONTROL,
-      action: this.switchSpeaker.bind(this),
-      display: this.switchSpeakerControl.bind(this),
-    };
+    this.meetingControls[PROCEED_WITHOUT_CAMERA_CONTROL] = new
+    ProceedWithoutCameraControl(this, PROCEED_WITHOUT_CAMERA_CONTROL);
 
     this.meetingControls[PROCEED_WITHOUT_MICROPHONE_CONTROL] = {
       ID: PROCEED_WITHOUT_MICROPHONE_CONTROL,
       action: this.ignoreAudioAccessPrompt.bind(this),
       display: this.proceedWithoutMicrophoneControl.bind(this),
     };
-
-    this.meetingControls[PROCEED_WITHOUT_CAMERA_CONTROL] = new
-    ProceedWithoutCameraControl(this, PROCEED_WITHOUT_CAMERA_CONTROL);
   }
 
   /**
@@ -1026,63 +1019,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    */
   async switchSpeaker(ID, speakerID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-
-    this.meetings[ID].speakerID = speakerID;
-    sdkMeeting.emit(EVENT_SPEAKER_SWITCH, {speakerID});
-  }
-
-  /**
-   * Returns an observable that emits the display data of the speaker switcher control.
-   *
-   * @param {string} ID  Meeting ID
-   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of speaker switcher control
-   * @private
-   */
-  switchSpeakerControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const availableSpeakers$ = defer(() => this.getAvailableDevices(ID, 'audiooutput'));
-
-    const initialControl$ = new Observable((observer) => {
-      if (sdkMeeting) {
-        observer.next({
-          ID: SWITCH_SPEAKER_CONTROL,
-          type: 'MULTISELECT',
-          tooltip: 'Speaker Devices',
-          noOptionsMessage: 'No available speakers',
-          options: null,
-          selected: this.meetings[ID].speakerID,
-        });
-        observer.complete();
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch speaker control`));
-      }
-    });
-
-    const controlWithOptions$ = initialControl$.pipe(
-      concatMap((control) => availableSpeakers$.pipe(
-        map((availableSpeakers) => ({
-          ...control,
-          selected: this.meetings[ID].speakerID,
-          options: availableSpeakers && availableSpeakers.map((speaker) => ({
-            value: speaker.deviceId,
-            label: speaker.label,
-            speaker,
-          })),
-        })),
-      )),
-    );
-
-    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH).pipe(
-      concatMap(({speakerID}) => controlWithOptions$.pipe(
-        map((control) => ({
-          ...control,
-          selected: speakerID,
-        })),
-      )),
-    );
-
-    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
+    return this.updateMeeting(ID, () => ({speakerID}));
   }
 
   /**
@@ -1196,8 +1133,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
-      const meetingWithSwitchSpeakerEvent$ = fromEvent(sdkMeeting, EVENT_SPEAKER_SWITCH);
-
       const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
 
       const meetingWithSwitchMicrophoneEvent$ = fromEvent(sdkMeeting, EVENT_MICROPHONE_SWITCH);
@@ -1230,7 +1165,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingStateChange$,
         meetingWithSwitchCameraEvent$,
         meetingWithSwitchMicrophoneEvent$,
-        meetingWithSwitchSpeakerEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
