@@ -27,6 +27,7 @@ import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import SwitchCameraControl from './MeetingsSDKAdapter/controls/SwitchCameraControl';
+import SwitchMicrophoneControl from './MeetingsSDKAdapter/controls/SwitchMicrophoneControl';
 import {chainWith, deepMerge} from './utils';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
@@ -136,11 +137,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     this.meetingControls[SWITCH_CAMERA_CONTROL] = new
     SwitchCameraControl(this, SWITCH_CAMERA_CONTROL);
 
-    this.meetingControls[SWITCH_MICROPHONE_CONTROL] = {
-      ID: SWITCH_MICROPHONE_CONTROL,
-      action: this.switchMicrophone.bind(this),
-      display: this.switchMicrophoneControl.bind(this),
-    };
+    this.meetingControls[SWITCH_MICROPHONE_CONTROL] = new
+    SwitchMicrophoneControl(this, SWITCH_MICROPHONE_CONTROL);
 
     this.meetingControls[SWITCH_SPEAKER_CONTROL] = {
       ID: SWITCH_SPEAKER_CONTROL,
@@ -989,32 +987,37 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    *
    * @param {string} ID Meeting ID
    * @param {string} microphoneID ID of the microphone to switch to
-   * @private
    */
   async switchMicrophone(ID, microphoneID) {
-    const sdkMeeting = this.fetchMeeting(ID);
+    await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+      let updates;
+      const {stream, permission} = await this.getStream(
+        ID,
+        {sendAudio: true},
+        {audio: {deviceId: microphoneID}},
+      ).toPromise();
 
-    const {stream, permission} = await this.getStream(
-      ID,
-      {sendAudio: true},
-      {audio: {deviceId: microphoneID}},
-    ).toPromise();
+      if (stream) {
+        updates = {
+          localAudio: {
+            stream,
+          },
+          microphoneID,
+        };
 
-    if (stream) {
-      this.meetings[ID].localAudio.stream = stream;
-      this.meetings[ID].microphoneID = microphoneID;
-
-      if (this.meetings[ID].state === MeetingState.JOINED) {
-        await sdkMeeting.updateAudio({
-          stream,
-          receiveAudio: mediaSettings.receiveAudio,
-          sendAudio: mediaSettings.sendAudio,
-        });
+        if (meeting.state === MeetingState.JOINED) {
+          await sdkMeeting.updateAudio({
+            stream,
+            receiveAudio: mediaSettings.receiveAudio,
+            sendAudio: mediaSettings.sendAudio,
+          });
+        }
+      } else {
+        throw new Error(`Could not change microphone, permission not granted: ${permission}`);
       }
-      sdkMeeting.emit(EVENT_MICROPHONE_SWITCH, {microphoneID});
-    } else {
-      throw new Error('Could not change microphone, permission not granted:', permission);
-    }
+
+      return updates;
+    });
   }
 
   /**
@@ -1029,59 +1032,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     this.meetings[ID].speakerID = speakerID;
     sdkMeeting.emit(EVENT_SPEAKER_SWITCH, {speakerID});
-  }
-
-  /**
-   * Returns an observable that emits the display data of the switch microphone control.
-   *
-   * @param {string} ID Meeting ID
-   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of the switch microphone control
-   * @private
-   */
-  switchMicrophoneControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const availableMicrophones$ = defer(() => this.getAvailableDevices(ID, 'audioinput'));
-
-    const initialControl$ = new Observable((observer) => {
-      if (sdkMeeting) {
-        observer.next({
-          ID: SWITCH_MICROPHONE_CONTROL,
-          type: 'MULTISELECT',
-          tooltip: 'Microphone Devices',
-          noOptionsMessage: 'No available microphones',
-          options: null,
-          selected: this.meetings[ID].microphoneID,
-        });
-        observer.complete();
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch microphone control`));
-      }
-    });
-
-    const controlWithOptions$ = initialControl$.pipe(
-      concatMap((control) => availableMicrophones$.pipe(
-        map((availableMicrophones) => ({
-          ...control,
-          selected: this.meetings[ID].microphoneID,
-          options: availableMicrophones && availableMicrophones.map((microphone) => ({
-            value: microphone.deviceId,
-            label: microphone.label,
-            microphone,
-          })),
-        })),
-      )),
-    );
-
-    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_MICROPHONE_SWITCH).pipe(
-      concatMap(({microphoneID}) => controlWithOptions$.pipe(
-        map((control) => ({
-          ...control,
-          selected: microphoneID,
-        })),
-      )),
-    );
-
-    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
   }
 
   /**
