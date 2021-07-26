@@ -21,7 +21,6 @@ describe('Settings Control', () => {
             icon: 'settings_32',
             tooltip: 'Show settings panel',
             state: 'inactive',
-            text: 'Settings',
           });
         });
     });

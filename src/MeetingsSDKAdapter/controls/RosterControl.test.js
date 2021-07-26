@@ -21,7 +21,6 @@ describe('Roster Control', () => {
             icon: 'participant-list_28',
             tooltip: 'Show participants panel',
             state: 'inactive',
-            text: 'Participants',
           });
         });
     });
