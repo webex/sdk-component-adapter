@@ -77,7 +77,7 @@
     ]
   },
   "jest": {
-    "setupFiles": [
+    "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
     ],
     "preset": "jest-puppeteer",
