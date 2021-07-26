@@ -841,9 +841,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
 
     const disableSharingStream = async () => {
-      this.stopStream(this.meetings[ID].localShare.stream);
-      this.meetings[ID].localShare.stream = null;
-
       sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
         control: SHARE_CONTROL,
         state: MeetingControlState.INACTIVE,
@@ -1320,7 +1317,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           tap(() => this.attachMedia(ID, {type: EVENT_REMOTE_SHARE_STOP})),
         );
 
-      const meetingWithLocalShareStoppedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP);
+      const meetingWithLocalShareStoppedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP).pipe(
+        tap(() => {
+          this.stopStream(this.meetings[ID].localShare.stream);
+          this.meetings[ID].localShare.stream = null;
+        }),
+      );
 
       const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
 
