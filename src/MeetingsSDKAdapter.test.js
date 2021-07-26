@@ -888,50 +888,30 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('switchMicrophoneControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.switchMicrophoneControl(meetingID)
-        .pipe(first()).subscribe((dataDisplay) => {
-          expect(dataDisplay).toMatchObject({
-            ID: 'switch-microphone',
-            type: 'MULTISELECT',
-            tooltip: 'Microphone Devices',
-            options: null,
-            selected: null,
-          });
-          done();
-        });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingsSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingsSDKAdapter.switchMicrophoneControl(meetingID).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add switch microphone control');
-          done();
-        },
-      );
-    });
-  });
-
   describe('switchMicrophone()', () => {
-    beforeEach(() => {
-      meetingsSDKAdapter.meetings[meetingID] = {
-        ...meeting,
-        microphoneID: null,
-        localAudio: {
-          stream: null,
-        },
-      };
+    test('sets the microphone that was chosen by the user', async () => {
+      meetingsSDKAdapter.meetings[meetingID].microphoneID = null;
+      await meetingsSDKAdapter.switchMicrophone(meetingID, 'example-microphone-id');
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({microphoneID: 'example-microphone-id'});
     });
 
-    test('emits the switch microphone events with microphoneID', async () => {
-      await meetingsSDKAdapter.switchMicrophone(meetingID, 'microphoneID');
+    test('returns a rejected promise if meeting does not exist', (done) => {
+      meetingsSDKAdapter.switchMicrophone('inexistent', 'example-microphone-id').catch((error) => {
+        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
+        done();
+      });
+    });
 
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:microphone:switch', {
-        microphoneID: 'microphoneID',
+    test('returns a rejected promise if microphone stream cannot be obtained', (done) => {
+      const sdkError = new Error('sdk switch microphone error');
+
+      mockSDKMeeting.getMediaStreams = () => Promise.reject(sdkError);
+      meetingsSDKAdapter.switchMicrophone(meetingID, 'example-microphone-id').catch((error) => {
+        expect(error.message).toBe('Could not change microphone, permission not granted: ERROR');
+        done();
       });
     });
   });
