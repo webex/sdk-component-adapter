@@ -610,7 +610,7 @@ describe('Meetings SDK Adapter', () => {
           icon: 'camera-muted_28',
           tooltip: 'No camera available',
           state: 'disabled',
-          text: null,
+          text: 'No camera',
         });
         done();
       });

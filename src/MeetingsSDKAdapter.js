@@ -725,21 +725,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       icon: 'camera-muted_28',
       tooltip: 'Start video',
       state: MeetingControlState.ACTIVE,
-      text: null,
+      text: 'Start video',
     };
     const unmuted = {
       ID: VIDEO_CONTROL,
       icon: 'camera-muted_28',
       tooltip: 'Stop video',
       state: MeetingControlState.INACTIVE,
-      text: null,
+      text: 'Stop video',
     };
     const disabled = {
       ID: VIDEO_CONTROL,
       icon: 'camera-muted_28',
       tooltip: 'No camera available',
       state: MeetingControlState.DISABLED,
-      text: null,
+      text: 'No camera',
     };
 
     return this.getMeeting(ID).pipe(

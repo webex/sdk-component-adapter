@@ -21,7 +21,7 @@ describe('Audio Control', () => {
             icon: 'microphone-muted_28',
             tooltip: 'No microphone available',
             state: 'disabled',
-            text: null,
+            text: 'No microphone',
           });
           done();
         });
