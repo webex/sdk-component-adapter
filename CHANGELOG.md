@@ -1,3 +1,10 @@
+## [1.49.2](https://github.com/webex/sdk-component-adapter/compare/v1.49.1...v1.49.2) (2021-07-26)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** stop local share stream when sdk event is emitted ([f41ae02](https://github.com/webex/sdk-component-adapter/commit/f41ae027793378920ee4e277b07740898214b641))
+
 ## [1.49.1](https://github.com/webex/sdk-component-adapter/compare/v1.49.0...v1.49.1) (2021-07-23)
 
 
