@@ -916,47 +916,20 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('switchSpeakerControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.switchSpeakerControl(meetingID)
-        .pipe(first()).subscribe((dataDisplay) => {
-          expect(dataDisplay).toMatchObject({
-            ID: 'switch-speaker',
-            type: 'MULTISELECT',
-            tooltip: 'Speaker Devices',
-            options: null,
-            selected: null,
-          });
-          done();
-        });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingsSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingsSDKAdapter.switchSpeakerControl(meetingID).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add switch speaker control');
-          done();
-        },
-      );
-    });
-  });
-
   describe('switchSpeaker()', () => {
-    beforeEach(() => {
-      meetingsSDKAdapter.meetings[meetingID] = {
-        ...meeting,
-        speakerID: null,
-      };
+    test('sets the speaker that was chosen by the user', async () => {
+      meetingsSDKAdapter.meetings[meetingID].speakerID = null;
+      await meetingsSDKAdapter.switchSpeaker(meetingID, 'example-speaker-id');
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({speakerID: 'example-speaker-id'});
     });
 
-    test('emits the switch speaker events with speakerID', async () => {
-      await meetingsSDKAdapter.switchSpeaker(meetingID, 'speakerID');
-
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:speaker:switch', {
-        speakerID: 'speakerID',
+    test('returns a rejected promise if meeting does not exist', (done) => {
+      meetingsSDKAdapter.switchSpeaker('inexistent', 'example-speaker-id').catch((error) => {
+        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
+        done();
       });
     });
   });

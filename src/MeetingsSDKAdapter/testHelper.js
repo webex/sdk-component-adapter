@@ -30,7 +30,7 @@ export function createTestMeetingsSDKAdapter() {
     title: 'my meeting',
     cameraID: 'cameraID',
     microphoneID: null,
-    speakerID: null,
+    speakerID: 'speakerID',
   };
   const mockSDK = createMockSDK();
   const meetingsSDKAdapter = new MeetingsSDKAdapter(mockSDK);
