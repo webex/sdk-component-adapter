@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/webex/sdk-component-adapter/compare/v1.50.0...v1.51.0) (2021-07-27)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** avoid emitting 'asking' state when user already allowed or denied access ([ae22028](https://github.com/webex/sdk-component-adapter/commit/ae220281aa499fce890edd611a8928f7bc7bad97))
+
 # [1.50.0](https://github.com/webex/sdk-component-adapter/compare/v1.49.2...v1.50.0) (2021-07-27)
 
 
