@@ -961,31 +961,6 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('proceedWithoutCameraControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.proceedWithoutCameraControl(meetingID)
-        .pipe(first()).subscribe((dataDisplay) => {
-          expect(dataDisplay).toMatchObject({
-            ID: 'proceed-without-camera',
-            type: 'JOIN',
-            text: 'Proceed without camera',
-            tooltip: 'Ignore media access prompt and proceed without camera',
-          });
-          done();
-        });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingsSDKAdapter.proceedWithoutCameraControl('inexistent').subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "inexistent" to add proceed without camera control');
-          done();
-        },
-      );
-    });
-  });
-
   describe('ignoreVideoAccessPrompt()', () => {
     test('calls ignoreMediaAccessPrompt() on the meeting object if defined', () => {
       meetingsSDKAdapter.meetings[meetingID].localVideo.ignoreMediaAccessPrompt = jest.fn();
