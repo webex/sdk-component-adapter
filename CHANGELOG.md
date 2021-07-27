@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/webex/sdk-component-adapter/compare/v1.49.2...v1.50.0) (2021-07-27)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** remove "Personal Room" from meeting title ([2c3d94f](https://github.com/webex/sdk-component-adapter/commit/2c3d94f1f102293776b98c6880f6c082e928d322))
+
 ## [1.49.2](https://github.com/webex/sdk-component-adapter/compare/v1.49.1...v1.49.2) (2021-07-26)
 
 
