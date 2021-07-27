@@ -1,3 +1,10 @@
+# [1.52.0](https://github.com/webex/sdk-component-adapter/compare/v1.51.0...v1.52.0) (2021-07-27)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** implement proceed without microphone control ([0518b04](https://github.com/webex/sdk-component-adapter/commit/0518b049a35b7c9a20c3cf108a4a0961b0986e5c))
+
 # [1.51.0](https://github.com/webex/sdk-component-adapter/compare/v1.50.0...v1.51.0) (2021-07-27)
 
 
