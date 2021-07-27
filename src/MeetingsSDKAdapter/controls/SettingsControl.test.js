@@ -1,48 +1,15 @@
 import {first} from 'rxjs/operators';
-import MeetingsSDKAdapter from '../../MeetingsSDKAdapter';
-import createMockSDK from '../../mockSdk';
+import {meetingID, createTestMeetingsSDKAdapter} from '../testHelper';
 
 describe('Settings Control', () => {
-  let meeting;
-  let meetingID;
   let meetingsSDKAdapter;
-  let mockSDK;
 
   beforeEach(() => {
-    mockSDK = createMockSDK();
-    meetingID = 'meetingID';
-    meetingsSDKAdapter = new MeetingsSDKAdapter(mockSDK);
-    meeting = {
-      ID: meetingID,
-      localAudio: {
-        stream: null,
-        permission: null,
-      },
-      localShare: {
-        stream: null,
-      },
-      localVideo: {
-        stream: null,
-        permission: null,
-      },
-      remoteAudio: null,
-      remoteVideo: null,
-      remoteShare: null,
-      showRoster: null,
-      showSettings: false,
-      title: 'my meeting',
-      cameraID: null,
-      microphoneID: null,
-      speakerID: null,
-    };
-    meetingsSDKAdapter.meetings[meetingID] = meeting;
+    meetingsSDKAdapter = createTestMeetingsSDKAdapter();
   });
 
   afterEach(() => {
-    meeting = null;
-    mockSDK = null;
     meetingsSDKAdapter = null;
-    meetingID = null;
   });
 
   describe('display()', () => {
