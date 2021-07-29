@@ -22,6 +22,7 @@ import {
 } from 'rxjs/operators';
 
 import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
+import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import {chainWith} from './utils';
@@ -111,11 +112,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     this.getMeetingObservables = {};
     this.meetings = {};
 
-    this.meetingControls[JOIN_CONTROL] = {
-      ID: JOIN_CONTROL,
-      action: this.joinMeeting.bind(this),
-      display: this.joinControl.bind(this),
-    };
+    this.meetingControls[JOIN_CONTROL] = new JoinControl(this, JOIN_CONTROL);
 
     this.meetingControls[AUDIO_CONTROL] = {
       ID: AUDIO_CONTROL,
@@ -613,26 +610,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       // eslint-disable-next-line no-console
       console.error(`Unable to leave from the meeting "${ID}"`, error);
     }
-  }
-
-  /**
-   * Returns an observable that emits the display data of a meeting control.
-   *
-   * @private
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the join control
-   */
-  // eslint-disable-next-line class-methods-use-this
-  joinControl() {
-    return Observable.create((observer) => {
-      observer.next({
-        ID: JOIN_CONTROL,
-        text: 'Join meeting',
-        tooltip: 'Join meeting',
-        state: MeetingControlState.ACTIVE,
-      });
-
-      observer.complete();
-    });
   }
 
   /**

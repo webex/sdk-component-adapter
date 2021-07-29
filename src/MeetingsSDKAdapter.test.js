@@ -458,20 +458,6 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('joinControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.joinControl().subscribe((dataDisplay) => {
-        expect(dataDisplay).toMatchObject({
-          ID: 'join-meeting',
-          text: 'Join meeting',
-          tooltip: 'Join meeting',
-          state: 'active',
-        });
-        done();
-      });
-    });
-  });
-
   describe('leaveMeeting()', () => {
     test('calls removeMedia() sdk adapter method and sdk leave method', async () => {
       meetingsSDKAdapter.removeMedia = jest.fn();
@@ -489,6 +475,44 @@ describe('Meetings SDK Adapter', () => {
 
       expect(global.console.error).toHaveBeenCalledWith(
         'Unable to leave from the meeting "meetingID"',
+        sdkError,
+      );
+    });
+  });
+
+  describe('joinMeeting()', () => {
+    test('calls join() sdk method', async () => {
+      await meetingsSDKAdapter.joinMeeting(meetingID);
+      expect(mockSDKMeeting.join).toHaveBeenCalled();
+    });
+
+    test('calls addMedia() sdk method', async () => {
+      await meetingsSDKAdapter.joinMeeting(meetingID);
+      expect(mockSDKMeeting.addMedia).toHaveBeenCalled();
+    });
+
+    test('calls muteAudio() sdk method if local audio is muted before join', async () => {
+      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
+      await meetingsSDKAdapter.joinMeeting(meetingID);
+      expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
+    });
+
+    test('calls muteVideo() sdk method if local video is muted before join', async () => {
+      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
+      await meetingsSDKAdapter.joinMeeting(meetingID);
+      expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
+    });
+
+    test('logs error if sdk refuses to join', async () => {
+      const sdkError = new Error('sdk join error');
+
+      mockSDKMeeting.join = jest.fn(() => Promise.reject(sdkError));
+      global.console.error = jest.fn();
+
+      await meetingsSDKAdapter.joinMeeting(meetingID);
+
+      expect(global.console.error).toHaveBeenCalledWith(
+        'Unable to join meeting "meetingID"',
         sdkError,
       );
     });
