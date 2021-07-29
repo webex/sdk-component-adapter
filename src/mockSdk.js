@@ -1,3 +1,5 @@
+import mockDevices from './mockDevices';
+
 export const mockSDKRoom = {
   id: 'abc',
   type: 'group',
@@ -102,7 +104,7 @@ export const createMockSDKMeeting = () => ({
   },
   addMedia: jest.fn(() => Promise.resolve()),
   emit: jest.fn(() => Promise.resolve()),
-  getDevices: jest.fn(() => Promise.resolve([])),
+  getDevices: jest.fn(() => Promise.resolve(mockDevices)),
   getMediaStreams: jest.fn((constraint) => {
     const mockSDKMediaStreams = createMockSDKMediaStreams();
 
