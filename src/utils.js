@@ -1,4 +1,5 @@
-import {Observable} from 'rxjs';
+import {combineLatest, Observable} from 'rxjs';
+import {startWith} from 'rxjs/operators';
 
 /**
  * Custom rxjs operator for chaining dependent observables.
@@ -41,6 +42,20 @@ export function chainWith(createDependentObservable) {
 }
 
 /**
+ * Custom rxjs operator that works like combineLatest, but emits even if some of the source observables haven't emitted yet.
+ * Usage:
+ ```js
+  combineLatestImmediate(obs1, obs2, ...);
+  ```
+ *
+ * @param {ObservableInput} [observables] An array of input Observables to combine with each other.
+ * @returns {Observable} Observable that emits arrays containing the last emitted value from each of the observables defined above.
+ */
+export function combineLatestImmediate(...observables) {
+  return combineLatest(observables.map((obs) => obs.pipe(startWith(undefined))));
+}
+
+/**
  * Helper function for deep merge on objects.
  *
  * @param {object} dest - The destination object.
@@ -58,4 +73,4 @@ export function deepMerge(dest, src) {
   }
 }
 
-export default {chainWith, deepMerge};
+export default {chainWith, combineLatestImmediate, deepMerge};

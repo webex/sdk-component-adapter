@@ -1,8 +1,6 @@
 import * as rxjs from 'rxjs';
 import {
-  take,
   last,
-  concatMap,
   first,
 } from 'rxjs/operators';
 
@@ -352,17 +350,6 @@ describe('Meetings SDK Adapter', () => {
         remoteVideo: null,
       });
     });
-
-    test('returns the same meeting object, if the event type is not declared', () => {
-      const event = {
-        type: 'NA',
-      };
-
-      meetingsSDKAdapter.meetings[meetingID] = meeting;
-      meetingsSDKAdapter.removeMedia(meetingID, event);
-
-      expect(meetingsSDKAdapter.meetings[meetingID]).toMatchObject(meeting);
-    });
   });
 
   describe('createMeeting()', () => {
@@ -394,7 +381,7 @@ describe('Meetings SDK Adapter', () => {
 
       meetingsSDKAdapter.createMeeting(target).pipe(last()).subscribe((newMeeting) => {
         expect(newMeeting).toMatchObject({
-          ...meeting,
+          title: 'my meeting',
           localAudio: {
             stream: mockSDKMediaStreams.localAudio,
             permission: 'ALLOWED',
@@ -403,6 +390,18 @@ describe('Meetings SDK Adapter', () => {
             stream: mockSDKMediaStreams.localVideo,
             permission: 'ALLOWED',
           },
+          localShare: {
+            stream: null,
+          },
+          remoteAudio: null,
+          remoteVideo: null,
+          remoteShare: null,
+          showRoster: null,
+          showSettings: false,
+          state: 'NOT_JOINED',
+          cameraID: null,
+          microphoneID: null,
+          speakerID: null,
         });
         done();
       });
@@ -859,49 +858,30 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('switchCameraControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.switchCameraControl(meetingID)
-        .pipe(take(1)).subscribe((dataDisplay) => {
-          expect(dataDisplay).toMatchObject({
-            ID: 'switch-camera',
-            tooltip: 'Video Devices',
-            options: null,
-            selected: null,
-          });
-          done();
-        });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingsSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingsSDKAdapter.switchCameraControl(meetingID).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "meetingID" to add switch camera control');
-          done();
-        },
-      );
-    });
-  });
-
   describe('switchCamera()', () => {
-    beforeEach(() => {
-      meetingsSDKAdapter.meetings[meetingID] = {
-        ...meeting,
-        cameraID: null,
-        localVideo: {
-          stream: null,
-        },
-      };
+    test('sets the camera that was chosen by the user', async () => {
+      meetingsSDKAdapter.meetings[meetingID].cameraID = null;
+      await meetingsSDKAdapter.switchCamera(meetingID, 'example-camera-id');
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({cameraID: 'example-camera-id'});
     });
 
-    test('emits the switch camera events with cameraID', async () => {
-      await meetingsSDKAdapter.switchCamera(meetingID, 'cameraID');
+    test('returns a rejected promise if meeting does not exist', (done) => {
+      meetingsSDKAdapter.switchCamera('inexistent', 'example-camera-id').catch((error) => {
+        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
+        done();
+      });
+    });
 
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:camera:switch', {
-        cameraID: 'cameraID',
+    test('returns a rejected promise if camera stream cannot be obtained', (done) => {
+      const sdkError = new Error('sdk switch camera error');
+
+      mockSDKMeeting.getMediaStreams = () => Promise.reject(sdkError);
+      meetingsSDKAdapter.switchCamera(meetingID, 'example-camera-id').catch((error) => {
+        expect(error.message).toBe('Could not change camera, permission not granted: ERROR');
+        done();
       });
     });
   });
@@ -909,7 +889,7 @@ describe('Meetings SDK Adapter', () => {
   describe('switchMicrophoneControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingsSDKAdapter.switchMicrophoneControl(meetingID)
-        .pipe(take(1)).subscribe((dataDisplay) => {
+        .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'switch-microphone',
             tooltip: 'Microphone Devices',
@@ -956,7 +936,7 @@ describe('Meetings SDK Adapter', () => {
   describe('switchSpeakerControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
       meetingsSDKAdapter.switchSpeakerControl(meetingID)
-        .pipe(take(1)).subscribe((dataDisplay) => {
+        .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'switch-speaker',
             tooltip: 'Speaker Devices',
@@ -1068,69 +1048,16 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('getMeeting()', () => {
-    let stopStream;
-
-    beforeEach(() => {
-      const {trueStopStream} = meetingsSDKAdapter.stopStream;
-
-      stopStream = trueStopStream;
-      meetingsSDKAdapter.stopStream = jest.fn();
-      meetingsSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
-      meetingsSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
-        localAudio: {
-          stream: mockSDKMediaStreams.localAudio,
-          permission: 'ALLOWED',
-        },
-        localVideo: {
-          stream: mockSDKMediaStreams.localVideo,
-          permission: 'ALLOWED',
-        },
-      }));
-      meeting = {
-        ...meeting,
-        localAudio: {
-          stream: mockSDKMediaStreams.localAudio,
-          permission: 'ALLOWED',
-        },
-        localVideo: {
-          stream: mockSDKMediaStreams.localVideo,
-          permission: 'ALLOWED',
-        },
-      };
-    });
-
-    afterEach(() => {
-      meetingsSDKAdapter.stopStream = stopStream;
-    });
-
     test('returns a meeting in a proper shape', (done) => {
-      meetingsSDKAdapter
-        .createMeeting(target)
-        .pipe(
-          last(),
-          concatMap(() => meetingsSDKAdapter.getMeeting(meetingID)),
-          take(1),
-        )
-        .subscribe((getMeeting) => {
-          expect(getMeeting).toMatchObject(meeting);
+      meetingsSDKAdapter.getMeeting(meetingID).pipe(first())
+        .subscribe((receivedMeeting) => {
+          expect(receivedMeeting).toMatchObject(meeting);
           done();
         });
     });
 
-    test('stops listening to events when unsubscribing', () => {
-      const subscription = meetingsSDKAdapter
-        .createMeeting(target)
-        .pipe(concatMap(() => meetingsSDKAdapter.getMeeting(meetingID)))
-        .subscribe();
-
-      subscription.unsubscribe();
-      expect(meetingsSDKAdapter.getMeetingObservables).toEqual({});
-    });
-
-    test('throws error on failed meeting fetch request', (done) => {
-      meetingsSDKAdapter
-        .createMeeting(target)
-        .pipe(concatMap(() => meetingsSDKAdapter.getMeeting('inexistent')))
+    test('emits error if meeting does not exist', (done) => {
+      meetingsSDKAdapter.getMeeting('inexistent')
         .subscribe(
           () => {},
           (error) => {

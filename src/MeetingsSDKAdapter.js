@@ -26,6 +26,7 @@ import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
+import SwitchCameraControl from './MeetingsSDKAdapter/controls/SwitchCameraControl';
 import {chainWith, deepMerge} from './utils';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
@@ -132,12 +133,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     this.meetingControls[EXIT_CONTROL] = new ExitControl(this, EXIT_CONTROL);
     this.meetingControls[ROSTER_CONTROL] = new RosterControl(this, ROSTER_CONTROL);
     this.meetingControls[SETTINGS_CONTROL] = new SettingsControl(this, SETTINGS_CONTROL);
-
-    this.meetingControls[SWITCH_CAMERA_CONTROL] = {
-      ID: SWITCH_CAMERA_CONTROL,
-      action: this.switchCamera.bind(this),
-      display: this.switchCameraControl.bind(this),
-    };
+    this.meetingControls[SWITCH_CAMERA_CONTROL] = new
+    SwitchCameraControl(this, SWITCH_CAMERA_CONTROL);
 
     this.meetingControls[SWITCH_MICROPHONE_CONTROL] = {
       ID: SWITCH_MICROPHONE_CONTROL,
@@ -942,31 +939,37 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    *
    * @param {string} ID Meeting ID
    * @param {string} cameraID ID of the camera to switch to
-   * @private
    */
   async switchCamera(ID, cameraID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const {stream, permission} = await this.getStream(
-      ID,
-      {sendVideo: true},
-      {video: {deviceId: cameraID}},
-    ).toPromise();
+    await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+      let updates;
+      const {stream, permission} = await this.getStream(
+        ID,
+        {sendVideo: true},
+        {video: {deviceId: cameraID}},
+      ).toPromise();
 
-    if (stream) {
-      this.meetings[ID].localVideo.stream = stream;
-      this.meetings[ID].cameraID = cameraID;
+      if (stream) {
+        updates = {
+          localVideo: {
+            stream,
+          },
+          cameraID,
+        };
 
-      if (this.meetings[ID].state === MeetingState.JOINED) {
-        await sdkMeeting.updateVideo({
-          stream,
-          receiveVideo: mediaSettings.receiveVideo,
-          sendVideo: mediaSettings.sendVideo,
-        });
+        if (meeting.state === MeetingState.JOINED) {
+          await sdkMeeting.updateVideo({
+            stream,
+            receiveVideo: mediaSettings.receiveVideo,
+            sendVideo: mediaSettings.sendVideo,
+          });
+        }
+      } else {
+        throw new Error(`Could not change camera, permission not granted: ${permission}`);
       }
-      sdkMeeting.emit(EVENT_CAMERA_SWITCH, {cameraID});
-    } else {
-      throw new Error('Could not change camera, permission not granted:', permission);
-    }
+
+      return updates;
+    });
   }
 
   /**
@@ -1014,58 +1017,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     this.meetings[ID].speakerID = speakerID;
     sdkMeeting.emit(EVENT_SPEAKER_SWITCH, {speakerID});
-  }
-
-  /**
-   * Returns an observable that emits the display data of the switch camera control.
-   *
-   * @param {string} ID Meeting ID
-   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of the switch camera control
-   * @private
-   */
-  switchCameraControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const availableCameras$ = defer(() => this.getAvailableDevices(ID, 'videoinput'));
-
-    const initialControl$ = new Observable((observer) => {
-      if (sdkMeeting) {
-        observer.next({
-          ID: SWITCH_CAMERA_CONTROL,
-          tooltip: 'Video Devices',
-          noOptionsMessage: 'No available cameras',
-          options: null,
-          selected: this.meetings[ID].cameraID,
-        });
-        observer.complete();
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add switch camera control`));
-      }
-    });
-
-    const controlWithOptions$ = initialControl$.pipe(
-      concatMap((control) => availableCameras$.pipe(
-        map((availableCameras) => ({
-          ...control,
-          selected: this.meetings[ID].cameraID,
-          options: availableCameras && availableCameras.map((camera) => ({
-            value: camera.deviceId,
-            label: camera.label,
-            camera,
-          })),
-        })),
-      )),
-    );
-
-    const controlFromEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH).pipe(
-      concatMap(({cameraID}) => controlWithOptions$.pipe(
-        map((control) => ({
-          ...control,
-          selected: cameraID,
-        })),
-      )),
-    );
-
-    return concat(initialControl$, controlWithOptions$, controlFromEvent$);
   }
 
   /**

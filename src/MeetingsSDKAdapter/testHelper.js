@@ -28,7 +28,7 @@ export function createTestMeetingsSDKAdapter() {
     showRoster: null,
     showSettings: false,
     title: 'my meeting',
-    cameraID: null,
+    cameraID: 'cameraID',
     microphoneID: null,
     speakerID: null,
   };
