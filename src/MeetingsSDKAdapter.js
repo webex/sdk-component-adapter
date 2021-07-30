@@ -24,6 +24,7 @@ import AudioControl from './MeetingsSDKAdapter/controls/AudioControl';
 import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
 import ProceedWithoutCameraControl from './MeetingsSDKAdapter/controls/ProceedWithoutCameraControl';
+import ProceedWithoutMicrophoneControl from './MeetingsSDKAdapter/controls/ProceedWithoutMicrophoneControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import SwitchCameraControl from './MeetingsSDKAdapter/controls/SwitchCameraControl';
@@ -138,16 +139,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     SwitchCameraControl(this, SWITCH_CAMERA_CONTROL);
     this.meetingControls[SWITCH_SPEAKER_CONTROL] = new
     SwitchSpeakerControl(this, SWITCH_SPEAKER_CONTROL);
+    this.meetingControls[PROCEED_WITHOUT_MICROPHONE_CONTROL] = new
+    ProceedWithoutMicrophoneControl(this, PROCEED_WITHOUT_MICROPHONE_CONTROL);
+
     this.meetingControls[SWITCH_MICROPHONE_CONTROL] = new
     SwitchMicrophoneControl(this, SWITCH_MICROPHONE_CONTROL);
     this.meetingControls[PROCEED_WITHOUT_CAMERA_CONTROL] = new
     ProceedWithoutCameraControl(this, PROCEED_WITHOUT_CAMERA_CONTROL);
-
-    this.meetingControls[PROCEED_WITHOUT_MICROPHONE_CONTROL] = {
-      ID: PROCEED_WITHOUT_MICROPHONE_CONTROL,
-      action: this.ignoreAudioAccessPrompt.bind(this),
-      display: this.proceedWithoutMicrophoneControl.bind(this),
-    };
   }
 
   /**
@@ -1041,36 +1039,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Returns an observable that emits the display data of the proceed without microphone control.
-   *
-   * @param {string} ID  Meeting ID
-   * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of proceed without microphone control
-   * @private
-   */
-  proceedWithoutMicrophoneControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-
-    const control$ = new Observable((observer) => {
-      if (sdkMeeting) {
-        observer.next({
-          ID: PROCEED_WITHOUT_MICROPHONE_CONTROL,
-          type: 'JOIN',
-          text: 'Proceed without microphone',
-          tooltip: 'Ignore media access prompt and proceed without microphone',
-        });
-        observer.complete();
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add proceed without microphone control`));
-      }
-    });
-
-    return control$;
-  }
-
-  /**
    * Allows user to join meeting without allowing microphone access
    *
-   * @param {string} ID Meeting ID
+   * @param {string} ID  Meeting ID
    */
   ignoreAudioAccessPrompt(ID) {
     const meeting = this.meetings[ID];
