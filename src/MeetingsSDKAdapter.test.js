@@ -1054,7 +1054,7 @@ describe('Meetings SDK Adapter', () => {
 
   describe('proceedWithoutMicrophoneControl()', () => {
     test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingSDKAdapter.proceedWithoutMicrophoneControl(meetingID)
+      meetingsSDKAdapter.proceedWithoutMicrophoneControl(meetingID)
         .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'proceed-without-microphone',
@@ -1066,7 +1066,7 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingSDKAdapter.proceedWithoutMicrophoneControl('inexistent').subscribe(
+      meetingsSDKAdapter.proceedWithoutMicrophoneControl('inexistent').subscribe(
         () => {},
         (error) => {
           expect(error.message).toBe('Could not find meeting with ID "inexistent" to add proceed without microphone control');
@@ -1078,11 +1078,11 @@ describe('Meetings SDK Adapter', () => {
 
   describe('ignoreAudioAccessPrompt()', () => {
     test('calls ignoreAudioAccessPrompt() on the meeting object if defined', () => {
-      meetingSDKAdapter.meetings[meetingID].localAudio.ignoreMediaAccessPrompt = jest.fn();
+      meetingsSDKAdapter.meetings[meetingID].localAudio.ignoreMediaAccessPrompt = jest.fn();
 
-      meetingSDKAdapter.ignoreAudioAccessPrompt(meetingID);
+      meetingsSDKAdapter.ignoreAudioAccessPrompt(meetingID);
 
-      expect(meetingSDKAdapter.meetings[meetingID].localAudio.ignoreMediaAccessPrompt)
+      expect(meetingsSDKAdapter.meetings[meetingID].localAudio.ignoreMediaAccessPrompt)
         .toHaveBeenCalled();
     });
   });
