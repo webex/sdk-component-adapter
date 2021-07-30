@@ -1,3 +1,10 @@
+## [1.52.2](https://github.com/webex/sdk-component-adapter/compare/v1.52.1...v1.52.2) (2021-07-30)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** refactor tests to use global MediaStream mock object ([13ab533](https://github.com/webex/sdk-component-adapter/commit/13ab533ba2575ba4cff6eeff0a4089038f0afd57))
+
 ## [1.52.1](https://github.com/webex/sdk-component-adapter/compare/v1.52.0...v1.52.1) (2021-07-30)
 
 
