@@ -1,3 +1,10 @@
+## [1.52.1](https://github.com/webex/sdk-component-adapter/compare/v1.52.0...v1.52.1) (2021-07-30)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** use meetingsSDKAdapter variable in tests file ([c53bfeb](https://github.com/webex/sdk-component-adapter/commit/c53bfebae97b4b201d4f43b7c60ca69d6ca1bfb4))
+
 # [1.52.0](https://github.com/webex/sdk-component-adapter/compare/v1.51.0...v1.52.0) (2021-07-27)
 
 
