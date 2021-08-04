@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/webex/sdk-component-adapter/compare/v1.53.0...v1.53.1) (2021-08-04)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** check for deviceId when filtering available devices ([f6adfdc](https://github.com/webex/sdk-component-adapter/commit/f6adfdc50dcc8db8966cef7495e04c9f54cfe25e))
+
 # [1.53.0](https://github.com/webex/sdk-component-adapter/compare/v1.52.2...v1.53.0) (2021-08-04)
 
 
