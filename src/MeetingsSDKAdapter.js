@@ -330,7 +330,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       devices = await sdkMeeting.getDevices();
-      devices = devices.filter((device) => device.kind === type);
+      devices = devices.filter((device) => device.kind === type && device.deviceId);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to retrieve devices for meeting "${ID}"`, error);
