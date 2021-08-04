@@ -1,3 +1,10 @@
+# [1.53.0](https://github.com/webex/sdk-component-adapter/compare/v1.52.2...v1.53.0) (2021-08-04)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement exit control in its own file and create the tests accordingly ([3489eaf](https://github.com/webex/sdk-component-adapter/commit/3489eaf932484e6f00669d5d7309f4c23ac35dc0))
+
 ## [1.52.2](https://github.com/webex/sdk-component-adapter/compare/v1.52.1...v1.52.2) (2021-07-30)
 
 
