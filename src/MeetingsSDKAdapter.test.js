@@ -601,116 +601,125 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('videoControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.videoControl(meetingID).subscribe((dataDisplay) => {
-        expect(dataDisplay).toMatchObject({
-          ID: 'mute-video',
-          type: 'TOGGLE',
-          icon: 'camera-muted_28',
-          tooltip: 'No camera available',
-          state: 'disabled',
-          text: 'No camera',
-        });
-        done();
-      });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingsSDKAdapter.videoControl('inexistent').subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-          done();
-        },
-      );
-    });
-  });
-
   describe('handleLocalVideo()', () => {
-    beforeEach(() => {
-      meetingsSDKAdapter.meetings[meetingID] = {
-        ...meeting,
-        localVideo: {
-          stream: mockSDKMediaStreams.localVideo,
-        },
-        remoteVideo: {},
-      };
-    });
+    describe('video is unmuted', () => {
+      beforeEach(() => {
+        meetingsSDKAdapter.meetings[meetingID] = {
+          ...meeting,
+          localVideo: {
+            stream: mockSDKMediaStreams.localVideo,
+            permission: 'ALLOWED',
+          },
+          disabledLocalVideo: null,
+          remoteVideo: {},
+        };
+      });
 
-    test('skips muting video if there is an inactive meeting', async () => {
-      meetingsSDKAdapter.meetings[meetingID].remoteVideo = null;
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('does not call sdk muteVideo() if the meeting is inactive', async () => {
+        meetingsSDKAdapter.meetings[meetingID].remoteVideo = null;
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(mockSDKMeeting.muteVideo).not.toHaveBeenCalled();
-    });
+        expect(mockSDKMeeting.muteVideo).not.toHaveBeenCalled();
+      });
 
-    test('skips unmuting video if there is an inactive meeting', async () => {
-      meetingsSDKAdapter.meetings[meetingID].remoteVideo = null;
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('calls sdk muteVideo() if the meeting is active', async () => {
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(mockSDKMeeting.unmuteVideo).not.toHaveBeenCalled();
-    });
+        expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
+      });
 
-    test('mutes video if the the video track is enabled', async () => {
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('updates the meeting object to have video muted', async () => {
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
-    });
+        expect(meetingsSDKAdapter.meetings[meetingID].localVideo.stream).toBeNull();
+        expect(meetingsSDKAdapter.meetings[meetingID].disabledLocalVideo).toMatchMediaStream(
+          mockSDKMediaStreams.localVideo,
+        );
+      });
 
-    test('localVideo property should be null once the video track is muted', async () => {
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('emits a meeting updated event', async () => {
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(meetingsSDKAdapter.meetings[meetingID].localVideo.stream).toBeNull();
-    });
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
+          localVideo: {stream: null},
+          disabledLocalVideo: mockSDKMediaStreams.localVideo,
+        });
+      });
 
-    test('emits the custom event after muting the video track', async () => {
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('logs error if the sdk muteVideo() rejects with an error', async () => {
+        const error = new Error('sdk error');
 
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'mute-video',
-        state: 'inactive',
+        mockSDKMeeting.muteVideo = jest.fn(() => Promise.reject(error));
+        global.console.error = jest.fn();
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
+
+        expect(global.console.error).toHaveBeenCalledWith(
+          'Unable to update local video settings for meeting "meetingID"',
+          error,
+        );
       });
     });
 
-    test('unmutes video if the video track is disabled', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localVideo.stream = null;
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
-
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'mute-video',
-        state: 'disabled',
+    describe('video is muted', () => {
+      beforeEach(() => {
+        meetingsSDKAdapter.meetings[meetingID] = {
+          ...meeting,
+          localVideo: {
+            stream: null,
+            permission: undefined,
+          },
+          disabledLocalVideo: mockSDKMediaStreams.localVideo,
+          remoteVideo: {},
+        };
       });
-    });
 
-    test('localVideo property should be defined once the video track is unmuted', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localVideo.stream = null;
-      meetingsSDKAdapter.meetings[meetingID].disabledLocalVideo = mockSDKMediaStreams.localVideo;
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('does not call sdk unmuteVideo() if the meeting is inactive', async () => {
+        meetingsSDKAdapter.meetings[meetingID].remoteVideo = null;
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(meetingsSDKAdapter.meetings[meetingID].localVideo.stream)
-        .toMatchMediaStream(mockSDKMediaStreams.localVideo);
-    });
-
-    test('emits the custom event after unmuting the video track', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localVideo.stream = null;
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
-
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'mute-video',
-        state: 'disabled',
+        expect(mockSDKMeeting.unmuteVideo).not.toHaveBeenCalled();
       });
-    });
 
-    test('throws error if video control is not handled properly', async () => {
-      mockSDKMeeting.muteVideo = jest.fn(() => Promise.reject());
-      global.console.error = jest.fn();
-      await meetingsSDKAdapter.handleLocalVideo(meetingID);
+      test('calls sdk unmuteVideo() if the meeting is active', async () => {
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith(
-        'Unable to update local video settings for meeting "meetingID"',
-        undefined,
-      );
+        expect(mockSDKMeeting.unmuteVideo).toHaveBeenCalled();
+      });
+
+      test('updates the meeting object to have video unmuted', async () => {
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
+
+        expect(meetingsSDKAdapter.meetings[meetingID].localVideo.stream)
+          .toMatchMediaStream(mockSDKMediaStreams.localVideo);
+        expect(meetingsSDKAdapter.meetings[meetingID].disabledLocalVideo).toBeNull();
+      });
+
+      test('emits a meeting updated event', async () => {
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
+
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
+          localVideo: {
+            stream: mockSDKMediaStreams.localVideo,
+          },
+        });
+      });
+
+      test('logs error if the sdk unmuteVideo() rejects with an error', async () => {
+        const error = new Error('sdk error');
+
+        mockSDKMeeting.unmuteVideo = jest.fn(() => Promise.reject(error));
+        global.console.error = jest.fn();
+        await meetingsSDKAdapter.handleLocalVideo(meetingID);
+
+        expect(global.console.error).toHaveBeenCalledWith(
+          'Unable to update local video settings for meeting "meetingID"',
+          error,
+        );
+      });
     });
   });
 

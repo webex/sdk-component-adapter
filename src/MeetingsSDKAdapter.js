@@ -11,7 +11,6 @@ import {
 import {
   catchError,
   concatMap,
-  distinctUntilChanged,
   filter,
   map,
   publishReplay,
@@ -30,6 +29,7 @@ import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import SwitchCameraControl from './MeetingsSDKAdapter/controls/SwitchCameraControl';
 import SwitchMicrophoneControl from './MeetingsSDKAdapter/controls/SwitchMicrophoneControl';
 import SwitchSpeakerControl from './MeetingsSDKAdapter/controls/SwitchSpeakerControl';
+import VideoControl from './MeetingsSDKAdapter/controls/VideoControl';
 import {chainWith, deepMerge} from './utils';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
@@ -120,11 +120,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     this.meetingControls[AUDIO_CONTROL] = new AudioControl(this, AUDIO_CONTROL);
 
-    this.meetingControls[VIDEO_CONTROL] = {
-      ID: VIDEO_CONTROL,
-      action: this.handleLocalVideo.bind(this),
-      display: this.videoControl.bind(this),
-    };
+    this.meetingControls[VIDEO_CONTROL] = new VideoControl(this, VIDEO_CONTROL);
 
     this.meetingControls[SHARE_CONTROL] = {
       ID: SHARE_CONTROL,
@@ -660,89 +656,43 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute video
    */
   async handleLocalVideo(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-
     try {
-      const isInSession = !!this.meetings[ID].remoteVideo;
-      const noVideo = !this.meetings[ID].disabledLocalVideo && !this.meetings[ID].localVideo.stream;
-      const videoEnabled = !!this.meetings[ID].localVideo.stream;
-      let state;
+      await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+        const isInSession = !!meeting.remoteVideo;
+        const videoEnabled = !!meeting.localVideo.stream;
+        const videoDisabled = !!meeting.disabledLocalVideo;
+        let updates;
 
-      if (noVideo) {
-        state = MeetingControlState.DISABLED;
-      } else if (videoEnabled) {
-        // Mute the video only if there is an active meeting
-        if (isInSession) {
-          await sdkMeeting.muteVideo();
+        if (videoEnabled) {
+          // Mute the video only if there is an active meeting
+          if (isInSession) {
+            await sdkMeeting.muteVideo();
+          }
+
+          // Store the current local video stream to avoid an extra request call
+          updates = {
+            localVideo: {stream: null},
+            disabledLocalVideo: meeting.localVideo.stream,
+          };
+        } else if (videoDisabled) {
+          // Unmute the video only if there is an active meeting
+          if (isInSession) {
+            await sdkMeeting.unmuteVideo();
+          }
+
+          // Retrieve the stored local video stream
+          updates = {
+            localVideo: {stream: meeting.disabledLocalVideo},
+            disabledLocalVideo: null,
+          };
         }
 
-        // Store the current local video stream to avoid an extra request call
-        this.meetings[ID].disabledLocalVideo = this.meetings[ID].localVideo.stream;
-        this.meetings[ID].localVideo.stream = null;
-        state = MeetingControlState.INACTIVE;
-      } else {
-        // Unmute the video only if there is an active meeting
-        if (isInSession) {
-          await sdkMeeting.unmuteVideo();
-        }
-
-        // Retrieve the stored local video stream
-        this.meetings[ID].localVideo.stream = this.meetings[ID].disabledLocalVideo;
-        this.meetings[ID].disabledLocalVideo = null;
-        state = MeetingControlState.ACTIVE;
-      }
-
-      // Due to SDK limitation around local media updates,
-      // we need to emit a custom event for video mute updates
-      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
-        control: VIDEO_CONTROL,
-        state,
+        return updates;
       });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to update local video settings for meeting "${ID}"`, error);
     }
-  }
-
-  /**
-   * Returns an observable that emits the display data of a mute meeting video control.
-   *
-   * @private
-   * @param {string} ID ID of the meeting to mute video
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the video control
-   */
-  videoControl(ID) {
-    const muted = {
-      ID: VIDEO_CONTROL,
-      type: 'TOGGLE',
-      icon: 'camera-muted_28',
-      tooltip: 'Start video',
-      state: MeetingControlState.ACTIVE,
-      text: 'Start video',
-    };
-    const unmuted = {
-      ID: VIDEO_CONTROL,
-      type: 'TOGGLE',
-      icon: 'camera-muted_28',
-      tooltip: 'Stop video',
-      state: MeetingControlState.INACTIVE,
-      text: 'Stop video',
-    };
-    const disabled = {
-      ID: VIDEO_CONTROL,
-      type: 'TOGGLE',
-      icon: 'camera-muted_28',
-      tooltip: 'No camera available',
-      state: MeetingControlState.DISABLED,
-      text: 'No camera',
-    };
-
-    return this.getMeeting(ID).pipe(
-      map(({localVideo: {stream}, disabledLocalVideo}) => (
-        (stream && unmuted) || (disabledLocalVideo && muted) || disabled
-      )),
-      distinctUntilChanged(),
-    );
   }
 
   /**
