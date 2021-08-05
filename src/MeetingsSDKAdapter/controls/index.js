@@ -10,3 +10,4 @@ export {default as SettingsControl} from './SettingsControl';
 export {default as SwitchCameraControl} from './SwitchCameraControl';
 export {default as SwitchMicrophoneControl} from './SwitchMicrophoneControl';
 export {default as SwitchSpeakerControl} from './SwitchSpeakerControl';
+export {default as VideoControl} from './VideoControl';
