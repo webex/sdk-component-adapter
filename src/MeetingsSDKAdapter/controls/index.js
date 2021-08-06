@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+export {default as AudioControl} from './AudioControl';
 export {default as JoinControl} from './JoinControl';
 export {default as MeetingControl} from './MeetingControl';
 export {default as RosterControl} from './RosterControl';

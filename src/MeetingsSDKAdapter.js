@@ -21,11 +21,12 @@ import {
   tap,
 } from 'rxjs/operators';
 
+import AudioControl from './MeetingsSDKAdapter/controls/AudioControl';
 import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
-import {chainWith} from './utils';
+import {chainWith, deepMerge} from './utils';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -114,11 +115,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     this.meetingControls[JOIN_CONTROL] = new JoinControl(this, JOIN_CONTROL);
 
-    this.meetingControls[AUDIO_CONTROL] = {
-      ID: AUDIO_CONTROL,
-      action: this.handleLocalAudio.bind(this),
-      display: this.audioControl.bind(this),
-    };
+    this.meetingControls[AUDIO_CONTROL] = new AudioControl(this, AUDIO_CONTROL);
 
     this.meetingControls[VIDEO_CONTROL] = {
       ID: VIDEO_CONTROL,
@@ -620,86 +617,47 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute audio
    */
   async handleLocalAudio(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-
     try {
-      const isInSession = !!this.meetings[ID].remoteAudio;
-      const noAudio = !this.meetings[ID].disabledLocalAudio && !this.meetings[ID].localAudio.stream;
-      const audioEnabled = !!this.meetings[ID].localAudio.stream;
-      let state;
+      await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+        const isInSession = !!meeting.remoteAudio;
+        const audioDisabled = !!this.meetings[ID].disabledLocalAudio;
+        const audioEnabled = !!meeting.localAudio.stream;
+        let updates;
 
-      if (noAudio) {
-        state = MeetingControlState.DISABLED;
-      } else if (audioEnabled) {
-        // Mute the audio only if there is an active meeting
-        if (isInSession) {
-          await sdkMeeting.muteAudio();
+        if (audioEnabled) {
+          // Mute the audio only if there is an active meeting
+          if (isInSession) {
+            await sdkMeeting.muteAudio();
+          }
+
+          // Store the current local audio stream to avoid an extra request call
+          updates = {
+            disabledLocalAudio: meeting.localAudio.stream,
+            localAudio: {
+              stream: null,
+            },
+          };
+        } else if (audioDisabled) {
+          // Unmute the audio only if there is an active meeting
+          if (isInSession) {
+            await sdkMeeting.unmuteAudio();
+          }
+
+          // Retrieve the stored local audio stream
+          updates = {
+            disabledLocalAudio: null,
+            localAudio: {
+              stream: meeting.disabledLocalAudio,
+            },
+          };
         }
 
-        // Store the current local audio stream to avoid an extra request call
-        this.meetings[ID].disabledLocalAudio = this.meetings[ID].localAudio.stream;
-        this.meetings[ID].localAudio.stream = null;
-        state = MeetingControlState.INACTIVE;
-      } else {
-        // Unmute the audio only if there is an active meeting
-        if (isInSession) {
-          await sdkMeeting.unmuteAudio();
-        }
-
-        // Retrieve the stored local audio stream
-        this.meetings[ID].localAudio.stream = this.meetings[ID].disabledLocalAudio;
-        this.meetings[ID].disabledLocalAudio = null;
-        state = MeetingControlState.ACTIVE;
-      }
-
-      // Due to SDK limitation around local media updates,
-      // we need to emit a custom event for audio mute updates
-      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
-        control: AUDIO_CONTROL,
-        state,
+        return updates;
       });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to update local audio settings for meeting "${ID}"`, error);
     }
-  }
-
-  /**
-   * Returns an observable that emits the display data of a mute meeting audio control.
-   *
-   * @private
-   * @param {string} ID ID of the meeting to mute audio
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the audio control
-   */
-  audioControl(ID) {
-    const muted = {
-      ID: AUDIO_CONTROL,
-      icon: 'microphone-muted_28',
-      tooltip: 'Unmute',
-      state: MeetingControlState.ACTIVE,
-      text: null,
-    };
-    const unmuted = {
-      ID: AUDIO_CONTROL,
-      icon: 'microphone-muted_28',
-      tooltip: 'Mute',
-      state: MeetingControlState.INACTIVE,
-      text: null,
-    };
-    const disabled = {
-      ID: AUDIO_CONTROL,
-      icon: 'microphone-muted_28',
-      tooltip: 'No microphone available',
-      state: MeetingControlState.DISABLED,
-      text: null,
-    };
-
-    return this.getMeeting(ID).pipe(
-      map(({localAudio: {stream}, disabledLocalAudio}) => (
-        (stream && unmuted) || (disabledLocalAudio && muted) || disabled
-      )),
-      distinctUntilChanged(),
-    );
   }
 
   /**
@@ -1425,9 +1383,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       throw new Error(`Could not find meeting with ID "${ID}"`);
     }
 
-    const updates = await updater(meeting);
-    const updatedMeeting = {...meeting, ...updates};
+    const updates = await updater(meeting, sdkMeeting);
 
-    sdkMeeting.emit(EVENT_MEETING_UPDATED, updatedMeeting);
+    deepMerge(meeting, updates);
+
+    sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
   }
 }
