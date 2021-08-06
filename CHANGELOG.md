@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/webex/sdk-component-adapter/compare/v1.53.1...v1.54.0) (2021-08-06)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement join control in its own file and create the tests accordingly ([68a4376](https://github.com/webex/sdk-component-adapter/commit/68a4376e43d2ee8cf65e73caf05c0c1286833c45))
+
 ## [1.53.1](https://github.com/webex/sdk-component-adapter/compare/v1.53.0...v1.53.1) (2021-08-04)
 
 
