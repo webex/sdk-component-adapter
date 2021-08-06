@@ -480,153 +480,125 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('joinMeeting()', () => {
-    test('calls join() sdk method', async () => {
-      await meetingsSDKAdapter.joinMeeting(meetingID);
-      expect(mockSDKMeeting.join).toHaveBeenCalled();
-    });
-
-    test('calls addMedia() sdk method', async () => {
-      await meetingsSDKAdapter.joinMeeting(meetingID);
-      expect(mockSDKMeeting.addMedia).toHaveBeenCalled();
-    });
-
-    test('calls muteAudio() sdk method if local audio is muted before join', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
-      await meetingsSDKAdapter.joinMeeting(meetingID);
-      expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
-    });
-
-    test('calls muteVideo() sdk method if local video is muted before join', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
-      await meetingsSDKAdapter.joinMeeting(meetingID);
-      expect(mockSDKMeeting.muteVideo).toHaveBeenCalled();
-    });
-
-    test('logs error if sdk refuses to join', async () => {
-      const sdkError = new Error('sdk join error');
-
-      mockSDKMeeting.join = jest.fn(() => Promise.reject(sdkError));
-      global.console.error = jest.fn();
-
-      await meetingsSDKAdapter.joinMeeting(meetingID);
-
-      expect(global.console.error).toHaveBeenCalledWith(
-        'Unable to join meeting "meetingID"',
-        sdkError,
-      );
-    });
-  });
-
-  describe('audioControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      meetingsSDKAdapter.audioControl(meetingID).subscribe((dataDisplay) => {
-        expect(dataDisplay).toMatchObject({
-          ID: 'mute-audio',
-          icon: 'microphone-muted_28',
-          tooltip: 'No microphone available',
-          state: 'disabled',
-          text: null,
-        });
-        done();
-      });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      meetingsSDKAdapter.audioControl('inexistent').subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-          done();
-        },
-      );
-    });
-  });
-
   describe('handleLocalAudio()', () => {
-    beforeEach(() => {
-      meetingsSDKAdapter.meetings[meetingID] = {
-        ...meeting,
-        localAudio: {
-          stream: mockSDKMediaStreams.localAudio,
-        },
-        remoteAudio: {},
-      };
-    });
+    describe('meeting is unmuted', () => {
+      beforeEach(() => {
+        meetingsSDKAdapter.meetings[meetingID] = {
+          ...meeting,
+          localAudio: {
+            stream: mockSDKMediaStreams.localAudio,
+            permission: 'ALLOWED',
+          },
+          disabledLocalAudio: null,
+          remoteAudio: {},
+        };
+      });
 
-    test('skips muting audio if there is an inactive meeting', async () => {
-      meetingsSDKAdapter.meetings[meetingID].remoteAudio = null;
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('does not call sdk muteAudio() if the meeting is inactive', async () => {
+        meetingsSDKAdapter.meetings[meetingID].remoteAudio = null;
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(mockSDKMeeting.muteAudio).not.toHaveBeenCalled();
-    });
+        expect(mockSDKMeeting.muteAudio).not.toHaveBeenCalled();
+      });
 
-    test('skips unmuting audio if there is an inactive meeting', async () => {
-      meetingsSDKAdapter.meetings[meetingID].remoteAudio = null;
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('calls sdk muteAudio() if the meeting is active', async () => {
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(mockSDKMeeting.unmuteAudio).not.toHaveBeenCalled();
-    });
+        expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
+      });
 
-    test('mutes audio if the the audio track is enabled', async () => {
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('updates the meeting object to have audio muted', async () => {
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(mockSDKMeeting.muteAudio).toHaveBeenCalled();
-    });
+        expect(meetingsSDKAdapter.meetings[meetingID].localAudio.stream).toBeNull();
+        expect(meetingsSDKAdapter.meetings[meetingID].disabledLocalAudio).toMatchMediaStream(
+          mockSDKMediaStreams.localAudio,
+        );
+      });
 
-    test('localAudio.stream property should be null once the audio track is muted', async () => {
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('emits a meeting updated event', async () => {
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(meetingsSDKAdapter.meetings[meetingID].localAudio.stream).toBeNull();
-    });
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
+          localAudio: {stream: null},
+          disabledLocalAudio: mockSDKMediaStreams.localAudio,
+        });
+      });
 
-    test('emits the custom event after muting the audio track', async () => {
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('logs error if the sdk muteAudio() rejects with an error', async () => {
+        const error = new Error('sdk error');
 
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'mute-audio',
-        state: 'inactive',
+        mockSDKMeeting.muteAudio = jest.fn(() => Promise.reject(error));
+        global.console.error = jest.fn();
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
+
+        expect(global.console.error).toHaveBeenCalledWith(
+          'Unable to update local audio settings for meeting "meetingID"',
+          error,
+        );
       });
     });
 
-    test('unmutes audio if the the audio track is disabled', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
-
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'mute-audio',
-        state: 'disabled',
+    describe('meeting is muted', () => {
+      beforeEach(() => {
+        meetingsSDKAdapter.meetings[meetingID] = {
+          ...meeting,
+          localAudio: {
+            stream: null,
+            permission: undefined,
+          },
+          disabledLocalAudio: mockSDKMediaStreams.localAudio,
+          remoteAudio: {},
+        };
       });
-    });
 
-    test('localAudio.stream property should be defined once the audio track is unmuted', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
-      meetingsSDKAdapter.meetings[meetingID].disabledLocalAudio = mockSDKMediaStreams.localAudio;
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('does not call sdk unmuteAudio() if the meeting is inactive', async () => {
+        meetingsSDKAdapter.meetings[meetingID].remoteAudio = null;
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(meetingsSDKAdapter.meetings[meetingID].localAudio.stream)
-        .toMatchMediaStream(mockSDKMediaStreams.localAudio);
-    });
-
-    test('emits the custom event after unmuting the audio track', async () => {
-      meetingsSDKAdapter.meetings[meetingID].localAudio.stream = null;
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
-
-      expect(mockSDKMeeting.emit).toHaveBeenCalledWith('adapter:media:local:update', {
-        control: 'mute-audio',
-        state: 'disabled',
+        expect(mockSDKMeeting.unmuteAudio).not.toHaveBeenCalled();
       });
-    });
 
-    test('throws error if audio control is not handled properly', async () => {
-      mockSDKMeeting.muteAudio = jest.fn(() => Promise.reject());
-      global.console.error = jest.fn();
-      await meetingsSDKAdapter.handleLocalAudio(meetingID);
+      test('calls sdk unmuteAudio() if the meeting is active', async () => {
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith(
-        'Unable to update local audio settings for meeting "meetingID"',
-        undefined,
-      );
+        expect(mockSDKMeeting.unmuteAudio).toHaveBeenCalled();
+      });
+
+      test('updates the meeting object to have audio unmuted', async () => {
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
+
+        expect(meetingsSDKAdapter.meetings[meetingID].localAudio.stream)
+          .toMatchMediaStream(mockSDKMediaStreams.localAudio);
+        expect(meetingsSDKAdapter.meetings[meetingID].disabledLocalAudio).toBeNull();
+      });
+
+      test('emits a meeting updated event', async () => {
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
+
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
+          localAudio: {
+            stream: mockSDKMediaStreams.localAudio,
+          },
+        });
+      });
+
+      test('logs error if the sdk unmuteAudio() rejects with an error', async () => {
+        const error = new Error('sdk error');
+
+        mockSDKMeeting.unmuteAudio = jest.fn(() => Promise.reject(error));
+        global.console.error = jest.fn();
+        await meetingsSDKAdapter.handleLocalAudio(meetingID);
+
+        expect(global.console.error).toHaveBeenCalledWith(
+          'Unable to update local audio settings for meeting "meetingID"',
+          error,
+        );
+      });
     });
   });
 

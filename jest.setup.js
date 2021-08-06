@@ -1,6 +1,6 @@
 // Mock Web Media APIs
 
-global.MediaStream = jest.fn((tracksOrStream = []) => {
+global.MediaStream = jest.fn(function(tracksOrStream = []) {
   let tracks;
 
   if (tracksOrStream instanceof global.MediaStream) {
@@ -22,12 +22,12 @@ global.MediaStream = jest.fn((tracksOrStream = []) => {
     }
   }
 
-  return {
+  return Object.assign(this, {
     getTracks: jest.fn(() => tracks),
     getAudioTracks: jest.fn(() => tracks.filter((track) => track.kind === 'audio')),
     getVideoTracks: jest.fn(() => tracks.filter((track) => track.kind === 'video')),
     removeTrack: jest.fn((toRemove) => tracks.filter((track) => track !== toRemove)),
-  };
+  });
 });
 
 expect.extend({
