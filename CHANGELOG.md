@@ -1,3 +1,11 @@
+# [1.55.0](https://github.com/webex/sdk-component-adapter/compare/v1.54.0...v1.55.0) (2021-08-11)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add text to control buttons ([75ed197](https://github.com/webex/sdk-component-adapter/commit/75ed19704c0160f9d56fa06ad491a8e7e7371ed7))
+* **MeetingsSdkAdapter:** move audio control in a separate file ([42a797e](https://github.com/webex/sdk-component-adapter/commit/42a797e76a96c5e3ffef24c8af07e3b0fa34ccf8))
+
 # [1.54.0](https://github.com/webex/sdk-component-adapter/compare/v1.53.1...v1.54.0) (2021-08-06)
 
 
