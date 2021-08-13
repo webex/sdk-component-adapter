@@ -35,6 +35,7 @@ export const createMockSDKMediaStreams = () => {
 export const createMockSDKMeeting = () => ({
   id: 'meetingID',
   sipuri: 'my meeting',
+  meetingInfo: {},
   members: {
     membersCollection: {
       members: {

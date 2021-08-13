@@ -484,11 +484,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
-      concatMap(({id}) => from(this.fetchMeetingTitle(destination)).pipe(
-        map((title) => ({ID: id, title})),
-      )),
-      map((meeting) => ({
-        ...meeting,
+      map(({id, meetingInfo: {meetingName}}) => ({
+        ID: id,
+        title: meetingName,
         localAudio: {
           stream: null,
           permission: null,
@@ -510,6 +508,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         microphoneID: null,
         speakerID: null,
       })),
+      // if not provided by the sdk, compute a meeting title
+      concatMap((meeting) => (
+        meeting.title
+          ? of(meeting)
+          : from(this.fetchMeetingTitle(destination)).pipe(
+            map((title) => ({...meeting, title})),
+          )
+      )),
     );
 
     return newMeeting$.pipe(
