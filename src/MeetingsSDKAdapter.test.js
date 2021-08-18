@@ -606,6 +606,7 @@ describe('Meetings SDK Adapter', () => {
       meetingsSDKAdapter.videoControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'mute-video',
+          type: 'TOGGLE',
           icon: 'camera-muted_28',
           tooltip: 'No camera available',
           state: 'disabled',
@@ -721,6 +722,7 @@ describe('Meetings SDK Adapter', () => {
       meetingsSDKAdapter.shareControl(meetingID).subscribe((dataDisplay) => {
         expect(dataDisplay).toMatchObject({
           ID: 'share-screen',
+          type: 'TOGGLE',
           icon: 'share-screen-presence-stroke_26',
           text: null,
         });
@@ -892,6 +894,7 @@ describe('Meetings SDK Adapter', () => {
         .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'switch-microphone',
+            type: 'MULTISELECT',
             tooltip: 'Microphone Devices',
             options: null,
             selected: null,
@@ -939,6 +942,7 @@ describe('Meetings SDK Adapter', () => {
         .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'switch-speaker',
+            type: 'MULTISELECT',
             tooltip: 'Speaker Devices',
             options: null,
             selected: null,
@@ -983,6 +987,7 @@ describe('Meetings SDK Adapter', () => {
         .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'proceed-without-camera',
+            type: 'JOIN',
             text: 'Proceed without camera',
             tooltip: 'Ignore media access prompt and proceed without camera',
           });
@@ -1018,6 +1023,7 @@ describe('Meetings SDK Adapter', () => {
         .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'proceed-without-microphone',
+            type: 'JOIN',
             text: 'Proceed without microphone',
             tooltip: 'Ignore media access prompt and proceed without microphone',
           });

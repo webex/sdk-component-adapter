@@ -17,9 +17,9 @@ describe('Join Control', () => {
       meetingsSDKAdapter.meetingControls['join-meeting'].display().pipe(first()).subscribe((display) => {
         expect(display).toMatchObject({
           ID: 'join-meeting',
+          type: 'JOIN',
           text: 'Join meeting',
           tooltip: 'Join meeting',
-          state: 'active',
         });
         done();
       });

@@ -1,5 +1,4 @@
 import {Observable, of} from 'rxjs';
-import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -28,9 +27,9 @@ export default class JoinControl extends MeetingControl {
   display() {
     return of({
       ID: this.ID,
+      type: 'JOIN',
       text: 'Join meeting',
       tooltip: 'Join meeting',
-      state: MeetingControlState.ACTIVE,
     });
   }
 }

@@ -18,6 +18,7 @@ describe('Switch Camera Control', () => {
         .pipe(elementAt(1)).subscribe((display) => {
           expect(display).toMatchObject({
             ID: 'switch-camera',
+            type: 'MULTISELECT',
             tooltip: 'Video Devices',
             noOptionsMessage: 'No available cameras',
             options: [
