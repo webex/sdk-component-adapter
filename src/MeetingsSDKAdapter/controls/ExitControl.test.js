@@ -17,9 +17,9 @@ describe('Exit Control', () => {
       meetingsSDKAdapter.meetingControls['leave-meeting'].display().pipe(first()).subscribe((display) => {
         expect(display).toMatchObject({
           ID: 'leave-meeting',
+          type: 'CANCEL',
           icon: 'cancel_28',
           tooltip: 'Leave',
-          state: 'active',
         });
         done();
       });

@@ -44,6 +44,7 @@ export default class SwitchCameraControl extends MeetingControl {
     return combineLatestImmediate(cameraID$, options$).pipe(
       map(([cameraID, options]) => ({
         ID: this.ID,
+        type: 'MULTISELECT',
         tooltip: 'Video Devices',
         noOptionsMessage: 'No available cameras',
         options: options || null,

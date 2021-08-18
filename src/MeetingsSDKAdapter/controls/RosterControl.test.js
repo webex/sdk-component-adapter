@@ -18,6 +18,7 @@ describe('Roster Control', () => {
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'member-roster',
+            type: 'TOGGLE',
             icon: 'participant-list_28',
             tooltip: 'Show participants panel',
             state: 'inactive',

@@ -719,6 +719,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   videoControl(ID) {
     const muted = {
       ID: VIDEO_CONTROL,
+      type: 'TOGGLE',
       icon: 'camera-muted_28',
       tooltip: 'Start video',
       state: MeetingControlState.ACTIVE,
@@ -726,6 +727,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
     const unmuted = {
       ID: VIDEO_CONTROL,
+      type: 'TOGGLE',
       icon: 'camera-muted_28',
       tooltip: 'Stop video',
       state: MeetingControlState.INACTIVE,
@@ -733,6 +735,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
     const disabled = {
       ID: VIDEO_CONTROL,
+      type: 'TOGGLE',
       icon: 'camera-muted_28',
       tooltip: 'No camera available',
       state: MeetingControlState.DISABLED,
@@ -833,6 +836,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const sdkMeeting = this.fetchMeeting(ID);
     const inactiveShare = {
       ID: SHARE_CONTROL,
+      type: 'TOGGLE',
       icon: 'share-screen-presence-stroke_26',
       tooltip: 'Start Share',
       state: MeetingControlState.INACTIVE,
@@ -840,6 +844,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
     const activeShare = {
       ID: SHARE_CONTROL,
+      type: 'TOGGLE',
       icon: 'share-screen-presence-stroke_26',
       tooltip: 'Stop Share',
       state: MeetingControlState.ACTIVE,
@@ -847,6 +852,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     };
     const disabledShare = {
       ID: SHARE_CONTROL,
+      type: 'TOGGLE',
       icon: 'share-screen-presence-stroke_26',
       tooltip: 'Sharing is Unavailable',
       state: MeetingControlState.DISABLED,
@@ -1034,6 +1040,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       if (sdkMeeting) {
         observer.next({
           ID: SWITCH_MICROPHONE_CONTROL,
+          type: 'MULTISELECT',
           tooltip: 'Microphone Devices',
           noOptionsMessage: 'No available microphones',
           options: null,
@@ -1086,6 +1093,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       if (sdkMeeting) {
         observer.next({
           ID: SWITCH_SPEAKER_CONTROL,
+          type: 'MULTISELECT',
           tooltip: 'Speaker Devices',
           noOptionsMessage: 'No available speakers',
           options: null,
@@ -1137,6 +1145,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       if (sdkMeeting) {
         observer.next({
           ID: PROCEED_WITHOUT_CAMERA_CONTROL,
+          type: 'JOIN',
           text: 'Proceed without camera',
           tooltip: 'Ignore media access prompt and proceed without camera',
         });
@@ -1179,6 +1188,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       if (sdkMeeting) {
         observer.next({
           ID: PROCEED_WITHOUT_MICROPHONE_CONTROL,
+          type: 'JOIN',
           text: 'Proceed without microphone',
           tooltip: 'Ignore media access prompt and proceed without microphone',
         });

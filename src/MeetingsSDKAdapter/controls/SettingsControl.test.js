@@ -18,6 +18,7 @@ describe('Settings Control', () => {
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'settings',
+            type: 'TOGGLE',
             icon: 'settings_32',
             tooltip: 'Show settings panel',
             state: 'inactive',
