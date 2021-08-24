@@ -1,3 +1,12 @@
+# [1.56.0](https://github.com/webex/sdk-component-adapter/compare/v1.55.0...v1.56.0) (2021-08-24)
+
+
+### Features
+
+* **MeetingControls:** add types for meeting controls ([a26bc09](https://github.com/webex/sdk-component-adapter/commit/a26bc0956c94b9789daa02693dd3109ee9702c24))
+* **MeetingSdkAdapter:** implement switch camera control in its own file and create the tests ([e08bd48](https://github.com/webex/sdk-component-adapter/commit/e08bd4814228c437c0dad6baf1148baa536eac62))
+* **MeetingsSdkAdapter:** take meeting title ([c9cbf10](https://github.com/webex/sdk-component-adapter/commit/c9cbf1013265ea7283160b5a0f3eb46ec827431d))
+
 # [1.55.0](https://github.com/webex/sdk-component-adapter/compare/v1.54.0...v1.55.0) (2021-08-11)
 
 
