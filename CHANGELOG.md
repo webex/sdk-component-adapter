@@ -1,3 +1,12 @@
+# [1.57.0](https://github.com/webex/sdk-component-adapter/compare/v1.56.0...v1.57.0) (2021-08-27)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement switch microphone control in its own file and create the tests ([e1d0de9](https://github.com/webex/sdk-component-adapter/commit/e1d0de986ce34adbb6479a9a764161af5d3e30fa))
+* **MeetingSdkAdapter:** move proceed without camera control in its own file and create the tests ([857cff2](https://github.com/webex/sdk-component-adapter/commit/857cff2a90371a5a6fb78ef13a5ac69538b03df0))
+* **MeetingsSdkAdapter:** add unmuted icon on audio control ([1bfc314](https://github.com/webex/sdk-component-adapter/commit/1bfc3141881bfda030a15f6757eacee1b65300ae))
+
 # [1.56.0](https://github.com/webex/sdk-component-adapter/compare/v1.55.0...v1.56.0) (2021-08-24)
 
 
