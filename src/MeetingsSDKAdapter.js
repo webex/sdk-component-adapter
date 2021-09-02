@@ -410,6 +410,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       this.stopStream(this.meetings[ID].localAudio.stream);
       this.stopStream(this.meetings[ID].localVideo.stream);
       this.stopStream(this.meetings[ID].localShare.stream);
+      this.stopStream(this.meetings[ID].disabledLocalAudio);
+      this.stopStream(this.meetings[ID].disabledLocalVideo);
     }
 
     this.meetings[ID] = {
