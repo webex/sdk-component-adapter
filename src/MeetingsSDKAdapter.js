@@ -832,26 +832,26 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const inactiveShare = {
       ID: SHARE_CONTROL,
       type: 'TOGGLE',
-      icon: 'share-screen-presence-stroke_26',
-      tooltip: 'Start Share',
       state: MeetingControlState.INACTIVE,
-      text: null,
+      icon: 'share-screen-presence-stroke_26',
+      text: 'Start sharing',
+      tooltip: 'Start Sharing',
     };
     const activeShare = {
       ID: SHARE_CONTROL,
       type: 'TOGGLE',
-      icon: 'share-screen-presence-stroke_26',
-      tooltip: 'Stop Share',
       state: MeetingControlState.ACTIVE,
-      text: null,
+      icon: 'share-screen-presence-stroke_26',
+      text: 'Stop sharing',
+      tooltip: 'Stop Sharing',
     };
     const disabledShare = {
       ID: SHARE_CONTROL,
       type: 'TOGGLE',
-      icon: 'share-screen-presence-stroke_26',
-      tooltip: 'Sharing is Unavailable',
       state: MeetingControlState.DISABLED,
-      text: null,
+      icon: 'share-screen-presence-stroke_26',
+      text: 'Sharing is Unavailable',
+      tooltip: 'Sharing is Unavailable',
     };
 
     const getDisplayData$ = Observable.create((observer) => {
