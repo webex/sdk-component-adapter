@@ -19,9 +19,10 @@ describe('Settings Control', () => {
           expect(dataDisplay).toMatchObject({
             ID: 'settings',
             type: 'TOGGLE',
-            icon: 'settings_32',
-            tooltip: 'Show settings panel',
             state: 'inactive',
+            icon: 'settings_32',
+            text: 'Settings',
+            tooltip: 'Show settings panel',
           });
         });
     });

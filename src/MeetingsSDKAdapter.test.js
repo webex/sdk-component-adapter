@@ -724,7 +724,6 @@ describe('Meetings SDK Adapter', () => {
           ID: 'share-screen',
           type: 'TOGGLE',
           icon: 'share-screen-presence-stroke_26',
-          text: null,
         });
         done();
       });

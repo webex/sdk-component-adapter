@@ -19,9 +19,10 @@ describe('Roster Control', () => {
           expect(dataDisplay).toMatchObject({
             ID: 'member-roster',
             type: 'TOGGLE',
-            icon: 'participant-list_28',
-            tooltip: 'Show participants panel',
             state: 'inactive',
+            icon: 'participant-list_28',
+            text: 'Participants',
+            tooltip: 'Show participants panel',
           });
         });
     });
