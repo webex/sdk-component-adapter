@@ -1,3 +1,11 @@
+# [1.58.0](https://github.com/webex/sdk-component-adapter/compare/v1.57.0...v1.58.0) (2021-09-03)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement switch speaker in its own file and create the tests accordingly ([8d8d955](https://github.com/webex/sdk-component-adapter/commit/8d8d955740a447565fe5f1309d5a0228008b547e))
+* **MeetingsSdkAdapter:** stop disabled stream when leaving the meeting ([6a8204e](https://github.com/webex/sdk-component-adapter/commit/6a8204ea77ed4041295c0e19decf9047480ac9aa))
+
 # [1.57.0](https://github.com/webex/sdk-component-adapter/compare/v1.56.0...v1.57.0) (2021-08-27)
 
 
