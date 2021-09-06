@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/webex/sdk-component-adapter/compare/v1.58.0...v1.59.0) (2021-09-06)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add missing text on controls ([c439fe7](https://github.com/webex/sdk-component-adapter/commit/c439fe7dd6a4579169eef543ca73516531d1ca70))
+
 # [1.58.0](https://github.com/webex/sdk-component-adapter/compare/v1.57.0...v1.58.0) (2021-09-03)
 
 
