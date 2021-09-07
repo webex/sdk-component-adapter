@@ -986,6 +986,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async switchMicrophone(ID, microphoneID) {
     await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
       let updates;
+
+      this.stopStream(meeting.localAudio.stream);
       const {stream, permission} = await this.getStream(
         ID,
         {sendAudio: true},
