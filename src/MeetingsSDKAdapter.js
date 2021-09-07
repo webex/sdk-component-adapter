@@ -946,6 +946,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async switchCamera(ID, cameraID) {
     await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
       let updates;
+
+      this.stopStream(meeting.localVideo.stream);
       const {stream, permission} = await this.getStream(
         ID,
         {sendVideo: true},
