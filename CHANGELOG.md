@@ -1,3 +1,10 @@
+# [1.61.0](https://github.com/webex/sdk-component-adapter/compare/v1.60.0...v1.61.0) (2021-09-08)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** move video control in a separate file ([6e5b2a2](https://github.com/webex/sdk-component-adapter/commit/6e5b2a229dea958aba4ce45448bd4a54bbb3977d))
+
 # [1.60.0](https://github.com/webex/sdk-component-adapter/compare/v1.59.0...v1.60.0) (2021-09-08)
 
 
