@@ -1,3 +1,16 @@
+# [1.60.0](https://github.com/webex/sdk-component-adapter/compare/v1.59.0...v1.60.0) (2021-09-08)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** stop stream when switching cameras ([6ac8ebf](https://github.com/webex/sdk-component-adapter/commit/6ac8ebfa6136afe44ceda745969ed0381658c77c))
+* **MeetingsSdkAdapter:** stop stream when switching microphones ([cd98107](https://github.com/webex/sdk-component-adapter/commit/cd9810711b5ceef78181eda4323c89f96eafade0))
+
+
+### Features
+
+* **MeetingsSdkAdapter:** move proceed without microphone control in its own file and create tests ([ca80867](https://github.com/webex/sdk-component-adapter/commit/ca8086714e49f617d99c2e396304cd7605a812d9))
+
 # [1.59.0](https://github.com/webex/sdk-component-adapter/compare/v1.58.0...v1.59.0) (2021-09-06)
 
 
