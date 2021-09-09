@@ -44,6 +44,7 @@ export default class SwitchSpeakerControl extends MeetingControl {
     return combineLatestImmediate(speakerID$, options$).pipe(
       map(([speakerID, options]) => ({
         ID: this.ID,
+        type: 'MULTISELECT',
         tooltip: 'Speaker Devices',
         noOptionsMessage: 'No available speakers',
         options: options || null,

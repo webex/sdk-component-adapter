@@ -46,6 +46,7 @@ export default class SwitchMicrophoneControl extends MeetingControl {
     return combineLatestImmediate(microphoneID$, options$).pipe(
       map(([microphoneID, options]) => ({
         ID: this.ID,
+        type: 'MULTISELECT',
         tooltip: 'Audio Devices',
         noOptionsMessage: 'No available microphones',
         options: options || null,
