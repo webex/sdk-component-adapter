@@ -1,4 +1,5 @@
 import {WebexAdapter} from '@webex/component-adapter-interfaces';
+import {setRequest} from './logger';
 import RoomsSDKAdapter from './RoomsSDKAdapter';
 import PeopleSDKAdapter from './PeopleSDKAdapter';
 import MeetingsSDKAdapter from './MeetingsSDKAdapter';
@@ -15,6 +16,7 @@ export default class WebexSDKAdapter extends WebexAdapter {
    */
   constructor(sdk) {
     super(sdk);
+    setRequest(sdk.request);
     this.activitiesAdapter = {};
     this.peopleAdapter = new PeopleSDKAdapter(sdk);
     this.roomsAdapter = new RoomsSDKAdapter(sdk);

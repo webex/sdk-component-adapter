@@ -31,6 +31,7 @@ import SwitchMicrophoneControl from './MeetingsSDKAdapter/controls/SwitchMicroph
 import SwitchSpeakerControl from './MeetingsSDKAdapter/controls/SwitchSpeakerControl';
 import VideoControl from './MeetingsSDKAdapter/controls/VideoControl';
 import {chainWith, deepMerge} from './utils';
+import {metrics} from './logger';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -542,6 +543,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to join
    */
   async joinMeeting(ID) {
+    metrics.info('sdk_adapter_join_attempt');
+
     try {
       const sdkMeeting = this.fetchMeeting(ID);
       const localStream = new MediaStream();
@@ -560,6 +563,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       }
 
       await sdkMeeting.join();
+      metrics.info('sdk_adapter_join_success');
 
       // SDK requires to join the meeting before adding the local stream media to the meeting
       await sdkMeeting.addMedia({localStream, mediaSettings});
@@ -573,6 +577,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         await sdkMeeting.muteVideo();
       }
     } catch (error) {
+      metrics.info('sdk_adapter_join_error');
       // eslint-disable-next-line no-console
       console.error(`Unable to join meeting "${ID}"`, error);
     }
@@ -585,13 +590,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to leave from
    */
   async leaveMeeting(ID) {
+    metrics.info('sdk_adapter_leave_meeting_attempt');
+
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
       this.removeMedia(ID);
 
       await sdkMeeting.leave();
+
+      metrics.info('sdk_adapter_leave_meeting_success');
     } catch (error) {
+      metrics.info('sdk_adapter_leave_meeting_error');
       // eslint-disable-next-line no-console
       console.error(`Unable to leave from the meeting "${ID}"`, error);
     }
