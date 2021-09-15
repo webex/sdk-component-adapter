@@ -49,6 +49,9 @@ jobs:
           name: Linting
           command: npm run linter
       - run:
+          name: Run In Band Test
+          command: npm run test:ci
+      - run:
           name: Unit Test Coverage
           command: npm run test:unit -- --coverage
       - store_test_results:
