@@ -30,7 +30,7 @@
   "license": "MIT",
   "peerDependencies": {
     "rxjs": "^6.5.4",
-    "webex": "^1.128.0"
+    "webex": "1.141.0"
   },
   "dependencies": {
     "@webex/common": "^1.105.0",
