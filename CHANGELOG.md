@@ -1,3 +1,10 @@
+## [1.61.1](https://github.com/webex/sdk-component-adapter/compare/v1.61.0...v1.61.1) (2021-09-15)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** add type multiselect to switch camera and switch speaker controls ([63d5609](https://github.com/webex/sdk-component-adapter/commit/63d560914c73d8090c70cc8524c7d49870d46cc4))
+
 # [1.61.0](https://github.com/webex/sdk-component-adapter/compare/v1.60.0...v1.61.0) (2021-09-08)
 
 
