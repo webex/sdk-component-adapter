@@ -53,7 +53,7 @@ jobs:
           command: npm run test:ci
       - run:
           name: Unit Test Coverage
-          command: npm run test:unit -- --coverage
+          command: npm run test:unit -- --coverage --maxWorkers=2
       - store_test_results:
           path: test_results
 

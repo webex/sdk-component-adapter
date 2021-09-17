@@ -1,3 +1,10 @@
+# [1.62.0](https://github.com/webex/sdk-component-adapter/compare/v1.61.1...v1.62.0) (2021-09-16)
+
+
+### Features
+
+* **config:** add maxWorkers to jest command ([9e83401](https://github.com/webex/sdk-component-adapter/commit/9e834018758d5a8e4bd95a43f18b12c5c1a59976))
+
 ## [1.61.1](https://github.com/webex/sdk-component-adapter/compare/v1.61.0...v1.61.1) (2021-09-15)
 
 
