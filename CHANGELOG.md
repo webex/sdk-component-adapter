@@ -1,3 +1,10 @@
+# [1.63.0](https://github.com/webex/sdk-component-adapter/compare/v1.62.0...v1.63.0) (2021-09-23)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** check if org id exists ([5a5efc8](https://github.com/webex/sdk-component-adapter/commit/5a5efc872db30c6bbba74140a4c7635e3a182219))
+
 # [1.62.0](https://github.com/webex/sdk-component-adapter/compare/v1.61.1...v1.62.0) (2021-09-16)
 
 
