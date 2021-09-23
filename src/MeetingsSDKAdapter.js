@@ -562,7 +562,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       await sdkMeeting.join();
 
       // SDK requires to join the meeting before adding the local stream media to the meeting
-      await sdkMeeting.addMedia({localStream, mediaSettings});
+      // SDK join calls for members update and not sure when this will be ready.
+      // This is a workaround and will be fixed on the SDK side.
+      setTimeout(() => sdkMeeting.addMedia({localStream, mediaSettings}), 3000);
 
       // Mute either streams after join if user had muted them before joining
       if (this.meetings[ID].localAudio.stream === null) {
