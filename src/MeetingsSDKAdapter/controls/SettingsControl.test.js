@@ -22,7 +22,7 @@ describe('Settings Control', () => {
             state: 'inactive',
             icon: 'settings_32',
             text: 'Settings',
-            tooltip: 'Show settings panel',
+            tooltip: 'Meeting settings',
           });
         });
     });

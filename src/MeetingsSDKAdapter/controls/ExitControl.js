@@ -29,7 +29,7 @@ export default class ExitControl extends MeetingControl {
       ID: this.ID,
       type: 'CANCEL',
       icon: 'cancel_28',
-      tooltip: 'Leave',
+      tooltip: 'Leave meeting',
     });
   }
 }

@@ -20,7 +20,7 @@ describe('Share Control', () => {
             ID: 'share-screen',
             type: 'TOGGLE',
             icon: 'share-screen-presence-stroke_26',
-            tooltip: 'Start Sharing',
+            tooltip: 'Start sharing content',
             state: 'inactive',
             text: 'Start sharing',
           });

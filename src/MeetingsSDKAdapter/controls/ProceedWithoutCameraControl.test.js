@@ -19,7 +19,7 @@ describe('Proceed Without Camera Control', () => {
           expect(dataDisplay).toMatchObject({
             ID: 'proceed-without-camera',
             text: 'Proceed without camera',
-            tooltip: 'Ignore media access prompt and proceed without camera',
+            tooltip: 'This setting cannot be changed once the meeting starts.',
             hint: 'This setting cannot be changed once the meeting starts.',
           });
           done();

@@ -20,7 +20,6 @@ describe('Audio Control', () => {
             ID: 'mute-audio',
             type: 'TOGGLE',
             icon: 'microphone-muted_28',
-            tooltip: 'No microphone available',
             state: 'disabled',
             text: 'No microphone',
           });

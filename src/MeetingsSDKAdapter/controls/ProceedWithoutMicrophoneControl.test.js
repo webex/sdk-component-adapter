@@ -19,7 +19,7 @@ describe('Proceed Without Microphone Control', () => {
           expect(display).toMatchObject({
             ID: 'proceed-without-microphone',
             text: 'Proceed without microphone',
-            tooltip: 'Ignore media access prompt and proceed without microphone',
+            tooltip: 'This setting cannot be changed once the meeting starts.',
             hint: 'This setting cannot be changed once the meeting starts.',
           });
           done();

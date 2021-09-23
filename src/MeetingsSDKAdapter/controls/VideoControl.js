@@ -44,7 +44,6 @@ export default class VideoControl extends MeetingControl {
     const disabled = {
       ID: this.ID,
       icon: 'camera-muted_28',
-      tooltip: 'No camera available',
       state: MeetingControlState.DISABLED,
       text: 'Start video',
     };
