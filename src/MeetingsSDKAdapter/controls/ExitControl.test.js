@@ -19,7 +19,7 @@ describe('Exit Control', () => {
           ID: 'leave-meeting',
           type: 'CANCEL',
           icon: 'cancel_28',
-          tooltip: 'Leave',
+          tooltip: 'Leave meeting',
         });
         done();
       });

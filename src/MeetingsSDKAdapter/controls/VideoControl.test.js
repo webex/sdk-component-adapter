@@ -19,7 +19,6 @@ describe('Video Control', () => {
           expect(dataDisplay).toMatchObject({
             ID: 'mute-video',
             icon: 'camera-muted_28',
-            tooltip: 'No camera available',
             state: 'disabled',
             text: 'Start video',
           });

@@ -34,7 +34,7 @@ export default class ProceedWithoutMicrophoneControl extends MeetingControl {
         observer.next({
           ID: this.ID,
           text: 'Proceed without microphone',
-          tooltip: 'Ignore media access prompt and proceed without microphone',
+          tooltip: 'This setting cannot be changed once the meeting starts.',
           hint: 'This setting cannot be changed once the meeting starts.',
         });
         observer.complete();

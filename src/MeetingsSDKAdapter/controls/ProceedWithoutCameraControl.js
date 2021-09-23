@@ -34,7 +34,7 @@ export default class ProceedWithoutCameraControl extends MeetingControl {
         observer.next({
           ID: this.ID,
           text: 'Proceed without camera',
-          tooltip: 'Ignore media access prompt and proceed without camera',
+          tooltip: 'This setting cannot be changed once the meeting starts.',
           hint: 'This setting cannot be changed once the meeting starts.',
         });
         observer.complete();
