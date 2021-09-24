@@ -835,11 +835,9 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showRoster: false});
     });
 
-    test('returns a rejected promise if meeting does not exist', (done) => {
-      meetingsSDKAdapter.toggleRoster('inexistent').catch((error) => {
-        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-        done();
-      });
+    test('returns a rejected promise if meeting does not exist', async () => {
+      await expect(meetingsSDKAdapter.toggleRoster('inexistent')).rejects
+        .toThrow('Could not find meeting with ID "inexistent"');
     });
   });
 
@@ -860,11 +858,9 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showSettings: false});
     });
 
-    test('returns a rejected promise if meeting does not exist', (done) => {
-      meetingsSDKAdapter.toggleSettings('inexistent').catch((error) => {
-        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-        done();
-      });
+    test('returns a rejected promise if meeting does not exist', async () => {
+      await expect(meetingsSDKAdapter.toggleSettings('inexistent')).rejects
+        .toThrow('Could not find meeting with ID "inexistent"');
     });
   });
 
@@ -878,21 +874,18 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({cameraID: 'example-camera-id'});
     });
 
-    test('returns a rejected promise if meeting does not exist', (done) => {
-      meetingsSDKAdapter.switchCamera('inexistent', 'example-camera-id').catch((error) => {
-        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-        done();
-      });
+    test('returns a rejected promise if meeting does not exist', async () => {
+      await expect(meetingsSDKAdapter.switchCamera('inexistent', 'example-camera-id'))
+        .rejects.toThrow('Could not find meeting with ID "inexistent"');
     });
 
-    test('returns a rejected promise if camera stream cannot be obtained', (done) => {
+    test('returns a rejected promise if camera stream cannot be obtained', async () => {
       const sdkError = new Error('sdk switch camera error');
 
       mockSDKMeeting.getMediaStreams = () => Promise.reject(sdkError);
-      meetingsSDKAdapter.switchCamera(meetingID, 'example-camera-id').catch((error) => {
-        expect(error.message).toBe('Could not change camera, permission not granted: ERROR');
-        done();
-      });
+
+      await expect(meetingsSDKAdapter.switchCamera(meetingID, 'example-camera-id'))
+        .rejects.toThrow('Could not change camera, permission not granted: ERROR');
     });
   });
 
@@ -906,21 +899,18 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({microphoneID: 'example-microphone-id'});
     });
 
-    test('returns a rejected promise if meeting does not exist', (done) => {
-      meetingsSDKAdapter.switchMicrophone('inexistent', 'example-microphone-id').catch((error) => {
-        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-        done();
-      });
+    test('returns a rejected promise if meeting does not exist', async () => {
+      await expect(meetingsSDKAdapter.switchMicrophone('inexistent', 'example-microphone-id'))
+        .rejects.toThrow('Could not find meeting with ID "inexistent"');
     });
 
-    test('returns a rejected promise if microphone stream cannot be obtained', (done) => {
+    test('returns a rejected promise if microphone stream cannot be obtained', async () => {
       const sdkError = new Error('sdk switch microphone error');
 
       mockSDKMeeting.getMediaStreams = () => Promise.reject(sdkError);
-      meetingsSDKAdapter.switchMicrophone(meetingID, 'example-microphone-id').catch((error) => {
-        expect(error.message).toBe('Could not change microphone, permission not granted: ERROR');
-        done();
-      });
+
+      await expect(meetingsSDKAdapter.switchMicrophone(meetingID, 'example-microphone-id'))
+        .rejects.toThrow('Could not change microphone, permission not granted: ERROR');
     });
   });
 
@@ -934,11 +924,9 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({speakerID: 'example-speaker-id'});
     });
 
-    test('returns a rejected promise if meeting does not exist', (done) => {
-      meetingsSDKAdapter.switchSpeaker('inexistent', 'example-speaker-id').catch((error) => {
-        expect(error.message).toBe('Could not find meeting with ID "inexistent"');
-        done();
-      });
+    test('returns a rejected promise if meeting does not exist', async () => {
+      await expect(meetingsSDKAdapter.switchSpeaker('inexistent', 'example-speaker-id'))
+        .rejects.toThrow('Could not find meeting with ID "inexistent"');
     });
   });
 
