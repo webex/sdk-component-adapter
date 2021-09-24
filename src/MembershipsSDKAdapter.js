@@ -97,6 +97,7 @@ function getMembers(sdkMembers) {
     orgID:
       member.participant
       && member.participant.person
+      && member.participant.person.orgId
       && constructHydraId(hydraTypes.ORGANIZATION, member.participant.person.orgId),
     inMeeting: member.isInMeeting,
     muted: member.isAudioMuted,
