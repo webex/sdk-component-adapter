@@ -102,7 +102,7 @@ The following examples display how you can utilize the Webex SDK Adapter along w
 Utilizing the `useEffect` hook, we can connect our adapter in a deferred event after initial render.
 
 ```js
-import '@webex/components/dist/webexComponents.css';
+import '@webex/components/dist/css/webex-components.css';
 
 import React, {useEffect, useState} from 'react';
 import Webex from 'webex';
