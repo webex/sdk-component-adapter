@@ -393,13 +393,19 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to update
    */
   removeMedia(ID) {
-    if (this.meetings && this.meetings[ID]) {
-      this.stopStream(this.meetings[ID].localAudio.stream);
-      this.stopStream(this.meetings[ID].localVideo.stream);
-      this.stopStream(this.meetings[ID].localShare.stream);
-      this.stopStream(this.meetings[ID].disabledLocalAudio);
-      this.stopStream(this.meetings[ID].disabledLocalVideo);
+    const meeting = this.meetings[ID];
+
+    if (!meeting) {
+      return;
     }
+
+    const {localAudio, localVideo, localShare} = meeting;
+
+    this.stopStream(localAudio && localAudio.stream);
+    this.stopStream(localVideo && localVideo.stream);
+    this.stopStream(localShare && localShare.stream);
+    this.stopStream(meeting.disabledLocalAudio);
+    this.stopStream(meeting.disabledLocalVideo);
 
     this.meetings[ID] = {
       ...this.meetings[ID],

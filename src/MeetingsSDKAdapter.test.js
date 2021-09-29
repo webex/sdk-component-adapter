@@ -5,7 +5,7 @@ import {
 } from 'rxjs/operators';
 
 import {createMockSDKMediaStreams} from './mockSdk';
-import {meetingID, createTestMeetingsSDKAdapter} from './MeetingsSDKAdapter/testHelper';
+import {meetingID, mockMeeting, createTestMeetingsSDKAdapter} from './MeetingsSDKAdapter/testHelper';
 
 describe('Meetings SDK Adapter', () => {
   let meeting;
@@ -278,6 +278,40 @@ describe('Meetings SDK Adapter', () => {
       });
     });
 
+    test('sets `localShare`, if the event type is `meeting:startedSharingLocal`', () => {
+      event = {
+        type: 'meeting:startedSharingLocal',
+      };
+      meetingsSDKAdapter.meetings[meetingID] = {
+        ...meeting,
+        localShareStream: 'localShareStream',
+      };
+      meetingsSDKAdapter.attachMedia(meetingID, event);
+
+      expect(meetingsSDKAdapter.meetings[meetingID]).toMatchObject({
+        localShare: {
+          stream: null,
+        },
+      });
+    });
+
+    test('clears `localShare`, if the event type is `meeting:stoppedSharingLocal`', () => {
+      event = {
+        type: 'meeting:stoppedSharingLocal',
+      };
+      meetingsSDKAdapter.meetings[meetingID] = {
+        ...meeting,
+        localShareStream: 'localShareStream',
+      };
+      meetingsSDKAdapter.attachMedia(meetingID, event);
+
+      expect(meetingsSDKAdapter.meetings[meetingID]).toMatchObject({
+        localShare: {
+          stream: null,
+        },
+      });
+    });
+
     test('returns the same meeting object, if the event type is not declared', () => {
       event = {
         type: 'NA',
@@ -348,6 +382,32 @@ describe('Meetings SDK Adapter', () => {
 
       expect(meetingsSDKAdapter.meetings[meetingID]).toMatchObject({
         remoteVideo: null,
+      });
+    });
+
+    describe('handles unexpected meeting shape', () => {
+      test('removes `localShare.stream` and `localShare.stream`', () => {
+        const id = mockMeeting.ID;
+
+        meetingsSDKAdapter.meetings[id] = mockMeeting;
+        meetingsSDKAdapter.removeMedia(id, {type: 'local'});
+
+        expect(meetingsSDKAdapter.meetings[id]).toMatchObject({
+          localAudio: {
+            stream: null,
+          },
+          localVideo: {
+            stream: null,
+          },
+          localShare: {
+            stream: null,
+          },
+        });
+      });
+
+      test('handles meeting that does not exist', () => {
+        meetingsSDKAdapter.removeMedia('unknown', {type: 'local'});
+        expect(meetingsSDKAdapter.meetings.unknown).toBeUndefined();
       });
     });
   });
@@ -970,6 +1030,14 @@ describe('Meetings SDK Adapter', () => {
             done();
           },
         );
+    });
+  });
+
+  describe('joinMeeting()', () => {
+    test('adds local audio tracks if localAudio stream', async () => {
+      meetingsSDKAdapter.fetchMeeting = jest.fn(() => mockMeeting);
+      await meetingsSDKAdapter.joinMeeting(mockMeeting.ID);
+      expect(meetingsSDKAdapter.fetchMeeting).toHaveBeenCalled();
     });
   });
 });

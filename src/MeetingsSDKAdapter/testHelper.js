@@ -4,6 +4,27 @@ import MeetingsSDKAdapter from '../MeetingsSDKAdapter';
 export const meetingID = 'meetingID';
 
 /**
+ * Shape of meeting with SIP
+ */
+export const mockMeeting = {
+  ID: 'mockMeeting1',
+  title: '5535@ucdemolab.com',
+  localAudio: {
+    stream: {},
+    permission: 'ALLOWED',
+  },
+  localVideo: {
+    stream: {},
+    permission: 'ALLOWED',
+  },
+  localShare: null,
+  remoteAudio: {},
+  remoteVideo: null,
+  remoteShare: null,
+  state: 'JOINED',
+};
+
+/**
  * Creates a new meeting SDK adapter instance based on a mock SDK.
  *
  * @returns {MeetingsSDKAdapter} A new instance of the meeting SDK adapter
