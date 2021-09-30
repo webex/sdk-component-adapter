@@ -58,3 +58,15 @@ Received: ${this.utils.printReceived(received && received.getTracks())}`;
     };
   },
 });
+
+global.document = {
+  createElement: (type) => {
+    const elem = {};
+
+    if (type === 'audio' || type === 'video') {
+      elem.setSinkId = () => {};
+    }
+
+    return elem;
+  },
+};
