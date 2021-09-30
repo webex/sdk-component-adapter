@@ -74,3 +74,6 @@ export function deepMerge(dest, src) {
 }
 
 export default {chainWith, combineLatestImmediate, deepMerge};
+
+// Checks for the existence of setSinkId on a media element.
+export const isSpeakerSupported = !!document.createElement('audio').setSinkId;
