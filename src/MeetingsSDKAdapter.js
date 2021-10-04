@@ -487,7 +487,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         remoteVideo: null,
         remoteShare: null,
         showRoster: null,
-        showSettings: false,
+        settings: {
+          visible: false,
+          preview: {
+            audio: {},
+            video: {},
+          },
+        },
         state: MeetingState.NOT_JOINED,
         cameraID: null,
         microphoneID: null,
@@ -876,13 +882,17 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Toggles the showSettings flag of the given meeting ID.
+   * Toggles the settings.visible flag of the given meeting ID.
    * A settings toggle event is dispatched.
    *
    * @param {string} ID  Meeting ID
    */
   toggleSettings(ID) {
-    return this.updateMeeting(ID, ({showSettings}) => ({showSettings: !showSettings}));
+    return this.updateMeeting(ID, ({settings}) => ({
+      settings: {
+        visible: !settings.visible,
+      },
+    }));
   }
 
   /**
