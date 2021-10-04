@@ -1,3 +1,10 @@
+# [1.64.0](https://github.com/webex/sdk-component-adapter/compare/v1.63.0...v1.64.0) (2021-10-04)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** create 'supportedControls()' method ([b2877cd](https://github.com/webex/sdk-component-adapter/commit/b2877cd42ea998676675f3d38f811a547a54c13d))
+
 # [1.63.0](https://github.com/webex/sdk-component-adapter/compare/v1.62.0...v1.63.0) (2021-09-23)
 
 
