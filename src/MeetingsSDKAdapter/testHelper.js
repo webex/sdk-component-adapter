@@ -26,7 +26,13 @@ export function createTestMeetingsSDKAdapter() {
     remoteVideo: null,
     remoteShare: null,
     showRoster: null,
-    showSettings: false,
+    settings: {
+      visible: false,
+      preview: {
+        audio: {},
+        video: {},
+      },
+    },
     title: 'my meeting',
     cameraID: 'cameraID',
     microphoneID: null,

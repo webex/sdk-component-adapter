@@ -397,7 +397,13 @@ describe('Meetings SDK Adapter', () => {
           remoteVideo: null,
           remoteShare: null,
           showRoster: null,
-          showSettings: false,
+          settings: {
+            visible: false,
+            preview: {
+              audio: {},
+              video: {},
+            },
+          },
           state: 'NOT_JOINED',
           cameraID: null,
           microphoneID: null,
@@ -843,19 +849,19 @@ describe('Meetings SDK Adapter', () => {
 
   describe('toggleSettings()', () => {
     test('shows settings if settings is hidden', async () => {
-      meetingsSDKAdapter.meetings[meetingID].showSettings = false;
+      meetingsSDKAdapter.meetings[meetingID].settings.visible = false;
       await meetingsSDKAdapter.toggleSettings(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
       expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
-      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showSettings: true});
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({settings: {visible: true}});
     });
 
     test('hides settings if settings is shown', async () => {
-      meetingsSDKAdapter.meetings[meetingID].showSettings = true;
+      meetingsSDKAdapter.meetings[meetingID].settings.visible = true;
       await meetingsSDKAdapter.toggleSettings(meetingID);
       expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
       expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
-      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({showSettings: false});
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({settings: {visible: false}});
     });
 
     test('returns a rejected promise if meeting does not exist', async () => {
