@@ -1138,4 +1138,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
   }
+
+  /**
+   * Displays the names of the available controls.
+   *
+   * @returns {string[]} Array containing the control names supported.
+   */
+  supportedControls() {
+    return Object.keys(this.meetingControls);
+  }
 }
