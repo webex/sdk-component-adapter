@@ -978,4 +978,25 @@ describe('Meetings SDK Adapter', () => {
         );
     });
   });
+
+  describe('supportedControls()', () => {
+    test('returns an array containing the available control names', () => {
+      const availableControls = meetingsSDKAdapter.supportedControls();
+
+      expect(availableControls.sort()).toEqual([
+        'join-meeting',
+        'leave-meeting',
+        'member-roster',
+        'mute-audio',
+        'mute-video',
+        'proceed-without-camera',
+        'proceed-without-microphone',
+        'settings',
+        'share-screen',
+        'switch-camera',
+        'switch-microphone',
+        'switch-speaker',
+      ]);
+    });
+  });
 });
