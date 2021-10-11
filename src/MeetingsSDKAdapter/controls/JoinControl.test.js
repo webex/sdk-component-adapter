@@ -14,12 +14,13 @@ describe('Join Control', () => {
 
   describe('display()', () => {
     test('returns the display data in a proper shape', (done) => {
-      meetingsSDKAdapter.meetingControls['join-meeting'].display().pipe(first()).subscribe((display) => {
+      meetingsSDKAdapter.meetingControls['join-meeting'].display(meetingID).pipe(first()).subscribe((display) => {
         expect(display).toMatchObject({
           ID: 'join-meeting',
           type: 'JOIN',
           text: 'Join meeting',
           tooltip: 'Join meeting',
+          hint: 'Muted, video off',
         });
         done();
       });
