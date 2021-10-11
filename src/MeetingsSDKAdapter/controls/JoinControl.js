@@ -1,4 +1,5 @@
-import {Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
+import {map, distinctUntilChanged} from 'rxjs/operators';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -24,12 +25,20 @@ export default class JoinControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable that emits display of the join control
    */
   // eslint-disable-next-line class-methods-use-this
-  display() {
-    return of({
-      ID: this.ID,
-      type: 'JOIN',
-      text: 'Join meeting',
-      tooltip: 'Join meeting',
-    });
+  display(meetingID) {
+    return this.adapter.getMeeting(meetingID).pipe(
+      map((meeting) => (
+        (meeting.localAudio.stream ? 'Unmuted, ' : 'Muted, ')
+        + (meeting.localVideo.stream ? 'video on' : 'video off')
+      )),
+      distinctUntilChanged(),
+      map((hint) => ({
+        ID: this.ID,
+        type: 'JOIN',
+        text: 'Join meeting',
+        tooltip: 'Join meeting',
+        hint,
+      })),
+    );
   }
 }
