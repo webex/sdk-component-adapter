@@ -1,4 +1,4 @@
-import {MeetingsAdapter, MeetingControlState, MeetingState} from '@webex/component-adapter-interfaces';
+import {MeetingsAdapter, MeetingState} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
 import {
   concat,
@@ -26,6 +26,7 @@ import ProceedWithoutCameraControl from './MeetingsSDKAdapter/controls/ProceedWi
 import ProceedWithoutMicrophoneControl from './MeetingsSDKAdapter/controls/ProceedWithoutMicrophoneControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
+import ShareControl from './MeetingsSDKAdapter/controls/ShareControl';
 import SwitchCameraControl from './MeetingsSDKAdapter/controls/SwitchCameraControl';
 import SwitchMicrophoneControl from './MeetingsSDKAdapter/controls/SwitchMicrophoneControl';
 import SwitchSpeakerControl from './MeetingsSDKAdapter/controls/SwitchSpeakerControl';
@@ -60,7 +61,6 @@ const EVENT_REMOTE_SHARE_STOP = 'meeting:stoppedSharingRemote';
 
 // Adapter Events
 const EVENT_MEETING_UPDATED = 'adapter:meeting:updated';
-const EVENT_MEDIA_LOCAL_UPDATE = 'adapter:media:local:update';
 const EVENT_CAMERA_SWITCH = 'adapter:camera:switch';
 const EVENT_MICROPHONE_SWITCH = 'adapter:microphone:switch';
 
@@ -116,32 +116,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     this.getMeetingObservables = {};
     this.meetings = {};
 
-    this.meetingControls[JOIN_CONTROL] = new JoinControl(this, JOIN_CONTROL);
-
-    this.meetingControls[AUDIO_CONTROL] = new AudioControl(this, AUDIO_CONTROL);
-
-    this.meetingControls[VIDEO_CONTROL] = new VideoControl(this, VIDEO_CONTROL);
-
-    this.meetingControls[SHARE_CONTROL] = {
-      ID: SHARE_CONTROL,
-      action: this.handleLocalShare.bind(this),
-      display: this.shareControl.bind(this),
+    this.meetingControls = {
+      [JOIN_CONTROL]: new JoinControl(this, JOIN_CONTROL),
+      [AUDIO_CONTROL]: new AudioControl(this, AUDIO_CONTROL),
+      [VIDEO_CONTROL]: new VideoControl(this, VIDEO_CONTROL),
+      [SHARE_CONTROL]: new ShareControl(this, SHARE_CONTROL),
+      [EXIT_CONTROL]: new ExitControl(this, EXIT_CONTROL),
+      [ROSTER_CONTROL]: new RosterControl(this, ROSTER_CONTROL),
+      [SETTINGS_CONTROL]: new SettingsControl(this, SETTINGS_CONTROL),
+      [SWITCH_CAMERA_CONTROL]: new SwitchCameraControl(this, SWITCH_CAMERA_CONTROL),
+      [SWITCH_SPEAKER_CONTROL]: new SwitchSpeakerControl(this, SWITCH_SPEAKER_CONTROL),
+      [SWITCH_MICROPHONE_CONTROL]: new SwitchMicrophoneControl(this, SWITCH_MICROPHONE_CONTROL),
+      [PROCEED_WITHOUT_MICROPHONE_CONTROL]:
+        new ProceedWithoutMicrophoneControl(this, PROCEED_WITHOUT_MICROPHONE_CONTROL),
+      [PROCEED_WITHOUT_CAMERA_CONTROL]:
+        new ProceedWithoutCameraControl(this, PROCEED_WITHOUT_CAMERA_CONTROL),
     };
-
-    this.meetingControls[EXIT_CONTROL] = new ExitControl(this, EXIT_CONTROL);
-    this.meetingControls[ROSTER_CONTROL] = new RosterControl(this, ROSTER_CONTROL);
-    this.meetingControls[SETTINGS_CONTROL] = new SettingsControl(this, SETTINGS_CONTROL);
-    this.meetingControls[SWITCH_CAMERA_CONTROL] = new
-    SwitchCameraControl(this, SWITCH_CAMERA_CONTROL);
-    this.meetingControls[SWITCH_SPEAKER_CONTROL] = new
-    SwitchSpeakerControl(this, SWITCH_SPEAKER_CONTROL);
-    this.meetingControls[PROCEED_WITHOUT_MICROPHONE_CONTROL] = new
-    ProceedWithoutMicrophoneControl(this, PROCEED_WITHOUT_MICROPHONE_CONTROL);
-
-    this.meetingControls[SWITCH_MICROPHONE_CONTROL] = new
-    SwitchMicrophoneControl(this, SWITCH_MICROPHONE_CONTROL);
-    this.meetingControls[PROCEED_WITHOUT_CAMERA_CONTROL] = new
-    ProceedWithoutCameraControl(this, PROCEED_WITHOUT_CAMERA_CONTROL);
   }
 
   /**
@@ -709,166 +699,46 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to start/stop sharing
    */
   async handleLocalShare(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
+    await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+      let updates;
 
-    if (!sdkMeeting.canUpdateMedia()) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to update screen share for meeting "${ID}" due to unstable connection.`);
+      const handleSdkError = (error) => {
+        // eslint-disable-next-line no-console
+        console.warn(`Unable to update local share stream for meeting "${ID}"`, error);
 
-      return;
-    }
+        this.stopStream(meeting.localShare.stream);
+        updates = {localShare: {stream: null}};
+        this.updateMeeting(ID, async () => ({localShare: {stream: null}}));
+      };
 
-    const enableSharingStream = async () => {
-      const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
+      //
+      // Workflow:
+      // To enable or to disable the local sharing stream based on toggle state.
+      // Will stop sharing stream and reset UI state when error happens
+      //
+      if (!sdkMeeting.canUpdateMedia()) {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to update screen share for meeting "${ID}" due to unstable connection.`);
+      } else if (meeting.localShare.stream) {
+        this.stopStream(meeting.localShare.stream);
 
-      this.meetings[ID].localShare.stream = localShare;
+        sdkMeeting.updateShare({sendShare: false, receiveShare: true}).catch(handleSdkError);
 
-      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
-        control: SHARE_CONTROL,
-        state: MeetingControlState.ACTIVE,
-      });
-
-      await sdkMeeting.updateShare({stream: localShare, sendShare: true, receiveShare: true});
-    };
-
-    const disableSharingStream = async () => {
-      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
-        control: SHARE_CONTROL,
-        state: MeetingControlState.INACTIVE,
-      });
-
-      await sdkMeeting.updateShare({
-        sendShare: false,
-        receiveShare: true,
-      });
-
-      // The rest of the cleanup is done in the handling of the EVENT_LOCAL_SHARE_STOP event emitted by sdkMeeting.updateShare
-    };
-
-    const resetSharingStream = (error) => {
-      // eslint-disable-next-line no-console
-      console.warn(`Unable to update local share stream for meeting "${ID}"`, error);
-
-      if (this.meetings[ID] && this.meetings[ID].localShare.stream) {
-        this.stopStream(this.meetings[ID].localShare.stream);
-        this.meetings[ID].localShare.stream = null;
-      }
-
-      sdkMeeting.emit(EVENT_MEDIA_LOCAL_UPDATE, {
-        control: SHARE_CONTROL,
-        state: MeetingControlState.INACTIVE,
-      });
-    };
-
-    //
-    // Workflow:
-    // To enable or to disable the local sharing stream based on toggle state.
-    // Will stop sharing stream and reset UI state when error happens
-    //
-    try {
-      if (this.meetings[ID].localShare.stream) {
-        await disableSharingStream();
+        updates = {localShare: {stream: null}};
       } else {
-        await enableSharingStream();
-      }
-    } catch (error) {
-      resetSharingStream(error);
-    }
-  }
+        const [, localShare] = await sdkMeeting.getMediaStreams({sendShare: true});
 
-  /**
-   * Returns an observable that emits the display data of a share control.
-   *
-   * @private
-   * @param {string} ID ID of the meeting to start/stop screen share
-   * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the screen share control
-   */
-  shareControl(ID) {
-    const sdkMeeting = this.fetchMeeting(ID);
-    const inactiveShare = {
-      ID: SHARE_CONTROL,
-      type: 'TOGGLE',
-      state: MeetingControlState.INACTIVE,
-      icon: 'share-screen-presence-stroke_26',
-      text: 'Start sharing',
-      tooltip: 'Start Sharing',
-    };
-    const activeShare = {
-      ID: SHARE_CONTROL,
-      type: 'TOGGLE',
-      state: MeetingControlState.ACTIVE,
-      icon: 'share-screen-presence-stroke_26',
-      text: 'Stop sharing',
-      tooltip: 'Stop Sharing',
-    };
-    const disabledShare = {
-      ID: SHARE_CONTROL,
-      type: 'TOGGLE',
-      state: MeetingControlState.DISABLED,
-      icon: 'share-screen-presence-stroke_26',
-      text: 'Sharing is Unavailable',
-      tooltip: 'Sharing is Unavailable',
-    };
+        sdkMeeting.updateShare({
+          stream: localShare,
+          sendShare: true,
+          receiveShare: true,
+        }).catch(handleSdkError);
 
-    const getDisplayData$ = Observable.create((observer) => {
-      if (sdkMeeting) {
-        observer.next(inactiveShare);
-      } else {
-        observer.error(new Error(`Could not find meeting with ID "${ID}" to add share control`));
+        updates = {localShare: {stream: localShare}};
       }
 
-      observer.complete();
+      return updates;
     });
-
-    const localMediaUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE).pipe(
-      filter((event) => event.control === SHARE_CONTROL),
-      map(({state}) => {
-        let eventData;
-
-        switch (state) {
-          case MeetingControlState.DISABLED:
-            eventData = disabledShare;
-            break;
-          case MeetingControlState.INACTIVE:
-            eventData = inactiveShare;
-            break;
-          case MeetingControlState.ACTIVE:
-            eventData = activeShare;
-            break;
-          default:
-            eventData = disabledShare;
-            break;
-        }
-
-        return eventData;
-      }),
-    );
-
-    const meetingWithMediaStoppedSharingLocalEvent$ = fromEvent(
-      sdkMeeting,
-      EVENT_LOCAL_SHARE_STOP,
-    ).pipe(
-      // eslint-disable-next-line no-console
-      tap(() => console.info('EVENT_LOCAL_SHARE_STOP was triggered')),
-      map(() => inactiveShare),
-    );
-
-    const meetingWithMediaStartedSharingLocalEvent$ = fromEvent(
-      sdkMeeting,
-      EVENT_LOCAL_SHARE_START,
-    ).pipe(
-      // eslint-disable-next-line no-console
-      tap(() => console.info('EVENT_LOCAL_SHARE_START was triggered')),
-      map(() => activeShare),
-    );
-
-    const sharingEvents$ = merge(
-      localMediaUpdateEvent$,
-      meetingWithMediaStoppedSharingLocalEvent$,
-      meetingWithMediaStartedSharingLocalEvent$,
-    );
-
-    return concat(getDisplayData$, sharingEvents$);
   }
 
   /**
@@ -1068,7 +938,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }),
       );
 
-      const meetingWithLocalUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEDIA_LOCAL_UPDATE);
+      const meetingWithLocalShareStartedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START);
 
       const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
 
@@ -1095,13 +965,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingUpdateEvent$,
         meetingWithMediaReadyEvent$,
         meetingWithMediaStoppedEvent$,
-        meetingWithLocalUpdateEvent$,
         meetingWithLocalShareStoppedEvent$,
         meetingWithMediaShareEvent$,
         meetingWithMediaStoppedShareEvent$,
         meetingStateChange$,
         meetingWithSwitchCameraEvent$,
         meetingWithSwitchMicrophoneEvent$,
+        meetingWithLocalShareStartedEvent$,
       ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
       const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);

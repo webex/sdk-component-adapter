@@ -64,7 +64,7 @@ export function combineLatestImmediate(...observables) {
 export function deepMerge(dest, src) {
   const result = dest;
 
-  for (const [key, val] of Object.entries(src)) {
+  for (const [key, val] of Object.entries(src || {})) {
     if (val && val.constructor === Object) {
       deepMerge(result[key], val);
     } else {

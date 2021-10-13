@@ -729,35 +729,6 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
-  describe('shareControl()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
-      global.console.log = jest.fn();
-      meetingsSDKAdapter.meetings[meetingID] = {...meeting};
-
-      meetingsSDKAdapter.shareControl(meetingID).subscribe((dataDisplay) => {
-        expect(dataDisplay).toMatchObject({
-          ID: 'share-screen',
-          type: 'TOGGLE',
-          icon: 'share-screen-presence-stroke_26',
-        });
-        done();
-      });
-    });
-
-    test('throws errors if sdk meeting object is not defined', (done) => {
-      global.console.log = jest.fn();
-      meetingsSDKAdapter.fetchMeeting = jest.fn();
-
-      meetingsSDKAdapter.shareControl('inexistent-meeting-id').subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe('Could not find meeting with ID "inexistent-meeting-id" to add share control');
-          done();
-        },
-      );
-    });
-  });
-
   describe('handleLocalShare()', () => {
     let mockConsole;
     let stopStream;
@@ -788,7 +759,7 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('start share if the share track is disabled', async () => {
-      meetingsSDKAdapter.meetings[meetingID] = {...meeting};
+      meetingsSDKAdapter.meetings[meetingID] = {...meeting, localShare: {stream: null}};
       const {getMediaStreams} = mockSDKMeeting;
 
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.resolve([['mockStream'], 'localShare']));
