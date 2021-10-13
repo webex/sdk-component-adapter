@@ -535,9 +535,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Attempts to join the meeting of the given meeting ID.
    * If the meeting is successfully joined, a ready event is dispatched.
    *
-   * @param {string} ID ID of the meeting to join
+   * @param {string} ID  ID of the meeting to join
+   * @param {object} options  Options for joining
+   * @param {string} [props.options.name]  Username for meeting
+   * @param {number} [props.options.password]  Meeting password
    */
-  async joinMeeting(ID) {
+  async joinMeeting(ID, options = {}) {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
       const localStream = new MediaStream();
@@ -555,7 +558,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         localVideo.getTracks().forEach((track) => localStream.addTrack(track));
       }
 
-      await sdkMeeting.join();
+      await sdkMeeting.join({pin: options.password, name: options.name});
 
       // SDK requires to join the meeting before adding the local stream media to the meeting
       await sdkMeeting.addMedia({localStream, mediaSettings});
