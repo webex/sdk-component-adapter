@@ -1,3 +1,10 @@
+# [1.66.0](https://github.com/webex/sdk-component-adapter/compare/v1.65.0...v1.66.0) (2021-10-13)
+
+
+### Features
+
+* **MeetingSdkAdapter:** implement share control in its own file and create the tests accordingly ([fd81198](https://github.com/webex/sdk-component-adapter/commit/fd81198178e516565e7af070d24892aed8ab4d73))
+
 # [1.65.0](https://github.com/webex/sdk-component-adapter/compare/v1.64.0...v1.65.0) (2021-10-13)
 
 
