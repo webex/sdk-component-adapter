@@ -1,3 +1,12 @@
+# [1.65.0](https://github.com/webex/sdk-component-adapter/compare/v1.64.0...v1.65.0) (2021-10-13)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add 'hint' for joinControl ([541912f](https://github.com/webex/sdk-component-adapter/commit/541912fc0c9c03fa2d6f142ea2b5e53d735833b4))
+* **MeetingsSdkAdapter:** add tests for 'supportedControls()' method ([2e33562](https://github.com/webex/sdk-component-adapter/commit/2e335627b4cd9ea0255ec2ed5bac3b52114a961d))
+* **SwitchSpeakerControl:** update tooltip message when no speakers in Firefox and Safari ([cdd5c47](https://github.com/webex/sdk-component-adapter/commit/cdd5c4711e74d05eb029ed37ce7d480d01f27cb3))
+
 # [1.64.0](https://github.com/webex/sdk-component-adapter/compare/v1.63.0...v1.64.0) (2021-10-04)
 
 
