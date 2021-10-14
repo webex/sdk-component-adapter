@@ -1,3 +1,10 @@
+# [1.67.0](https://github.com/webex/sdk-component-adapter/compare/v1.66.1...v1.67.0) (2021-10-14)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** send name and password when joining ([e0a0a85](https://github.com/webex/sdk-component-adapter/commit/e0a0a85e82dddb254c645686c3d034595b0b28c5))
+
 ## [1.66.1](https://github.com/webex/sdk-component-adapter/compare/v1.66.0...v1.66.1) (2021-10-14)
 
 
