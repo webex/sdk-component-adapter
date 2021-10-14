@@ -1,3 +1,10 @@
+## [1.66.1](https://github.com/webex/sdk-component-adapter/compare/v1.66.0...v1.66.1) (2021-10-14)
+
+
+### Bug Fixes
+
+* **package:** update webex to v.1.142.0 ([fd51a1d](https://github.com/webex/sdk-component-adapter/commit/fd51a1d66e60993d1449d9239690d634045317d3))
+
 # [1.66.0](https://github.com/webex/sdk-component-adapter/compare/v1.65.0...v1.66.0) (2021-10-13)
 
 
