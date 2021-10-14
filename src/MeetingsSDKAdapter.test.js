@@ -970,4 +970,15 @@ describe('Meetings SDK Adapter', () => {
       ]);
     });
   });
+
+  describe('clearPasswordRequiredFlag()', () => {
+    test('clears the passwordRequired flag if set', async () => {
+      meetingsSDKAdapter.meetings[meetingID].passwordRequired = true;
+      await meetingsSDKAdapter.clearPasswordRequiredFlag(meetingID);
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({passwordRequired: false});
+    });
+  });
 });
