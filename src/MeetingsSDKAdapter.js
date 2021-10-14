@@ -536,9 +536,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * If the meeting is successfully joined, a ready event is dispatched.
    *
    * @param {string} ID  ID of the meeting to join
-   * @param {object} options  Options for joining
-   * @param {string} [props.options.name]  Username for meeting
-   * @param {number} [props.options.password]  Meeting password
+   * @param {object} [options]  Options for joining
+   * @param {string} [options.name]  Username for meeting
+   * @param {string} [options.password]  Meeting password
    */
   async joinMeeting(ID, options = {}) {
     try {
@@ -558,7 +558,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         localVideo.getTracks().forEach((track) => localStream.addTrack(track));
       }
 
-      await sdkMeeting.join({pin: options.password, name: options.name});
+      sdkMeeting.meetingFiniteStateMachine.reset();
+      await sdkMeeting.join({pin: options.password, moderator: false, name: options.name});
 
       // SDK requires to join the meeting before adding the local stream media to the meeting
       await sdkMeeting.addMedia({localStream, mediaSettings});
@@ -572,8 +573,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         await sdkMeeting.muteVideo();
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to join meeting "${ID}"`, error);
+      if (error.stack.startsWith('BadRequest: Meeting requires a moderator pin or guest')) {
+        this.updateMeeting(ID, () => ({passwordRequired: true}));
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to join meeting "${ID}"`, error);
+      }
     }
   }
 
@@ -1029,5 +1034,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   supportedControls() {
     return Object.keys(this.meetingControls);
+  }
+
+  /**
+   * Clears the password required flag.
+   *
+   * @async
+   * @param {string} ID  Id of the meeting
+   */
+  async clearPasswordRequiredFlag(ID) {
+    await this.updateMeeting(ID, async () => ({passwordRequired: false}));
   }
 }
