@@ -543,35 +543,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async joinMeeting(ID, options = {}) {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
-      const localStream = new MediaStream();
-
-      const localAudio = this.meetings[ID].localAudio.stream
-        || this.meetings[ID].disabledLocalAudio;
-      const localVideo = this.meetings[ID].localVideo.stream
-        || this.meetings[ID].disabledLocalVideo;
-
-      if (localAudio) {
-        localAudio.getTracks().forEach((track) => localStream.addTrack(track));
-      }
-
-      if (localVideo) {
-        localVideo.getTracks().forEach((track) => localStream.addTrack(track));
-      }
 
       sdkMeeting.meetingFiniteStateMachine.reset();
       await sdkMeeting.join({pin: options.password, moderator: false, name: options.name});
-
-      // SDK requires to join the meeting before adding the local stream media to the meeting
-      await sdkMeeting.addMedia({localStream, mediaSettings});
-
-      // Mute either streams after join if user had muted them before joining
-      if (this.meetings[ID].localAudio.stream === null) {
-        await sdkMeeting.muteAudio();
-      }
-
-      if (this.meetings[ID].localVideo.stream === null) {
-        await sdkMeeting.muteVideo();
-      }
     } catch (error) {
       if (error.stack.startsWith('BadRequest: Meeting requires a moderator pin or guest')) {
         this.updateMeeting(ID, () => ({passwordRequired: true}));
@@ -897,6 +871,41 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Sends the local media streams to the SDK
+   *
+   * @async
+   * @private
+   * @param {string} ID  Meeting id
+   * @returns {Promise} Resolves when the local media streams have been successfully sent to the SDK.
+   */
+  async addMedia(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+    const localStream = new MediaStream();
+    const localAudio = this.meetings[ID].localAudio.stream
+      || this.meetings[ID].disabledLocalAudio;
+    const localVideo = this.meetings[ID].localVideo.stream
+      || this.meetings[ID].disabledLocalVideo;
+
+    if (localAudio) {
+      localAudio.getAudioTracks().forEach((track) => localStream.addTrack(track));
+    }
+
+    if (localVideo) {
+      localVideo.getVideoTracks().forEach((track) => localStream.addTrack(track));
+    }
+
+    await sdkMeeting.addMedia({localStream, mediaSettings});
+
+    if (!this.meetings[ID].localAudio.stream) {
+      await sdkMeeting.muteAudio();
+    }
+
+    if (!this.meetings[ID].localVideo.stream) {
+      await sdkMeeting.muteVideo();
+    }
+  }
+
+  /**
    * Returns an observable that emits meeting data of the given ID.
    *
    * @param {string} ID ID of meeting to get
@@ -959,6 +968,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
           if (sdkState === 'ACTIVE') {
             state = MeetingState.JOINED;
+            // do not await on this, otherwise the emitted message won't contain an updated state
+            this.addMedia(ID).catch((error) => {
+              // eslint-disable-next-line no-console
+              console.error(`Unable to add media to the meeting "${ID}"`, error);
+            });
           } else if (sdkState === 'INACTIVE') {
             state = MeetingState.LEFT;
           } else {
