@@ -20,6 +20,7 @@ describe('Proceed Without Camera Control', () => {
             ID: 'proceed-without-camera',
             text: 'Proceed without camera',
             tooltip: 'Ignore media access prompt and proceed without camera',
+            hint: 'This setting cannot be changed once the meeting starts.',
           });
           done();
         });
