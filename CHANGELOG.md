@@ -1,3 +1,10 @@
+# [1.68.0](https://github.com/webex/sdk-component-adapter/compare/v1.67.0...v1.68.0) (2021-10-19)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add 'hint' for ProceedWithoutCamera and ProceedWithoutMicrophone controls ([07a07ed](https://github.com/webex/sdk-component-adapter/commit/07a07ed45297aa1b4e3bbe46c681a836d455b4bc))
+
 # [1.67.0](https://github.com/webex/sdk-component-adapter/compare/v1.66.1...v1.67.0) (2021-10-14)
 
 
