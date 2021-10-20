@@ -17,8 +17,8 @@ export default class RosterControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to toggle roster
    */
-  action(meetingID) {
-    this.adapter.toggleRoster(meetingID);
+  async action(meetingID) {
+    await this.adapter.toggleRoster(meetingID);
   }
 
   /**
