@@ -19,6 +19,7 @@ import {
   tap,
 } from 'rxjs/operators';
 
+import ourLogger from './logger';
 import AudioControl from './MeetingsSDKAdapter/controls/AudioControl';
 import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
@@ -737,6 +738,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to toggle roster
    */
   toggleRoster(ID) {
+    ourLogger.debug('MEETING', ID, 'toggleRoster()', 'called function');
+
     return this.updateMeeting(ID, ({showRoster}) => ({showRoster: !showRoster}));
   }
 
