@@ -1,3 +1,10 @@
+## [1.69.2](https://github.com/webex/sdk-component-adapter/compare/v1.69.1...v1.69.2) (2021-10-20)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** don't enable camera or microphone when it is switched from settings ([584440e](https://github.com/webex/sdk-component-adapter/commit/584440efd6dddbb4eae2421d59863ed9e275f109))
+
 ## [1.69.1](https://github.com/webex/sdk-component-adapter/compare/v1.69.0...v1.69.1) (2021-10-20)
 
 
