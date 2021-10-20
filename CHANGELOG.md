@@ -1,3 +1,10 @@
+## [1.69.1](https://github.com/webex/sdk-component-adapter/compare/v1.69.0...v1.69.1) (2021-10-20)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** add local media after the sdk meeting moves to the ACTIVE state ([8c05c87](https://github.com/webex/sdk-component-adapter/commit/8c05c87b5d0f0f727c04dce895bf5193821362dd))
+
 # [1.69.0](https://github.com/webex/sdk-component-adapter/compare/v1.68.0...v1.69.0) (2021-10-20)
 
 
