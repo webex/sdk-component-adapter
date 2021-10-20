@@ -21,7 +21,7 @@ describe('Roster Control', () => {
             type: 'TOGGLE',
             state: 'inactive',
             icon: 'participant-list_28',
-            text: 'Participants',
+            text: 'Show participants',
             tooltip: 'Show participants panel',
           });
         });
