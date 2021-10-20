@@ -555,7 +555,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       await sdkMeeting.join({pin: options.password, moderator: false, name: options.name});
     } catch (error) {
       if (error.stack.startsWith('BadRequest: Meeting requires a moderator pin or guest')) {
-        this.updateMeeting(ID, () => ({passwordRequired: true}));
+        this.updateMeeting(ID, () => (
+          {
+            passwordRequired: true,
+            invalidPassword: !!error.joinOptions.pin,
+          }));
       } else {
         // eslint-disable-next-line no-console
         console.error(`Unable to join meeting "${ID}"`, error);
@@ -1104,5 +1108,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async clearPasswordRequiredFlag(ID) {
     await this.updateMeeting(ID, async () => ({passwordRequired: false}));
+  }
+
+  /**
+   * Sets the invalidPassword flag to false.
+   *
+   * @async
+   * @param {string} ID  Id of the meeting
+   */
+  async clearInvalidPasswordFlag(ID) {
+    await this.updateMeeting(ID, async () => ({invalidPassword: false}));
   }
 }
