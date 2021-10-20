@@ -369,7 +369,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   // eslint-disable-next-line class-methods-use-this
   stopStream(stream) {
-    if (stream) {
+    if (stream && stream.getTracks) {
       const tracks = stream.getTracks();
 
       tracks.forEach((track) => track.stop());
@@ -410,6 +410,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       cameraID: null,
       microphoneID: null,
       speakerID: null,
+      settings: {
+        visible: false,
+        preview: {
+          video: null,
+          audio: null,
+        },
+      },
     };
   }
 
@@ -480,8 +487,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         settings: {
           visible: false,
           preview: {
-            audio: {},
-            video: {},
+            audio: null,
+            video: null,
           },
         },
         state: MeetingState.NOT_JOINED,
@@ -739,12 +746,63 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    *
    * @param {string} ID  Meeting ID
    */
-  toggleSettings(ID) {
-    return this.updateMeeting(ID, ({settings}) => ({
-      settings: {
-        visible: !settings.visible,
-      },
-    }));
+  async toggleSettings(ID) {
+    await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+      let updates;
+      const openingSettings = !meeting.settings.visible;
+
+      if (openingSettings) {
+        // Populate the preview streams with clones of the meeting streams
+        // so that switching cameras/microphones in preview doesn't stop the meeting streams.
+        // If the camera or microphone are muted, start them for the preview.
+        const videoStream = meeting.localVideo.stream || meeting.disabledLocalVideo;
+        const audioStream = meeting.localAudio.stream || meeting.disabledLocalAudio;
+
+        updates = {
+          settings: {
+            visible: true,
+            preview: {
+              video: videoStream && videoStream.clone(),
+              audio: audioStream && audioStream.clone(),
+            },
+          },
+        };
+      } else {
+        // When closing settings, stop the existing meeting streams
+        // and replace them with the last preview streams.
+        this.stopStream(meeting.localVideo.stream);
+        this.stopStream(meeting.localAudio.stream);
+        updates = {
+          settings: {
+            visible: false,
+          },
+          localVideo: {
+            stream: meeting.localVideo.stream && meeting.settings.preview.video,
+          },
+          disabledLocalVideo: meeting.disabledLocalVideo && meeting.settings.preview.video,
+          localAudio: {
+            stream: meeting.localAudio.stream && meeting.settings.preview.audio,
+          },
+          disabledLocalAudio: meeting.disabledLocalAudio && meeting.settings.preview.audio,
+        };
+
+        if (meeting.state === MeetingState.JOINED) {
+          await sdkMeeting.updateVideo({
+            stream: meeting.settings.preview.video,
+            receiveVideo: mediaSettings.receiveVideo,
+            sendVideo: mediaSettings.sendVideo,
+          });
+
+          await sdkMeeting.updateAudio({
+            stream: meeting.settings.preview.audio,
+            receiveAudio: mediaSettings.receiveAudio,
+            sendAudio: mediaSettings.sendAudio,
+          });
+        }
+      }
+
+      return updates;
+    });
   }
 
   /**
@@ -754,10 +812,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} cameraID ID of the camera to switch to
    */
   async switchCamera(ID, cameraID) {
-    await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+    await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
-      this.stopStream(meeting.localVideo.stream);
+      this.stopStream(meeting.settings.preview.video);
       const {stream, permission} = await this.getStream(
         ID,
         {sendVideo: true},
@@ -766,19 +824,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       if (stream) {
         updates = {
-          localVideo: {
-            stream,
+          settings: {
+            preview: {
+              stream,
+            },
           },
           cameraID,
         };
-
-        if (meeting.state === MeetingState.JOINED) {
-          await sdkMeeting.updateVideo({
-            stream,
-            receiveVideo: mediaSettings.receiveVideo,
-            sendVideo: mediaSettings.sendVideo,
-          });
-        }
       } else {
         throw new Error(`Could not change camera, permission not granted: ${permission}`);
       }
@@ -794,10 +846,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} microphoneID ID of the microphone to switch to
    */
   async switchMicrophone(ID, microphoneID) {
-    await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
+    await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
-      this.stopStream(meeting.localAudio.stream);
+      this.stopStream(meeting.settings.preview.audio);
       const {stream, permission} = await this.getStream(
         ID,
         {sendAudio: true},
@@ -806,19 +858,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       if (stream) {
         updates = {
-          localAudio: {
-            stream,
+          settings: {
+            preview: {
+              audio: stream,
+            },
           },
           microphoneID,
         };
-
-        if (meeting.state === MeetingState.JOINED) {
-          await sdkMeeting.updateAudio({
-            stream,
-            receiveAudio: mediaSettings.receiveAudio,
-            sendAudio: mediaSettings.sendAudio,
-          });
-        }
       } else {
         throw new Error(`Could not change microphone, permission not granted: ${permission}`);
       }

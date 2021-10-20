@@ -400,8 +400,8 @@ describe('Meetings SDK Adapter', () => {
           settings: {
             visible: false,
             preview: {
-              audio: {},
-              video: {},
+              audio: null,
+              video: null,
             },
           },
           state: 'NOT_JOINED',
