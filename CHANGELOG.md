@@ -1,3 +1,10 @@
+# [1.69.0](https://github.com/webex/sdk-component-adapter/compare/v1.68.0...v1.69.0) (2021-10-20)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add a flag to the meeting object when password is required ([84fa4d7](https://github.com/webex/sdk-component-adapter/commit/84fa4d7c44017e29be6f34b7a26b34423c20f43b))
+
 # [1.68.0](https://github.com/webex/sdk-component-adapter/compare/v1.67.0...v1.68.0) (2021-10-19)
 
 
