@@ -981,4 +981,15 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({passwordRequired: false});
     });
   });
+
+  describe('clearInvalidPasswordFlag()', () => {
+    test('clears the invalidPassword flag if set', async () => {
+      meetingsSDKAdapter.meetings[meetingID].invalidPassword = true;
+      await meetingsSDKAdapter.clearInvalidPasswordFlag(meetingID);
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({invalidPassword: false});
+    });
+  });
 });
