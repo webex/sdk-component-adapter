@@ -1,3 +1,10 @@
+## [1.70.1](https://github.com/webex/sdk-component-adapter/compare/v1.70.0...v1.70.1) (2021-10-21)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** update meeting controls text ([6e53159](https://github.com/webex/sdk-component-adapter/commit/6e5315974769428808251be8424d71bdd13e3b85))
+
 # [1.70.0](https://github.com/webex/sdk-component-adapter/compare/v1.69.2...v1.70.0) (2021-10-21)
 
 
