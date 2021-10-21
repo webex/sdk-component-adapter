@@ -47,6 +47,7 @@ describe('Switch Microphone Control', () => {
               },
             ],
             selected: null,
+            hint: 'Use arrow keys to navigate between microphone options and hit "Enter" to select.',
           });
           done();
         });

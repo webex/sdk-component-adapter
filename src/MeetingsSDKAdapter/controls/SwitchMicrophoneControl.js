@@ -51,6 +51,7 @@ export default class SwitchMicrophoneControl extends MeetingControl {
         noOptionsMessage: 'No available microphones',
         options: options || null,
         selected: microphoneID || null,
+        hint: 'Use arrow keys to navigate between microphone options and hit "Enter" to select.',
       })),
     );
   }

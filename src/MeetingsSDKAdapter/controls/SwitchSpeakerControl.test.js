@@ -47,6 +47,7 @@ describe('Switch Speaker Control', () => {
               },
             ],
             selected: 'speakerID',
+            hint: 'Use arrow keys to navigate between speaker options and hit "Enter" to select.',
           });
           done();
         });
