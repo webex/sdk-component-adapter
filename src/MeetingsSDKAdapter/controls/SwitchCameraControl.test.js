@@ -32,6 +32,7 @@ describe('Switch Camera Control', () => {
               },
             ],
             selected: 'cameraID',
+            hint: 'Use arrow keys to navigate between camera options and hit "Enter" to select.',
           });
           done();
         });
