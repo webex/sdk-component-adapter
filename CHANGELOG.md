@@ -1,3 +1,10 @@
+# [1.70.0](https://github.com/webex/sdk-component-adapter/compare/v1.69.2...v1.70.0) (2021-10-21)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** handle invalid password when joining ([7e5d143](https://github.com/webex/sdk-component-adapter/commit/7e5d1431b511cb0e527955bcef6a28828b914f18))
+
 ## [1.69.2](https://github.com/webex/sdk-component-adapter/compare/v1.69.1...v1.69.2) (2021-10-20)
 
 
