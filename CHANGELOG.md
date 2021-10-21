@@ -1,3 +1,10 @@
+# [1.71.0](https://github.com/webex/sdk-component-adapter/compare/v1.70.1...v1.71.0) (2021-10-21)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** update tooltips text ([8cc638b](https://github.com/webex/sdk-component-adapter/commit/8cc638bcea8da424eae8469579f6464a8216b06b))
+
 ## [1.70.1](https://github.com/webex/sdk-component-adapter/compare/v1.70.0...v1.70.1) (2021-10-21)
 
 
