@@ -1,3 +1,10 @@
+# [1.72.0](https://github.com/webex/sdk-component-adapter/compare/v1.71.0...v1.72.0) (2021-10-22)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add hints for settings controls ([bac0b47](https://github.com/webex/sdk-component-adapter/commit/bac0b4775740ba9ff385a56e30519a2e09fad4a6))
+
 # [1.71.0](https://github.com/webex/sdk-component-adapter/compare/v1.70.1...v1.71.0) (2021-10-21)
 
 
