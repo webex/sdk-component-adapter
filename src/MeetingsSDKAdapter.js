@@ -1016,7 +1016,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           const sdkState = event.payload.currentState;
           let state;
 
-          if (sdkState === 'ACTIVE') {
+          if (sdkState === 'INITIALIZING') {
+            state = 'JOINING';
+          } else if (sdkState === 'ACTIVE') {
             state = MeetingState.JOINED;
             // do not await on this, otherwise the emitted message won't contain an updated state
             this.addMedia(ID).catch((error) => {
