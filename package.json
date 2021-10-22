@@ -34,7 +34,9 @@
   "dependencies": {
     "@webex/common": "^1.105.0",
     "@webex/component-adapter-interfaces": "^1.17.0",
-    "winston": "^3.3.3"
+    "logform": "^2.2.0",
+    "winston": "^3.3.3",
+    "winston-transport": "^4.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
@@ -43,6 +45,7 @@
     "@babel/preset-env": "^7.12.1",
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "@rollup/plugin-json": "^4.1.0",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
     "@webex/test-users": "^1.80.36",
@@ -58,10 +61,13 @@
     "jest-puppeteer": "^4.3.0",
     "nodemon": "^2.0.6",
     "parcel": "^1.12.4",
+    "parcel-bundler": "^1.12.3",
     "puppeteer": "^2.0.0",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "semantic-release": "^18.0.0"
   },
