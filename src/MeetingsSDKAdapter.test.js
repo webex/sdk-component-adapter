@@ -992,4 +992,15 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({invalidPassword: false});
     });
   });
+
+  describe('clearInvalidHostKeyFlag()', () => {
+    test('clears the invalidHostKey flag if set', async () => {
+      meetingsSDKAdapter.meetings[meetingID].invalidHostKey = true;
+      await meetingsSDKAdapter.clearInvalidHostKeyFlag(meetingID);
+
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({invalidHostKey: false});
+    });
+  });
 });

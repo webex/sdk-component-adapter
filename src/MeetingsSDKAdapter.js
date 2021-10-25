@@ -546,7 +546,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID  ID of the meeting to join
    * @param {object} [options]  Options for joining
    * @param {string} [options.name]  Username for meeting
-   * @param {string} [options.password]  Meeting password
+   * @param {string} [options.password]  Meeting guest password
+   * @param {string} [options.hostKey]  Meeting host key
    */
   async joinMeeting(ID, options = {}) {
     logger.debug('MEETING', ID, 'joinMeeting()', ['called with', {ID, options}]);
@@ -554,13 +555,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       sdkMeeting.meetingFiniteStateMachine.reset();
-      await sdkMeeting.join({pin: options.password, moderator: false, name: options.name});
+      await sdkMeeting.join({
+        pin: options.hostKey || options.password,
+        moderator: !!(options.hostKey),
+        name: options.name,
+      });
     } catch (error) {
       if (error.stack.startsWith('BadRequest: Meeting requires a moderator pin or guest')) {
         this.updateMeeting(ID, () => (
           {
             passwordRequired: true,
-            invalidPassword: !!error.joinOptions.pin,
+            invalidPassword: !!error.joinOptions.pin && !error.joinOptions.moderator,
+            invalidHostKey: !!error.joinOptions.pin && error.joinOptions.moderator,
           }));
       } else {
         // eslint-disable-next-line no-console
@@ -1137,5 +1143,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async clearInvalidPasswordFlag(ID) {
     await this.updateMeeting(ID, async () => ({invalidPassword: false}));
+  }
+
+  /**
+   * Sets the invalidHostKey flag to false.
+   *
+   * @async
+   * @param {string} ID  Id of the meeting
+   */
+  async clearInvalidHostKeyFlag(ID) {
+    await this.updateMeeting(ID, async () => ({invalidHostKey: false}));
   }
 }
