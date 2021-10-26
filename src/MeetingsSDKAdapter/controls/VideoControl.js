@@ -29,6 +29,7 @@ export default class VideoControl extends MeetingControl {
   display(meetingID) {
     const muted = {
       ID: this.ID,
+      type: 'BUTTON',
       icon: 'camera-muted_28',
       tooltip: 'Start video',
       state: MeetingControlState.ACTIVE,

@@ -47,7 +47,7 @@ export default class AudioControl extends MeetingControl {
     };
     const disabled = {
       ID: this.ID,
-      type: 'TOGGLE',
+      type: 'BUTTON',
       icon: 'microphone-muted_28',
       state: MeetingControlState.DISABLED,
       text: 'No microphone',
