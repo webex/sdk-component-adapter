@@ -1,3 +1,10 @@
+# [1.73.0](https://github.com/webex/sdk-component-adapter/compare/v1.72.0...v1.73.0) (2021-10-26)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** deactivate join while waiting for host ([31692e8](https://github.com/webex/sdk-component-adapter/commit/31692e84f91e95211aecd7e9cf5a043446e77c36))
+
 # [1.72.0](https://github.com/webex/sdk-component-adapter/compare/v1.71.0...v1.72.0) (2021-10-22)
 
 
