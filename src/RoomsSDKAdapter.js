@@ -9,8 +9,10 @@ import {
   flatMap,
   publishReplay,
   refCount,
+  tap,
 } from 'rxjs/operators';
 import {RoomsAdapter} from '@webex/component-adapter-interfaces';
+import logger from './logger';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -95,6 +97,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * @returns {external:Observable.<Room>} Observable stream that emits room data of the given ID
    */
   getRoom(ID) {
+    logger.debug('ROOM', ID, 'getRoom()', ['called with', {ID}]);
     if (!(ID in this.getRoomObservables)) {
       this.startListeningToRoomUpdates();
 
@@ -114,6 +117,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
         room$,
         roomUpdate$,
       ).pipe(
+        tap((room) => logger.debug('ROOM', ID, 'getRoom()', ['emitting room object', room])),
         finalize(() => {
           // Called once all subscriptions to `ID` are done.
           this.stopListeningToRoomUpdates();
