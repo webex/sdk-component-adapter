@@ -33,6 +33,7 @@ export default class ProceedWithoutMicrophoneControl extends MeetingControl {
       if (sdkMeeting) {
         observer.next({
           ID: this.ID,
+          type: 'BUTTON',
           text: 'Proceed without microphone',
           tooltip: 'This setting cannot be changed once the meeting starts.',
           hint: 'This setting cannot be changed once the meeting starts.',
