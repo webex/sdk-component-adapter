@@ -1,3 +1,10 @@
+# [1.75.0](https://github.com/webex/sdk-component-adapter/compare/v1.74.0...v1.75.0) (2021-10-26)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add 'type' for ProceedWithoutCamera and ProceedWithoutMicrophone controls ([c532dda](https://github.com/webex/sdk-component-adapter/commit/c532dda71771ee202775f61cacd9cf58442a685a))
+
 # [1.74.0](https://github.com/webex/sdk-component-adapter/compare/v1.73.0...v1.74.0) (2021-10-26)
 
 
