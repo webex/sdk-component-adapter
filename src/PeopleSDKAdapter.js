@@ -12,9 +12,11 @@ import {
   map,
   publishReplay,
   refCount,
+  tap,
 } from 'rxjs/operators';
 import {deconstructHydraId} from '@webex/common';
 import {PeopleAdapter, PersonStatus} from '@webex/component-adapter-interfaces';
+import logger from './logger';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -71,6 +73,8 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
       orgId,
     } = await this.datasource.people.get(ID);
 
+    logger.debug('PEOPLE', ID, 'fetchPerson()', ['called with', {ID}]);
+
     return {
       ID: id,
       emails,
@@ -89,6 +93,8 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * @returns {external:Observable.<Person>} Observable stream that emits person data of the current user
    */
   getMe() {
+    logger.debug('PEOPLE', undefined, 'getMe()', 'called');
+
     // Get person data of the current access token bearer
     return defer(() => this.fetchPerson('me')).pipe(
       // Get person status information from presence plug-in
@@ -110,6 +116,7 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
    * @returns {external:Observable.<Person>} Observable stream that emits person data of the given ID
    */
   getPerson(ID) {
+    logger.debug('PEOPLE', ID, 'getPerson()', ['called with', {ID}]);
     if (!(ID in this.getPersonObservables)) {
       const personUUID = deconstructHydraId(ID).id;
       const person$ = defer(() => this.fetchPerson(ID));
@@ -131,6 +138,11 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
         this.datasource.internal.mercury,
         USER_PRESENCE_UPDATE_EVENT,
       ).pipe(
+        tap(() => {
+          logger.debug(
+            'PEOPLE', ID, 'getPerson', ['received', USER_PRESENCE_UPDATE_EVENT, 'event'],
+          );
+        }),
         filter((event) => event.data.subject === personUUID),
         map((event) => getStatus(event.data.status)),
       );
@@ -138,17 +150,25 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
       // Update the person status after each change emitted from the event
       const personUpdate$ = person$.pipe(
         flatMap((person) => statusUpdate$.pipe(map((status) => ({...person, status})))),
+        tap((person) => {
+          logger.debug('PEOPLE', ID, 'getPerson()', ['person update', {person}]);
+        }),
       );
 
       // Emit initial person data on the first run and send updates after each status change
       const getPerson$ = concat(personWithStatus$, personUpdate$).pipe(
+        tap((person) => {
+          logger.debug('PEOPLE', ID, 'getPerson()', ['emit initial person', {person}]);
+        }),
         finalize(async () => {
           try {
+            logger.debug('PEOPLE', ID, 'getPerson()', ['unsubscribing from internal service', {personUUID}]);
             // Unsubscribe from `Apheleia` internal service when there are no more subscriptions
             await this.datasource.internal.presence.unsubscribe(personUUID);
           } catch (error) {
             // Don't do anything when unsubscribing fails
             // Trying to remove a subscription fails when the user has presence turned off
+            logger.warn('Unsubscribing failed, user has presence turned off');
           }
 
           delete this.getPersonObservables[ID];
