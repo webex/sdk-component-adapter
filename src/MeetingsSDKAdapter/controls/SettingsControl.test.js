@@ -18,7 +18,6 @@ describe('Settings Control', () => {
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'settings',
-            type: 'TOGGLE',
             state: 'inactive',
             icon: 'settings_32',
             text: 'Settings',

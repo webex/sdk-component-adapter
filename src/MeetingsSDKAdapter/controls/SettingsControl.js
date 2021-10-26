@@ -30,7 +30,7 @@ export default class SettingsControl extends MeetingControl {
   display(meetingID) {
     const active = {
       ID: this.ID,
-      type: 'TOGGLE',
+      type: 'BUTTON',
       state: MeetingControlState.ACTIVE,
       icon: 'settings_32',
       text: 'Settings',
