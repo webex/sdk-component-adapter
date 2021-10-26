@@ -33,6 +33,7 @@ export default class ProceedWithoutCameraControl extends MeetingControl {
       if (sdkMeeting) {
         observer.next({
           ID: this.ID,
+          type: 'BUTTON',
           text: 'Proceed without camera',
           tooltip: 'This setting cannot be changed once the meeting starts.',
           hint: 'This setting cannot be changed once the meeting starts.',
