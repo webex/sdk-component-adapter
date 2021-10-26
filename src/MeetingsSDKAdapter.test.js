@@ -7,6 +7,8 @@ import {
 import {createMockSDKMediaStreams} from './mockSdk';
 import {meetingID, createTestMeetingsSDKAdapter} from './MeetingsSDKAdapter/testHelper';
 
+import logger from './logger';
+
 describe('Meetings SDK Adapter', () => {
   let meeting;
   let meetingsSDKAdapter;
@@ -48,20 +50,17 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('throws errors if the local media is not retrieved successfully', (done) => {
-      global.console.error = jest.fn();
-      const mockConsole = global.console.error;
+      logger.error = jest.fn();
+      const mockLogger = logger.error;
 
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
       meetingsSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe(
         () => {
-          expect(mockConsole).toHaveBeenCalledWith(
-            'Unable to retrieve local media stream for meeting',
+          expect(mockLogger).toHaveBeenCalledWith(
+            'MEETING',
             'meetingID',
-            'with mediaDirection',
-            expect.anything(),
-            'and audioVideo',
-            undefined,
-            'reason:',
+            'getStream()',
+            ['Unable to retrieve local media stream', {mediaDirection: expect.anything(), audioVideo: undefined}],
             undefined,
           );
           done();
@@ -96,20 +95,18 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('logs errors and returns a null stream and error status if stream cannot be retrieved', (done) => {
-      global.console.error = jest.fn();
+      logger.error = jest.fn();
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
       meetingsSDKAdapter.getStream(meetingID, {sendAudio: true}).pipe(last()).subscribe(
         ({permission, stream}) => {
           expect(stream).toBeNull();
           expect(permission).toBe('ERROR');
-          expect(global.console.error).toHaveBeenCalledWith(
-            'Unable to retrieve local media stream for meeting',
+          expect(logger.error).toHaveBeenCalledWith(
+            'MEETING',
             'meetingID',
-            'with mediaDirection',
-            {sendAudio: true},
-            'and audioVideo',
-            undefined,
-            'reason:',
+            'getStream()',
+            ['Unable to retrieve local media stream',
+              {mediaDirection: {sendAudio: true}, audioVideo: undefined}],
             undefined,
           );
           done();
@@ -125,7 +122,7 @@ describe('Meetings SDK Adapter', () => {
       ];
 
       mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
-      global.console.error = jest.fn();
+      logger.error = jest.fn();
       meetingsSDKAdapter.getStream(meetingID, {sendVideo: true}).pipe(
         last(),
       ).subscribe(
@@ -475,11 +472,14 @@ describe('Meetings SDK Adapter', () => {
       const sdkError = new Error('sdk leave error');
 
       mockSDKMeeting.leave = jest.fn(() => Promise.reject(sdkError));
-      global.console.error = jest.fn();
+      logger.error = jest.fn();
       await meetingsSDKAdapter.leaveMeeting(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith(
-        'Unable to leave from the meeting "meetingID"',
+      expect(logger.error).toHaveBeenCalledWith(
+        'MEETING',
+        'meetingID',
+        'leaveMeeting()',
+        'Unable to leave',
         sdkError,
       );
     });
@@ -536,11 +536,14 @@ describe('Meetings SDK Adapter', () => {
         const error = new Error('sdk error');
 
         mockSDKMeeting.muteAudio = jest.fn(() => Promise.reject(error));
-        global.console.error = jest.fn();
+        logger.error = jest.fn();
         await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-        expect(global.console.error).toHaveBeenCalledWith(
-          'Unable to update local audio settings for meeting "meetingID"',
+        expect(logger.error).toHaveBeenCalledWith(
+          'MEETING',
+          'meetingID',
+          'handleLocalAudio()',
+          'Unable to update local audio settings',
           error,
         );
       });
@@ -596,11 +599,14 @@ describe('Meetings SDK Adapter', () => {
         const error = new Error('sdk error');
 
         mockSDKMeeting.unmuteAudio = jest.fn(() => Promise.reject(error));
-        global.console.error = jest.fn();
+        logger.error = jest.fn();
         await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-        expect(global.console.error).toHaveBeenCalledWith(
-          'Unable to update local audio settings for meeting "meetingID"',
+        expect(logger.error).toHaveBeenCalledWith(
+          'MEETING',
+          'meetingID',
+          'handleLocalAudio()',
+          'Unable to update local audio settings',
           error,
         );
       });
@@ -658,11 +664,14 @@ describe('Meetings SDK Adapter', () => {
         const error = new Error('sdk error');
 
         mockSDKMeeting.muteVideo = jest.fn(() => Promise.reject(error));
-        global.console.error = jest.fn();
+        logger.error = jest.fn();
         await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-        expect(global.console.error).toHaveBeenCalledWith(
-          'Unable to update local video settings for meeting "meetingID"',
+        expect(logger.error).toHaveBeenCalledWith(
+          'MEETING',
+          'meetingID',
+          'handleLocalVideo()',
+          'Unable to update local video settings',
           error,
         );
       });
@@ -718,11 +727,14 @@ describe('Meetings SDK Adapter', () => {
         const error = new Error('sdk error');
 
         mockSDKMeeting.unmuteVideo = jest.fn(() => Promise.reject(error));
-        global.console.error = jest.fn();
+        logger.error = jest.fn();
         await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-        expect(global.console.error).toHaveBeenCalledWith(
-          'Unable to update local video settings for meeting "meetingID"',
+        expect(logger.error).toHaveBeenCalledWith(
+          'MEETING',
+          'meetingID',
+          'handleLocalVideo()',
+          'Unable to update local video settings',
           error,
         );
       });
@@ -730,7 +742,7 @@ describe('Meetings SDK Adapter', () => {
   });
 
   describe('handleLocalShare()', () => {
-    let mockConsole;
+    let mockLogger;
     let stopStream;
 
     beforeEach(() => {
@@ -739,22 +751,27 @@ describe('Meetings SDK Adapter', () => {
       stopStream = trueStopStream;
       meetingsSDKAdapter.stopStream = jest.fn();
 
-      mockConsole = jest.fn();
+      mockLogger = jest.fn();
     });
 
     afterEach(() => {
       meetingsSDKAdapter.stopStream = stopStream;
-      mockConsole = null;
+      mockLogger = null;
     });
 
     test('skips start/stop share if sdk meeting is in SDP negotiation', async () => {
-      global.console.error = jest.fn();
+      logger.error = jest.fn();
       const {canUpdateMedia} = mockSDKMeeting;
 
       mockSDKMeeting.canUpdateMedia = jest.fn(() => false);
       await meetingsSDKAdapter.handleLocalShare(meetingID);
 
-      expect(global.console.error).toHaveBeenCalledWith(expect.stringContaining('due to unstable connection'));
+      expect(logger.error).toHaveBeenCalledWith(
+        'MEETING',
+        'meetingID',
+        'handleLocalShare()',
+        'Unable to update screen share due to unstable connection.',
+      );
       mockSDKMeeting.canUpdateMedia = canUpdateMedia;
     });
 
@@ -782,12 +799,15 @@ describe('Meetings SDK Adapter', () => {
 
     test('resets sharing stream if share control is not handled properly', async () => {
       meetingsSDKAdapter.meetings[meetingID] = {...meeting, localShare: {stream: 'localShare'}};
-      global.console.warn = mockConsole;
+      logger.warn = mockLogger;
       mockSDKMeeting.updateShare = jest.fn(() => Promise.reject());
       await meetingsSDKAdapter.handleLocalShare(meetingID);
 
-      expect(mockConsole).toHaveBeenCalledWith(
-        expect.stringContaining(`Unable to update local share stream for meeting "${meetingID}"`),
+      expect(mockLogger).toHaveBeenCalledWith(
+        'MEETING',
+        'meetingID',
+        'handleLocalShare()',
+        'Unable to update local share stream',
         undefined,
       );
     });

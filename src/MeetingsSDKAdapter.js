@@ -20,6 +20,7 @@ import {
 } from 'rxjs/operators';
 
 import logger from './logger';
+
 import AudioControl from './MeetingsSDKAdapter/controls/AudioControl';
 import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
@@ -254,8 +255,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         if (!ignored) {
           let perm;
 
-          // eslint-disable-next-line no-console
-          console.error('Unable to retrieve local media stream for meeting', ID, 'with mediaDirection', mediaDirection, 'and audioVideo', audioVideo, 'reason:', error);
+          logger.error('MEETING', ID, 'getStream()', ['Unable to retrieve local media stream', {mediaDirection, audioVideo}], error);
 
           if (error instanceof DOMException && error.name === 'NotAllowedError') {
             if (error.message === 'Permission dismissed') {
@@ -313,8 +313,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       devices = await sdkMeeting.getDevices();
       devices = devices.filter((device) => !type || (device.kind === type && device.deviceId));
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to retrieve devices for meeting "${ID}"`, error);
+      logger.error('MEETING', ID, 'getAvailableDevices()', 'Unable to retrieve devices', error);
 
       devices = [];
     }
@@ -542,8 +541,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
       }),
       catchError((err) => {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to create a meeting with "${destination}"`, err);
+        logger.error('MEETING', destination, 'createMeeting()', `Unable to create a meeting with "${destination}"`, err);
         throw err;
       }),
     );
@@ -584,8 +582,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         moderator: !!(options.hostKey),
         name: options.name,
       });
+      logger.info('MEETING', ID, 'JOIN', 'Joining meeting');
     } catch (error) {
       if (error.stack.includes('Meeting requires a moderator pin or guest')) {
+        logger.info('MEETING', ID, 'joinMeeting()', 'Meeting requires authentication');
         const opts = error.joinOptions || {};
 
         this.updateMeeting(ID, () => (
@@ -595,8 +595,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             invalidHostKey: !!opts.pin && opts.moderator,
           }));
       } else {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to join meeting "${ID}"`, error);
+        logger.error('MEETING', ID, 'joinMeeting()', 'Unable to join', error);
       }
     }
   }
@@ -616,9 +615,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       logger.debug('MEETING', ID, 'leaveMeeting()', 'calling sdkMeeting.leave()');
       await sdkMeeting.leave();
+      logger.info('MEETING', ID, 'LEAVE', 'Leaving meeting');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to leave from the meeting "${ID}"`, error);
+      logger.error('MEETING', ID, 'leaveMeeting()', 'Unable to leave', error);
     }
   }
 
@@ -643,6 +642,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalAudio()', 'calling sdkMeeting.muteAudio()');
             await sdkMeeting.muteAudio();
+            logger.info('MEETING', ID, 'MUTE', 'Audio muted');
           }
 
           // Store the current local audio stream to avoid an extra request call
@@ -657,6 +657,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalAudio()', 'calling sdkMeeting.unmuteAudio()');
             await sdkMeeting.unmuteAudio();
+            logger.info('MEETING', ID, 'UNMUTE', 'Unmute audio');
           }
 
           // Retrieve the stored local audio stream
@@ -673,8 +674,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         return updates;
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to update local audio settings for meeting "${ID}"`, error);
+      logger.error('MEETING', ID, 'handleLocalAudio()', 'Unable to update local audio settings', error);
     }
   }
 
@@ -699,6 +699,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalVideo()', 'calling sdkMeeting.muteVideo()');
             await sdkMeeting.muteVideo();
+            logger.info('MEETING', ID, 'MUTE', 'Video muted');
           }
 
           // Store the current local video stream to avoid an extra request call
@@ -711,6 +712,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalVideo()', 'calling sdkMeeting.unmuteVideo()');
             await sdkMeeting.unmuteVideo();
+            logger.info('MEETING', ID, 'UNMUTE', 'Unmute video');
           }
 
           // Retrieve the stored local video stream
@@ -725,8 +727,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         return updates;
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Unable to update local video settings for meeting "${ID}"`, error);
+      logger.error('MEETING', ID, 'handleLocalVideo()', 'Unable to update local video settings', error);
     }
   }
 
@@ -743,8 +744,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       let updates;
 
       const handleSdkError = (error) => {
-        // eslint-disable-next-line no-console
-        console.warn(`Unable to update local share stream for meeting "${ID}"`, error);
+        logger.warn('MEETING', ID, 'handleLocalShare()', 'Unable to update local share stream', error);
 
         this.stopStream(meeting.localShare.stream);
         updates = {localShare: {stream: null}};
@@ -757,12 +757,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       // Will stop sharing stream and reset UI state when error happens
       //
       if (!sdkMeeting.canUpdateMedia()) {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to update screen share for meeting "${ID}" due to unstable connection.`);
+        logger.error('MEETING', ID, 'handleLocalShare()', 'Unable to update screen share due to unstable connection.');
       } else if (meeting.localShare.stream) {
         this.stopStream(meeting.localShare.stream);
 
         sdkMeeting.updateShare({sendShare: false, receiveShare: true}).catch(handleSdkError);
+        logger.info('MEETING', ID, 'UNSHARE', 'Stopping sharing');
 
         updates = {localShare: {stream: null}};
       } else {
@@ -773,6 +773,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           sendShare: true,
           receiveShare: true,
         }).catch(handleSdkError);
+
+        logger.info('MEETING', ID, 'SHARE', 'Starting sharing');
 
         updates = {localShare: {stream: localShare}};
       }
@@ -791,6 +793,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   toggleRoster(ID) {
     logger.debug('MEETING', ID, 'toggleRoster()', ['called with', {ID}]);
+    logger.info('MEETING', ID, 'TOOGLE ROSTER', 'Opening meeting participants panel');
 
     return this.updateMeeting(ID, ({showRoster}) => ({showRoster: !showRoster}));
   }
@@ -808,6 +811,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const openingSettings = !meeting.settings.visible;
 
       if (openingSettings) {
+        logger.info('MEETING', ID, 'TOOGLE SETTINGS', 'Opening settings modal');
         // Populate the preview streams with clones of the meeting streams
         // so that switching cameras/microphones in preview doesn't stop the meeting streams.
         // If the camera or microphone are muted, start them for the preview.
@@ -824,6 +828,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           },
         };
       } else {
+        logger.info('MEETING', ID, 'TOOGLE SETTINGS', 'Closing settings modal');
         // When closing settings, stop the existing meeting streams
         // and replace them with the last preview streams.
         this.stopStream(meeting.localVideo.stream);
@@ -871,6 +876,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchCamera(ID, cameraID) {
     logger.debug('MEETING', ID, 'switchCamera()', ['called with', {ID, cameraID}]);
+    logger.info('MEETING', ID, 'SWITCH CAMERA', `Switching current camera to camera with id "${cameraID}"`);
     await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
@@ -908,6 +914,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchMicrophone(ID, microphoneID) {
     logger.debug('MEETING', ID, 'switchMicrophone()', ['called with', {ID, microphoneID}]);
+    logger.info('MEETING', ID, 'SWITCH MICROPHONE', `Switching current microphone to microphone with id "${microphoneID}"`);
     await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
@@ -946,6 +953,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async switchSpeaker(ID, speakerID) {
     logger.debug('MEETING', ID, 'switchSpeaker()', ['called with', {ID, speakerID}]);
+    logger.info('MEETING', ID, 'SWITCH SPEAKER', `Switching current speaker to speaker with id "${speakerID}"`);
 
     return this.updateMeeting(ID, () => ({speakerID}));
   }
@@ -960,10 +968,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const meeting = this.meetings[ID];
 
     if (meeting.localVideo.ignoreMediaAccessPrompt) {
+      logger.info('MEETING', ID, 'PROCEED WITHOUT CAMERA', 'Allow to join the meeting without camera access');
       meeting.localVideo.ignoreMediaAccessPrompt();
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Can not ignore video prompt in current state:', meeting.localVideo.permission);
+      logger.error('MEETING', ID, 'ignoreVideoAccessPrompt()', `Can not ignore video prompt in current state: "${meeting.localVideo.permission}"`);
     }
   }
 
@@ -977,10 +985,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const meeting = this.meetings[ID];
 
     if (meeting.localAudio.ignoreMediaAccessPrompt) {
+      logger.info('MEETING', ID, 'PROCEED WITHOUT MICROPHONE', 'Allow to join the meeting without microphone access');
       meeting.localAudio.ignoreMediaAccessPrompt();
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Can not ignore audio prompt in current state:', meeting.localAudio.permission);
+      logger.error('MEETING', ID, 'ignoreAudioAccessPrompt()', `Can not ignore audio prompt in current state: "${meeting.localAudio.permission}"`);
     }
   }
 
@@ -1122,8 +1130,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             state = MeetingState.JOINED;
             // do not await on this, otherwise the emitted message won't contain an updated state
             this.addMedia(ID).catch((error) => {
-              // eslint-disable-next-line no-console
-              console.error(`Unable to add media to the meeting "${ID}"`, error);
+              logger.error('MEETING', ID, 'getMeeting()', 'Unable to add media', error);
             });
           } else if (sdkState === 'INACTIVE') {
             logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change INACTIVE');
