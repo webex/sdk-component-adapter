@@ -32,7 +32,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const winstonLogger = createLogger({
-  level: 'error',
+  level: 'debug',
   transports: activeTransports,
 });
 

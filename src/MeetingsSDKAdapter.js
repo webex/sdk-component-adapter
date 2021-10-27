@@ -159,6 +159,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable} Observable that emits local media streams and their user permission status
    */
   getLocalMedia(ID) {
+    logger.debug('MEETING', ID, 'getLocalMedia()', ['called with', {ID}]);
     const {sendAudio, sendVideo} = mediaSettings;
 
     return this.getStreamWithPermission(sendAudio, ID, {sendAudio: true}).pipe(
@@ -198,6 +199,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable} Observable that emits local media streams and their user permission status
    */
   getStream(ID, mediaDirection, audioVideo) {
+    logger.debug('MEETING', ID, 'getStream()', ['called with', {ID, mediaDirection, audioVideo}]);
+
     return new Observable(async (subscriber) => {
       let ignored = false;
       let isAsking;
@@ -273,6 +276,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Observable} Observable that emits local media streams and their user permission status
    */
   getStreamWithPermission(condition, ID, mediaDirection, audioVideo) {
+    logger.debug('MEETING', ID, 'getStreamWithPermission()', ['called with these params', {
+      condition, ID, mediaDirection, audioVideo,
+    }]);
+
     return condition
       ? this.getStream(ID, mediaDirection, audioVideo)
       : of({permission: null, stream: null});
@@ -289,6 +296,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   // eslint-disable-next-line class-methods-use-this
   async getAvailableDevices(ID, type) {
+    logger.debug('MEETING', ID, 'getAvailableDevices()', ['called with', {ID, type}]);
     let devices;
 
     try {
@@ -303,6 +311,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       devices = [];
     }
 
+    logger.debug('MEETING', ID, 'getAvailabelDevices()', ['return', devices]);
+
     return devices;
   }
 
@@ -316,6 +326,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {MediaStream} media.stream Media stream to attach to meeting
    */
   attachMedia(ID, {type, stream}) {
+    logger.debug('MEETING', ID, 'attachMedia()', ['called with', {ID, type, stream}]);
     const meeting = {...this.meetings[ID]};
 
     switch (type) {
@@ -370,6 +381,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   // eslint-disable-next-line class-methods-use-this
   stopStream(stream) {
+    logger.debug('MEETING', undefined, 'stopStream()', 'called');
     if (stream && stream.getTracks) {
       const tracks = stream.getTracks();
 
@@ -384,6 +396,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to update
    */
   removeMedia(ID) {
+    logger.debug('MEETING', ID, 'removeMedia()', ['called with', {ID}]);
     if (this.meetings && this.meetings[ID]) {
       this.stopStream(this.meetings[ID].localAudio.stream);
       this.stopStream(this.meetings[ID].localVideo.stream);
@@ -536,6 +549,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {object} The SDK meeting object from the meetings collection.
    */
   fetchMeeting(ID) {
+    logger.debug('MEETING', ID, 'fetchMeeting()', ['called with', {ID}]);
+
     return this.datasource.meetings.getMeetingByType('id', ID);
   }
 
@@ -555,6 +570,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       sdkMeeting.meetingFiniteStateMachine.reset();
+      logger.debug('MEETING', ID, 'joinMeeting()', ['calling sdkMeeting.join() with', {pin: options.password, moderator: false, name: options.name}]);
       await sdkMeeting.join({
         pin: options.hostKey || options.password,
         moderator: !!(options.hostKey),
@@ -582,11 +598,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to leave from
    */
   async leaveMeeting(ID) {
+    logger.debug('MEETING', ID, 'leaveMeeting()', ['called with', {ID}]);
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
       this.removeMedia(ID);
 
+      logger.debug('MEETING', ID, 'leaveMeeting()', 'calling sdkMeeting.leave()');
       await sdkMeeting.leave();
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -602,6 +620,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute audio
    */
   async handleLocalAudio(ID) {
+    logger.debug('MEETING', ID, 'handleLocalAudio()', ['called with', {ID}]);
     try {
       await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
         const isInSession = !!meeting.remoteAudio;
@@ -612,6 +631,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         if (audioEnabled) {
           // Mute the audio only if there is an active meeting
           if (isInSession) {
+            logger.debug('MEETING', ID, 'handleLocalAudio()', 'calling sdkMeeting.muteAudio()');
             await sdkMeeting.muteAudio();
           }
 
@@ -625,6 +645,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         } else if (audioDisabled) {
           // Unmute the audio only if there is an active meeting
           if (isInSession) {
+            logger.debug('MEETING', ID, 'handleLocalAudio()', 'calling sdkMeeting.unmuteAudio()');
             await sdkMeeting.unmuteAudio();
           }
 
@@ -636,6 +657,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             },
           };
         }
+
+        logger.debug('MEETING', ID, 'handleLocalAudio()', ['meeting updated with localAudio', {updates}]);
 
         return updates;
       });
@@ -653,6 +676,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to mute video
    */
   async handleLocalVideo(ID) {
+    logger.debug('MEETING', ID, 'handleLocalVideo()', ['called with', {ID}]);
     try {
       await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
         const isInSession = !!meeting.remoteVideo;
@@ -663,6 +687,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         if (videoEnabled) {
           // Mute the video only if there is an active meeting
           if (isInSession) {
+            logger.debug('MEETING', ID, 'handleLocalVideo()', 'calling sdkMeeting.muteVideo()');
             await sdkMeeting.muteVideo();
           }
 
@@ -674,6 +699,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         } else if (videoDisabled) {
           // Unmute the video only if there is an active meeting
           if (isInSession) {
+            logger.debug('MEETING', ID, 'handleLocalVideo()', 'calling sdkMeeting.unmuteVideo()');
             await sdkMeeting.unmuteVideo();
           }
 
@@ -683,6 +709,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             disabledLocalVideo: null,
           };
         }
+
+        logger.debug('MEETING', ID, 'handleLocalVideo()', ['meeting updated with localVideo', {updates}]);
 
         return updates;
       });
@@ -700,6 +728,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to start/stop sharing
    */
   async handleLocalShare(ID) {
+    logger.debug('MEETING', ID, 'handleLocalShare()', ['called with', {ID}]);
     await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
       let updates;
 
@@ -738,6 +767,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         updates = {localShare: {stream: localShare}};
       }
 
+      logger.debug('MEETING', ID, 'handleLocalShare()', ['meeting updated with localShare', {updates}]);
+
       return updates;
     });
   }
@@ -749,6 +780,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID ID of the meeting to toggle roster
    */
   toggleRoster(ID) {
+    logger.debug('MEETING', ID, 'toggleRoster()', ['called with', {ID}]);
+
     return this.updateMeeting(ID, ({showRoster}) => ({showRoster: !showRoster}));
   }
 
@@ -759,6 +792,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID  Meeting ID
    */
   async toggleSettings(ID) {
+    logger.debug('MEETING', ID, 'toggleSettings()', ['called with', {ID}]);
     await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
       let updates;
       const openingSettings = !meeting.settings.visible;
@@ -813,6 +847,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
       }
 
+      logger.debug('MEETING', ID, 'toggleSettings()', ['meeting updated with toggleSettings', {updates}]);
+
       return updates;
     });
   }
@@ -824,6 +860,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} cameraID ID of the camera to switch to
    */
   async switchCamera(ID, cameraID) {
+    logger.debug('MEETING', ID, 'switchCamera()', ['called with', {ID, cameraID}]);
     await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
@@ -847,6 +884,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         throw new Error(`Could not change camera, permission not granted: ${permission}`);
       }
 
+      logger.debug('MEETING', ID, 'switchCamera()', ['meeting update with switchCamera', {updates}]);
+
       return updates;
     });
   }
@@ -858,6 +897,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} microphoneID ID of the microphone to switch to
    */
   async switchMicrophone(ID, microphoneID) {
+    logger.debug('MEETING', ID, 'switchMicrophone()', ['called with', {ID, microphoneID}]);
     await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
@@ -881,6 +921,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         throw new Error(`Could not change microphone, permission not granted: ${permission}`);
       }
 
+      logger.debug('MEETING', ID, 'switchMicrophone()', ['meeting update with switchMicrophone', {updates}]);
+
       return updates;
     });
   }
@@ -893,6 +935,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @private
    */
   async switchSpeaker(ID, speakerID) {
+    logger.debug('MEETING', ID, 'switchSpeaker()', ['called with', {ID, speakerID}]);
+
     return this.updateMeeting(ID, () => ({speakerID}));
   }
 
@@ -902,6 +946,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string}  ID Meeting ID
    */
   ignoreVideoAccessPrompt(ID) {
+    logger.debug('MEETING', ID, 'ignoreVideoAccessPrompt()', ['called with', {ID}]);
     const meeting = this.meetings[ID];
 
     if (meeting.localVideo.ignoreMediaAccessPrompt) {
@@ -918,6 +963,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID  Meeting ID
    */
   ignoreAudioAccessPrompt(ID) {
+    logger.debug('MEETING', ID, 'ignoreAudioAccessPrompt()', ['called with', {ID}]);
     const meeting = this.meetings[ID];
 
     if (meeting.localAudio.ignoreMediaAccessPrompt) {
@@ -937,6 +983,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @returns {Promise} Resolves when the local media streams have been successfully sent to the SDK.
    */
   async addMedia(ID) {
+    logger.debug('MEETING', ID, 'addMedia()', ['called with', {ID}]);
     const sdkMeeting = this.fetchMeeting(ID);
     const localStream = new MediaStream();
     const localAudio = this.meetings[ID].localAudio.stream
@@ -952,13 +999,16 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       localVideo.getVideoTracks().forEach((track) => localStream.addTrack(track));
     }
 
+    logger.debug('MEETING', ID, 'addMedia()', ['calling sdkMeeting.addMedia()', {localStream, mediaSettings}]);
     await sdkMeeting.addMedia({localStream, mediaSettings});
 
     if (!this.meetings[ID].localAudio.stream) {
+      logger.debug('MEETING', ID, 'addMedia()', 'calling sdkMeeting.muteAudio()');
       await sdkMeeting.muteAudio();
     }
 
     if (!this.meetings[ID].localVideo.stream) {
+      logger.debug('MEETING', ID, 'addMedia()', 'calling sdkMeeting.muteVideo()');
       await sdkMeeting.muteVideo();
     }
   }
@@ -986,6 +1036,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       });
 
       const meetingUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED).pipe(
+        tap(() => logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_MEETING_UPDATED, 'event'])),
         tap((meeting) => {
           this.meetings[ID] = meeting;
         }),
@@ -1023,16 +1074,30 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingWithLocalShareStoppedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_STOP).pipe(
         tap(() => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_LOCAL_SHARE_STOP, 'event']);
           this.stopStream(this.meetings[ID].localShare.stream);
           this.meetings[ID].localShare.stream = null;
         }),
       );
 
-      const meetingWithLocalShareStartedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START);
+      const meetingWithLocalShareStartedEvent$ = fromEvent(sdkMeeting, EVENT_LOCAL_SHARE_START)
+        .pipe(
+          tap(() => {
+            logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_LOCAL_SHARE_START, 'event']);
+          }),
+        );
 
-      const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH);
+      const meetingWithSwitchCameraEvent$ = fromEvent(sdkMeeting, EVENT_CAMERA_SWITCH).pipe(
+        tap(() => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_CAMERA_SWITCH, 'event']);
+        }),
+      );
 
-      const meetingWithSwitchMicrophoneEvent$ = fromEvent(sdkMeeting, EVENT_MICROPHONE_SWITCH);
+      const meetingWithSwitchMicrophoneEvent$ = fromEvent(sdkMeeting, EVENT_MICROPHONE_SWITCH).pipe(
+        tap(() => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_MICROPHONE_SWITCH, 'event']);
+        }),
+      );
 
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
@@ -1040,8 +1105,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           let state;
 
           if (sdkState === 'INITIALIZING') {
+            logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change INITIALIZING');
             state = 'JOINING';
           } else if (sdkState === 'ACTIVE') {
+            logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change ACTIVE');
             state = MeetingState.JOINED;
             // do not await on this, otherwise the emitted message won't contain an updated state
             this.addMedia(ID).catch((error) => {
@@ -1049,12 +1116,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
               console.error(`Unable to add media to the meeting "${ID}"`, error);
             });
           } else if (sdkState === 'INACTIVE') {
+            logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change INACTIVE');
             state = MeetingState.LEFT;
           } else {
             state = this.meetings[ID].state;
           }
 
+          logger.debug('MEETING', ID, 'getMeeting()', ['changing meeting state to ', {state}]);
           this.meetings[ID] = {...this.meetings[ID], state};
+          logger.debug('MEETING', ID, 'getMeeting()', ['changed meeting state to ', {state}]);
         }),
       );
 
@@ -1069,15 +1139,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithSwitchCameraEvent$,
         meetingWithSwitchMicrophoneEvent$,
         meetingWithLocalShareStartedEvent$,
-      ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
+      ).pipe(map(() => this.meetings[ID]), // Return a meeting object from event
+        tap(() => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['meeting after event is ', this.meetings[ID]]);
+        }));
 
-      const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
+      const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$).pipe(
+        tap(() => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['meeting with events is ', this.meetings[ID]]);
+        }),
+      );
 
       // Convert to a multicast observable
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
         publishReplay(1),
         refCount(),
         takeWhile((meeting) => meeting.state && meeting.state !== MeetingState.LEFT, true),
+        tap(() => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['emitting updated meeting object', this.meetings[ID]]);
+        }),
       );
     }
 
@@ -1102,6 +1182,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
 
   async updateMeeting(ID, updater) {
+    logger.debug('MEETING', ID, 'updateMeeting()', ['called with', {ID, updater}]);
     const sdkMeeting = this.fetchMeeting(ID);
     const meeting = this.meetings[ID];
 
@@ -1113,6 +1194,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
     deepMerge(meeting, updates);
 
+    logger.debug('MEETING', ID, 'updateMeeting()', ['meeting updated with', EVENT_MEETING_UPDATED, 'event', 'meeting object', {meeting}]);
     sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
   }
 
@@ -1132,6 +1214,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID  Id of the meeting
    */
   async clearPasswordRequiredFlag(ID) {
+    logger.debug('MEETING', ID, 'clearPasswordRequiredFlag()', ['called with', {ID}]);
     await this.updateMeeting(ID, async () => ({passwordRequired: false}));
   }
 
@@ -1142,6 +1225,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * @param {string} ID  Id of the meeting
    */
   async clearInvalidPasswordFlag(ID) {
+    logger.debug('MEETING', ID, 'clearInvalidPasswordFlag()', ['called with', {ID}]);
     await this.updateMeeting(ID, async () => ({invalidPassword: false}));
   }
 
