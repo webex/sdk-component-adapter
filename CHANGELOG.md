@@ -1,3 +1,10 @@
+# [1.76.0](https://github.com/webex/sdk-component-adapter/compare/v1.75.0...v1.76.0) (2021-10-27)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** implement host key to join meeting ([25c1df5](https://github.com/webex/sdk-component-adapter/commit/25c1df5aa3c9f981f7f3efd65c88cc2e8fe0d359))
+
 # [1.75.0](https://github.com/webex/sdk-component-adapter/compare/v1.74.0...v1.75.0) (2021-10-26)
 
 
