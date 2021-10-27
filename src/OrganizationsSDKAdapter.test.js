@@ -44,12 +44,14 @@ describe('Organizations SDK Adapter', () => {
   });
 
   test('throws an error on invalid organization ID', (done) => {
-    organizationsSDKAdapter.fetchOrganization = jest.fn(() => Promise.reject());
+    const sdkError = new Error('Could\'t find organization with ID "badOrgID"');
+
+    organizationsSDKAdapter.fetchOrganization = jest.fn(() => Promise.reject(sdkError));
 
     organizationsSDKAdapter.getOrg('badOrgID').subscribe(
       () => {},
       (error) => {
-        expect(error.message).toBe('Could\'t find organization with ID "badOrgID"');
+        expect(error.message).toBe(sdkError.message);
         done();
       },
     );

@@ -1,6 +1,7 @@
 import {ReplaySubject, defer} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {OrganizationsAdapter} from '@webex/component-adapter-interfaces';
+import logger from './logger';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -32,6 +33,8 @@ export default class OrganizationsSDKAdapter extends OrganizationsAdapter {
    * @private
    */
   fetchOrganization(orgID) {
+    logger.debug('ORGANIZATION', orgID, 'fetchOrganization()', ['called with', {orgID}]);
+
     return this.datasource.request({
       service: 'hydra',
       resource: `organizations/${orgID}`,
@@ -45,6 +48,8 @@ export default class OrganizationsSDKAdapter extends OrganizationsAdapter {
    * @returns {external:Observable.<Organization>} Observable stream that emits organization data
    */
   getOrg(ID) {
+    logger.debug('ORGANIZATION', ID, 'getOrg()', ['called with', {ID}]);
+
     if (!(ID in this.organizationObservables)) {
       // use ReplaySubject cause we don't need to set an initial value
       this.organizationObservables[ID] = new ReplaySubject(1);
@@ -56,9 +61,11 @@ export default class OrganizationsSDKAdapter extends OrganizationsAdapter {
         })),
       ).subscribe(
         (organization) => {
+          logger.debug('ORGANIZATION', ID, 'getOrg()', ['emitting organization object', organization]);
           this.organizationObservables[ID].next(organization);
         },
-        () => {
+        (error) => {
+          logger.error('ORGANIZATION', ID, 'getOrg()', 'Error fetching organization', error);
           this.organizationObservables[ID].error(new Error(`Could't find organization with ID "${ID}"`));
         },
       );
