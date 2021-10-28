@@ -32,7 +32,7 @@ export default class RosterControl extends MeetingControl {
       ID: this.ID,
       type: 'TOGGLE',
       state: MeetingControlState.ACTIVE,
-      icon: 'participant-list_28',
+      icon: 'participant-list',
       text: 'Hide participants',
       tooltip: 'Hide participants panel',
     };
@@ -40,7 +40,7 @@ export default class RosterControl extends MeetingControl {
       ID: this.ID,
       type: 'TOGGLE',
       state: MeetingControlState.INACTIVE,
-      icon: 'participant-list_28',
+      icon: 'participant-list',
       text: 'Show participants',
       tooltip: 'Show participants panel',
     };

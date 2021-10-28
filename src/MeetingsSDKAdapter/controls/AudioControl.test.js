@@ -18,7 +18,7 @@ describe('Audio Control', () => {
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'mute-audio',
-            icon: 'microphone-muted_28',
+            icon: 'microphone-muted',
             state: 'disabled',
             text: 'No microphone',
           });

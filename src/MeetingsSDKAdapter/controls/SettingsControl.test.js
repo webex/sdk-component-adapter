@@ -19,7 +19,7 @@ describe('Settings Control', () => {
           expect(dataDisplay).toMatchObject({
             ID: 'settings',
             state: 'inactive',
-            icon: 'settings_32',
+            icon: 'settings',
             text: 'Settings',
             tooltip: 'Meeting settings',
           });

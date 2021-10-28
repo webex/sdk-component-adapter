@@ -20,7 +20,7 @@ describe('Roster Control', () => {
             ID: 'member-roster',
             type: 'TOGGLE',
             state: 'inactive',
-            icon: 'participant-list_28',
+            icon: 'participant-list',
             text: 'Show participants',
             tooltip: 'Show participants panel',
           });

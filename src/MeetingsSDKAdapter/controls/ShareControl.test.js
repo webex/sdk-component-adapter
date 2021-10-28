@@ -19,7 +19,7 @@ describe('Share Control', () => {
           expect(dataDisplay).toMatchObject({
             ID: 'share-screen',
             type: 'TOGGLE',
-            icon: 'share-screen-presence-stroke_26',
+            icon: 'share-screen-presence-stroke',
             tooltip: 'Start sharing content',
             state: 'inactive',
             text: 'Start sharing',
