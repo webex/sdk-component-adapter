@@ -1,3 +1,8 @@
+import logger from './src/logger';
+
+// set the error level
+logger.setLevel('error');
+
 // Mock Web Media APIs
 
 global.MediaStream = jest.fn(function(tracksOrStream = []) {

@@ -6,9 +6,6 @@ import {
 
 import {createMockSDKMediaStreams} from './mockSdk';
 import {meetingID, createTestMeetingsSDKAdapter} from './MeetingsSDKAdapter/testHelper';
-import logger from './logger';
-
-logger.setLevel('error');
 
 describe('Meetings SDK Adapter', () => {
   let meeting;
