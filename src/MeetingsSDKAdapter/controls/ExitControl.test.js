@@ -18,7 +18,7 @@ describe('Exit Control', () => {
         expect(display).toMatchObject({
           ID: 'leave-meeting',
           type: 'CANCEL',
-          icon: 'cancel_28',
+          icon: 'cancel',
           tooltip: 'Leave meeting',
         });
         done();

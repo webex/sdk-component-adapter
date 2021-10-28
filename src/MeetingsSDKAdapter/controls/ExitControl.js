@@ -28,7 +28,7 @@ export default class ExitControl extends MeetingControl {
     return of({
       ID: this.ID,
       type: 'CANCEL',
-      icon: 'cancel_28',
+      icon: 'cancel',
       tooltip: 'Leave meeting',
     });
   }
