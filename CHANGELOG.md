@@ -1,3 +1,10 @@
+# [1.80.0](https://github.com/webex/sdk-component-adapter/compare/v1.79.0...v1.80.0) (2021-10-28)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** remove size from icon names ([c333624](https://github.com/webex/sdk-component-adapter/commit/c3336240ad486c20e286ea1bfe0b708d0bef79a5))
+
 # [1.79.0](https://github.com/webex/sdk-component-adapter/compare/v1.78.0...v1.79.0) (2021-10-28)
 
 
