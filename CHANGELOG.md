@@ -1,3 +1,10 @@
+# [1.77.0](https://github.com/webex/sdk-component-adapter/compare/v1.76.0...v1.77.0) (2021-10-28)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** change 'type' for 'Settings', 'Audio' and 'Video' controls ([1659670](https://github.com/webex/sdk-component-adapter/commit/1659670b56809b845057b1ff35e6fc198516a218))
+
 # [1.76.0](https://github.com/webex/sdk-component-adapter/compare/v1.75.0...v1.76.0) (2021-10-27)
 
 
