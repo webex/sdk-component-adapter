@@ -1,3 +1,10 @@
+# [1.78.0](https://github.com/webex/sdk-component-adapter/compare/v1.77.0...v1.78.0) (2021-10-28)
+
+
+### Features
+
+* **RoomsSdkAdapter:** add debug logs ([713eae7](https://github.com/webex/sdk-component-adapter/commit/713eae7ad593fc065c4f263e712ddaba03a89fae))
+
 # [1.77.0](https://github.com/webex/sdk-component-adapter/compare/v1.76.0...v1.77.0) (2021-10-28)
 
 
