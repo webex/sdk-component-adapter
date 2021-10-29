@@ -9,7 +9,7 @@ const logFormat = format.printf(({
     msgString = message.map((item) => (
       (typeof item === 'string' && item)
       || JSON.stringify(item, (key, value) => (
-        (value instanceof MediaStream && `MediaStream([${value.getTracks().map((track) => track.type)}])`)
+        (value instanceof MediaStream && `MediaStream([${value.getTracks().map((track) => track.kind)}])`)
         || value
       ), 2)
     )).join(' ');
