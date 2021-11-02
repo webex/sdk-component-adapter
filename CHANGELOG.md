@@ -1,3 +1,16 @@
+# [1.81.0](https://github.com/webex/sdk-component-adapter/compare/v1.80.0...v1.81.0) (2021-11-02)
+
+
+### Bug Fixes
+
+* **logger:** add the correct type property of media stream tracks ([fdb75bb](https://github.com/webex/sdk-component-adapter/commit/fdb75bb54f9e54a52d763bb1966e69e7dae18025))
+
+
+### Features
+
+* **MeetingsSdkAdapter:** update meeting controls type ([b78c306](https://github.com/webex/sdk-component-adapter/commit/b78c3061fd1bc13a6c027a96208c4d5023549361))
+* **OrganizationsSdkAdapter:** add debug logs ([38f24fa](https://github.com/webex/sdk-component-adapter/commit/38f24faa5c2a07abbe21e99fb4f07bd0ee81834e))
+
 # [1.80.0](https://github.com/webex/sdk-component-adapter/compare/v1.79.0...v1.80.0) (2021-10-28)
 
 
