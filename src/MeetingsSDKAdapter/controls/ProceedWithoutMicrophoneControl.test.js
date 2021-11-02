@@ -18,6 +18,7 @@ describe('Proceed Without Microphone Control', () => {
         .pipe(first()).subscribe((display) => {
           expect(display).toMatchObject({
             ID: 'proceed-without-microphone',
+            type: 'BUTTON',
             text: 'Proceed without microphone',
             tooltip: 'This setting cannot be changed once the meeting starts.',
             hint: 'This setting cannot be changed once the meeting starts.',

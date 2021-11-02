@@ -18,6 +18,7 @@ describe('Proceed Without Camera Control', () => {
         .pipe(first()).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'proceed-without-camera',
+            type: 'BUTTON',
             text: 'Proceed without camera',
             tooltip: 'This setting cannot be changed once the meeting starts.',
             hint: 'This setting cannot be changed once the meeting starts.',

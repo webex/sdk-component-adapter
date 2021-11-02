@@ -18,6 +18,7 @@ describe('Video Control', () => {
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'mute-video',
+            type: 'BUTTON',
             icon: 'camera-muted',
             state: 'disabled',
             text: 'Start video',

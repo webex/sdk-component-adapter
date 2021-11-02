@@ -37,6 +37,7 @@ export default class VideoControl extends MeetingControl {
     };
     const unmuted = {
       ID: this.ID,
+      type: 'BUTTON',
       icon: 'camera',
       tooltip: 'Stop video',
       state: MeetingControlState.INACTIVE,
@@ -44,6 +45,7 @@ export default class VideoControl extends MeetingControl {
     };
     const disabled = {
       ID: this.ID,
+      type: 'BUTTON',
       icon: 'camera-muted',
       state: MeetingControlState.DISABLED,
       text: 'Start video',

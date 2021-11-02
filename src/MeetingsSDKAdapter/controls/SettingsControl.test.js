@@ -18,6 +18,7 @@ describe('Settings Control', () => {
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
             ID: 'settings',
+            type: 'BUTTON',
             state: 'inactive',
             icon: 'settings',
             text: 'Settings',
