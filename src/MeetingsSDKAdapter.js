@@ -23,8 +23,6 @@ import logger from './logger';
 import AudioControl from './MeetingsSDKAdapter/controls/AudioControl';
 import ExitControl from './MeetingsSDKAdapter/controls/ExitControl';
 import JoinControl from './MeetingsSDKAdapter/controls/JoinControl';
-import ProceedWithoutCameraControl from './MeetingsSDKAdapter/controls/ProceedWithoutCameraControl';
-import ProceedWithoutMicrophoneControl from './MeetingsSDKAdapter/controls/ProceedWithoutMicrophoneControl';
 import RosterControl from './MeetingsSDKAdapter/controls/RosterControl';
 import SettingsControl from './MeetingsSDKAdapter/controls/SettingsControl';
 import ShareControl from './MeetingsSDKAdapter/controls/ShareControl';
@@ -76,8 +74,6 @@ const SETTINGS_CONTROL = 'settings';
 const SWITCH_CAMERA_CONTROL = 'switch-camera';
 const SWITCH_MICROPHONE_CONTROL = 'switch-microphone';
 const SWITCH_SPEAKER_CONTROL = 'switch-speaker';
-const PROCEED_WITHOUT_CAMERA_CONTROL = 'proceed-without-camera';
-const PROCEED_WITHOUT_MICROPHONE_CONTROL = 'proceed-without-microphone';
 
 // Media stream types
 const MEDIA_TYPE_LOCAL = 'local';
@@ -128,10 +124,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       [SWITCH_CAMERA_CONTROL]: new SwitchCameraControl(this, SWITCH_CAMERA_CONTROL),
       [SWITCH_SPEAKER_CONTROL]: new SwitchSpeakerControl(this, SWITCH_SPEAKER_CONTROL),
       [SWITCH_MICROPHONE_CONTROL]: new SwitchMicrophoneControl(this, SWITCH_MICROPHONE_CONTROL),
-      [PROCEED_WITHOUT_MICROPHONE_CONTROL]:
-        new ProceedWithoutMicrophoneControl(this, PROCEED_WITHOUT_MICROPHONE_CONTROL),
-      [PROCEED_WITHOUT_CAMERA_CONTROL]:
-        new ProceedWithoutCameraControl(this, PROCEED_WITHOUT_CAMERA_CONTROL),
     };
   }
 
