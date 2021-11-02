@@ -184,10 +184,10 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         await webexSDKAdapter.meetingsAdapter.meetingControls['settings'].action(MEETING_ID);
         break;
       case 'proceed-without-camera': 
-        await webexSDKAdapter.meetingsAdapter.meetingControls['proceed-without-camera'].action(MEETING_ID);
+        await webexSDKAdapter.meetingsAdapter.ignoreVideoAccessPrompt(MEETING_ID);
         break;
       case 'proceed-without-microphone': 
-        await webexSDKAdapter.meetingsAdapter.meetingControls['proceed-without-microphone'].action(MEETING_ID);
+        await webexSDKAdapter.meetingsAdapter.ignoreAudioAccessPrompt(MEETING_ID);
         break
     }
   } catch (error) {
