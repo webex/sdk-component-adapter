@@ -1,3 +1,10 @@
+# [1.82.0](https://github.com/webex/sdk-component-adapter/compare/v1.81.0...v1.82.0) (2021-11-02)
+
+
+### Features
+
+* **PeopleSdkAdapter:** add debug logs ([9360692](https://github.com/webex/sdk-component-adapter/commit/93606922bb03e153ab8015409d767a5a9db756de))
+
 # [1.81.0](https://github.com/webex/sdk-component-adapter/compare/v1.80.0...v1.81.0) (2021-11-02)
 
 
