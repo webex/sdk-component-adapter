@@ -38,7 +38,7 @@ export default class SettingsControl extends MeetingControl {
     };
     const inactive = {
       ID: this.ID,
-      type: 'TOGGLE',
+      type: 'BUTTON',
       state: MeetingControlState.INACTIVE,
       icon: 'settings',
       text: 'Settings',
