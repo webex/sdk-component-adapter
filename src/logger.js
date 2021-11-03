@@ -33,7 +33,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const winstonLogger = createLogger({
-  level: 'debug',
+  level: 'error',
   transports: activeTransports,
 });
 
@@ -50,6 +50,10 @@ for (const level of ['info', 'warn', 'error', 'debug']) {
       resourceType, resourceID, action, message, error,
     })
   );
+}
+
+if (typeof window !== 'undefined') {
+  window.webexSDKAdapterSetLogLevel = (level) => logger.setLevel(level);
 }
 
 export default logger;
