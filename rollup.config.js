@@ -38,6 +38,6 @@ export default [
         },
       }),
     ],
-    external: ['rxjs', 'rxjs/operators', 'webex', 'winston', 'winston-transport', '@webex/common'],
+    external: ['rxjs', 'rxjs/operators', 'webex', '@webex/common'],
   },
 ];
