@@ -1,3 +1,10 @@
+## [1.82.1](https://github.com/webex/sdk-component-adapter/compare/v1.82.0...v1.82.1) (2021-11-03)
+
+
+### Bug Fixes
+
+* **Winston:** repair winston export for widgets ([d7ad8d1](https://github.com/webex/sdk-component-adapter/commit/d7ad8d17bbf86c61ebc87ab73dc157516f9234de))
+
 # [1.82.0](https://github.com/webex/sdk-component-adapter/compare/v1.81.0...v1.82.0) (2021-11-02)
 
 
