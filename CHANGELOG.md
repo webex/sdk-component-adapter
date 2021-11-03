@@ -1,3 +1,10 @@
+# [1.83.0](https://github.com/webex/sdk-component-adapter/compare/v1.82.1...v1.83.0) (2021-11-03)
+
+
+### Features
+
+* **logger:** enable debug logs from the console ([b794ae6](https://github.com/webex/sdk-component-adapter/commit/b794ae681a9eb6f87c9e9e3d9f5d424ca5e77514))
+
 ## [1.82.1](https://github.com/webex/sdk-component-adapter/compare/v1.82.0...v1.82.1) (2021-11-03)
 
 
