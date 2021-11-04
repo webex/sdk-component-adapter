@@ -1,3 +1,10 @@
+# [1.85.0](https://github.com/webex/sdk-component-adapter/compare/v1.84.0...v1.85.0) (2021-11-04)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** change the identification mode of error stack for meetings with password ([073faf5](https://github.com/webex/sdk-component-adapter/commit/073faf5fed50654b6e7950b81a4be1ddb8578121))
+
 # [1.84.0](https://github.com/webex/sdk-component-adapter/compare/v1.83.0...v1.84.0) (2021-11-04)
 
 
