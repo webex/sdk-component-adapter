@@ -1,6 +1,6 @@
-import babel from 'rollup-plugin-babel';
-import resolve from 'rollup-plugin-node-resolve';
-import commonJS from 'rollup-plugin-commonjs';
+import {babel} from '@rollup/plugin-babel';
+import resolve from '@rollup/plugin-node-resolve';
+import commonJS from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
@@ -29,15 +29,18 @@ export default [
       builtins(),
       json(),
       resolve({preferBuiltins: false}),
-      babel({
-        runtimeHelpers: true,
-      }),
       commonJS({
+        context: 'window',
         namedExports: {
           '@webex/common': ['deconstructHydraId', 'constructHydraId', 'SDK_EVENT'],
         },
+        transformMixedEsModules: true,
+      }),
+      babel({
+        babelHelpers: 'runtime',
+        plugins: ['@babel/plugin-transform-runtime'],
       }),
     ],
-    external: ['rxjs', 'rxjs/operators', 'webex', '@webex/common'],
+    external: ['rxjs', 'rxjs/operators', 'webex', '@webex/common', 'winston'],
   },
 ];
