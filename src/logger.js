@@ -1,6 +1,5 @@
-import winston from 'winston';
+import {createLogger, format, transports} from 'winston';
 
-const {createLogger, format, transports} = winston;
 const logFormat = format.printf(({
   timestamp, level, resourceType, resourceID, action, message, error,
 }) => {
