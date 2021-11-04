@@ -569,12 +569,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         name: options.name,
       });
     } catch (error) {
-      if (error.stack.startsWith('BadRequest: Meeting requires a moderator pin or guest')) {
+      if (error.stack.includes('Meeting requires a moderator pin or guest')) {
+        const opts = error.joinOptions || {};
+
         this.updateMeeting(ID, () => (
           {
             passwordRequired: true,
-            invalidPassword: !!error.joinOptions.pin && !error.joinOptions.moderator,
-            invalidHostKey: !!error.joinOptions.pin && error.joinOptions.moderator,
+            invalidPassword: !!opts.pin && !opts.moderator,
+            invalidHostKey: !!opts.pin && opts.moderator,
           }));
       } else {
         // eslint-disable-next-line no-console
