@@ -85,13 +85,14 @@ function getMeeting() {
     (meeting) => {
       console.log('Received meeting update: ', meeting);
 
+      document.getElementById('meeting-state').value = meeting.state;
       document.getElementById('remote-audio').srcObject = meeting.remoteAudio;
       document.getElementById('remote-video').srcObject = meeting.remoteVideo;
       document.getElementById('local-audio').srcObject = meeting.localAudio.stream;
       document.getElementById('local-video').srcObject = meeting.localVideo.stream;
       document.getElementById('local-share').srcObject = meeting.localShare.stream;
       document.getElementById('remote-share').srcObject = meeting.remoteShare;
-      document.getElementById('meeting-title').innerHTML = meeting.title;
+      document.getElementById('meeting-title').innerText = meeting.title;
     },
     (error) => {
       console.error('Get Meeting error: ', error);
@@ -152,7 +153,9 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
         });
         break;
       case 'join-meeting':
-        await webexSDKAdapter.meetingsAdapter.meetingControls['join-meeting'].action(MEETING_ID);
+        const password = document.getElementById('password').value || undefined;
+        const hostKey = document.getElementById('host-key').value || undefined;
+        await webexSDKAdapter.meetingsAdapter.joinMeeting(MEETING_ID, {password, hostKey});
         break;
       case 'leave-meeting':
         await webexSDKAdapter.meetingsAdapter.meetingControls['leave-meeting'].action(MEETING_ID);
