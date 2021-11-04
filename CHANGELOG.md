@@ -1,3 +1,15 @@
+# [1.84.0](https://github.com/webex/sdk-component-adapter/compare/v1.83.0...v1.84.0) (2021-11-04)
+
+
+### Bug Fixes
+
+* **package:** update parcel and parcel-bundle versions to latest ([38075d2](https://github.com/webex/sdk-component-adapter/commit/38075d2d04a113cd2a1d07d0085ba1cd48a1b8c1))
+
+
+### Features
+
+* **scripts:** add input elements related to pasword, host key and meeting state in sdk demo page ([883ff36](https://github.com/webex/sdk-component-adapter/commit/883ff363d6c0df485aac10515479da76cb752ed8))
+
 # [1.83.0](https://github.com/webex/sdk-component-adapter/compare/v1.82.1...v1.83.0) (2021-11-03)
 
 
