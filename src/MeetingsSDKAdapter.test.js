@@ -847,6 +847,7 @@ describe('Meetings SDK Adapter', () => {
   describe('switchCamera()', () => {
     test('sets the camera that was chosen by the user', async () => {
       meetingsSDKAdapter.meetings[meetingID].cameraID = null;
+      meetingsSDKAdapter.getStream = jest.fn(() => ({stream: new MediaStream(), deviceId: '', toPromise: () => Promise.resolve({stream: new MediaStream(), permission: 'ALLOWED', deviceId: 'example-camera-id'})}));
       await meetingsSDKAdapter.switchCamera(meetingID, 'example-camera-id');
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
@@ -872,6 +873,7 @@ describe('Meetings SDK Adapter', () => {
   describe('switchMicrophone()', () => {
     test('sets the microphone that was chosen by the user', async () => {
       meetingsSDKAdapter.meetings[meetingID].microphoneID = null;
+      meetingsSDKAdapter.getStream = jest.fn(() => ({stream: new MediaStream(), deviceId: '', toPromise: () => Promise.resolve({stream: new MediaStream(), permission: 'ALLOWED', deviceId: 'example-microphone-id'})}));
       await meetingsSDKAdapter.switchMicrophone(meetingID, 'example-microphone-id');
 
       expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);

@@ -155,7 +155,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     const {sendAudio, sendVideo} = mediaSettings;
 
     return this.getStreamWithPermission(sendAudio, ID, {sendAudio: true}).pipe(
-      map(({permission, stream, ignore}) => ({
+      map(({
+        permission,
+        stream,
+        ignore,
+        deviceId,
+      }) => ({
         localAudio: {
           stream,
           permission,
@@ -165,15 +170,22 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           stream: null,
           permission: null,
         },
+        microphoneID: deviceId,
       })),
       chainWith((audio) => this.getStreamWithPermission(sendVideo, ID, {sendVideo: true}).pipe(
-        map(({permission, stream, ignore}) => ({
+        map(({
+          permission,
+          stream,
+          ignore,
+          deviceId,
+        }) => ({
           ...audio,
           localVideo: {
             stream,
             permission,
             ignoreMediaAccessPrompt: ignore,
           },
+          cameraID: deviceId,
         })),
       )),
     );
@@ -216,6 +228,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }, 2000);
 
         const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
+        const availableDevices = await this.getAvailableDevices(ID);
+        const [{label: deviceLabel}] = localStream.getTracks();
+        const mediaDevice = availableDevices.find((device) => device.label === deviceLabel);
+        const deviceId = mediaDevice && mediaDevice.deviceId;
 
         isAsking = false;
 
@@ -229,7 +245,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }
 
         if (!ignored) {
-          subscriber.next({permission: 'ALLOWED', stream: localStream});
+          subscriber.next({permission: 'ALLOWED', stream: localStream, deviceId});
           subscriber.complete();
         }
       } catch (error) {
@@ -281,7 +297,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    * Returns available media devices.
    *
    * @param {string} ID ID of the meeting
-   * @param {'videoinput'|'audioinput'|'audiooutput'} type String specifying the device type.
+   * @param {'videoinput'|'audioinput'|'audiooutput'} [type] String specifying the device type.
    * See {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDeviceInfo/kind|MDN}
    * @returns {MediaDeviceInfo[]} Array containing media devices.
    * @private
@@ -295,7 +311,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       devices = await sdkMeeting.getDevices();
-      devices = devices.filter((device) => device.kind === type && device.deviceId);
+      devices = devices.filter((device) => !type || (device.kind === type && device.deviceId));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Unable to retrieve devices for meeting "${ID}"`, error);
@@ -859,7 +875,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       let updates;
 
       this.stopStream(meeting.settings.preview.video);
-      const {stream, permission} = await this.getStream(
+      const {stream, permission, deviceId} = await this.getStream(
         ID,
         {sendVideo: true},
         {video: {deviceId: cameraID}},
@@ -872,7 +888,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
               stream,
             },
           },
-          cameraID,
+          cameraID: deviceId,
         };
       } else {
         throw new Error(`Could not change camera, permission not granted: ${permission}`);
@@ -896,7 +912,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       let updates;
 
       this.stopStream(meeting.settings.preview.audio);
-      const {stream, permission} = await this.getStream(
+      const {stream, permission, deviceId} = await this.getStream(
         ID,
         {sendAudio: true},
         {audio: {deviceId: microphoneID}},
@@ -909,7 +925,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
               audio: stream,
             },
           },
-          microphoneID,
+          microphoneID: deviceId,
         };
       } else {
         throw new Error(`Could not change microphone, permission not granted: ${permission}`);
