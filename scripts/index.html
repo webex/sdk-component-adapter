@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <style>
+      fieldset {
+        padding-bottom: 0.438rem;
+      }
+
+      fieldset > * {
+        margin-bottom: 0.313rem;  
+      }
+    </style>
+  </head>
   <body>
     <main>
       <div style="width:100%">
@@ -19,9 +30,14 @@
           <fieldset>
             <legend>Dialer</legend>
             <input id="destination" placeholder="Person ID or Email Address or SIP URI or Room ID" type="text" />
-            <button id="create-meeting">Create a Meeting</button>
-            <button id="join-meeting">Join Meeting</button>
+            <button id="create-meeting">Create Meeting</button>
             <button id="leave-meeting">Leave Meeting</button>
+            <br />
+            <label for="password">Password:</label>
+            <input id="password" type="password" />
+            <label for="host-key">Host key:</label>
+            <input id="host-key" type="password" />
+            <button id="join-meeting">Join Meeting</button>
           </fieldset>
         </form>
         <form id="actions">
@@ -34,6 +50,12 @@
             <button id="settings">Settings</button>
             <button id="proceed-without-camera">Proceed without camera</button>
             <button id="proceed-without-microphone">Proceed without microphone</button>
+          </fieldset>
+        </form>
+        <form id="state">
+          <fieldset>
+            <legend>Meeting state</legend>
+            <input id="meeting-state" type="text" readonly />
           </fieldset>
         </form>
         <form id="devices">
