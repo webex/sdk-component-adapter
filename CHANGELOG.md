@@ -1,3 +1,10 @@
+# [1.87.0](https://github.com/webex/sdk-component-adapter/compare/v1.86.0...v1.87.0) (2021-11-08)
+
+
+### Features
+
+* **src:** replace all console.log/warn/error with Winston logger ([318a190](https://github.com/webex/sdk-component-adapter/commit/318a19032609505d0f44fef3971d5b91e874c0f0))
+
 # [1.86.0](https://github.com/webex/sdk-component-adapter/compare/v1.85.2...v1.86.0) (2021-11-08)
 
 
