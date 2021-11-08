@@ -1,3 +1,10 @@
+## [1.85.1](https://github.com/webex/sdk-component-adapter/compare/v1.85.0...v1.85.1) (2021-11-08)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** show default camera and microphone in webex settings ([a1f865c](https://github.com/webex/sdk-component-adapter/commit/a1f865cbb35a0e20e46f965d3c60f99090671440))
+
 # [1.85.0](https://github.com/webex/sdk-component-adapter/compare/v1.84.0...v1.85.0) (2021-11-04)
 
 
