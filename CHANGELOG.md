@@ -1,3 +1,10 @@
+## [1.85.2](https://github.com/webex/sdk-component-adapter/compare/v1.85.1...v1.85.2) (2021-11-08)
+
+
+### Bug Fixes
+
+* **rollup:** replace deprecated rollup plugins with recommended ones ([76f327b](https://github.com/webex/sdk-component-adapter/commit/76f327b30dba3fd73d6aab65a87c31b0cf3e2dd5))
+
 ## [1.85.1](https://github.com/webex/sdk-component-adapter/compare/v1.85.0...v1.85.1) (2021-11-08)
 
 
