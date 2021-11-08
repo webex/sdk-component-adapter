@@ -1,3 +1,10 @@
+# [1.86.0](https://github.com/webex/sdk-component-adapter/compare/v1.85.2...v1.86.0) (2021-11-08)
+
+
+### Features
+
+* **WebexSdkAdapter:** add debug logs ([355a106](https://github.com/webex/sdk-component-adapter/commit/355a106f749558073313c336517991bbb351e57c))
+
 ## [1.85.2](https://github.com/webex/sdk-component-adapter/compare/v1.85.1...v1.85.2) (2021-11-08)
 
 
