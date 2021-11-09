@@ -1124,7 +1124,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
           if (sdkState === 'INITIALIZING') {
             logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change INITIALIZING');
-            state = 'JOINING';
+            state = MeetingState.LOBBY;
           } else if (sdkState === 'ACTIVE') {
             logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change ACTIVE');
             state = MeetingState.JOINED;
