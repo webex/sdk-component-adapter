@@ -1,3 +1,10 @@
+## [1.87.1](https://github.com/webex/sdk-component-adapter/compare/v1.87.0...v1.87.1) (2021-11-10)
+
+
+### Bug Fixes
+
+* **package:** move winston to peer dependencies ([53e0ca0](https://github.com/webex/sdk-component-adapter/commit/53e0ca0db3e3a157e598071d0c12d59cedbd7c46))
+
 # [1.87.0](https://github.com/webex/sdk-component-adapter/compare/v1.86.0...v1.87.0) (2021-11-08)
 
 
