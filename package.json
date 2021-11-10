@@ -29,15 +29,14 @@
   "license": "MIT",
   "peerDependencies": {
     "rxjs": "^6.5.4",
-    "webex": "^1.142.0"
+    "webex": "^1.142.0",
+    "winston": "^3.3.3"
   },
   "dependencies": {
     "@babel/plugin-transform-runtime": "^7.16.0",
     "@webex/common": "^1.105.0",
     "@webex/component-adapter-interfaces": "^1.17.0",
-    "logform": "^2.2.0",
-    "winston": "^3.3.3",
-    "winston-transport": "^4.4.0"
+    "logform": "^2.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
