@@ -21,7 +21,7 @@ describe('Video Control', () => {
             type: 'BUTTON',
             icon: 'camera-muted',
             state: 'disabled',
-            text: 'Start video',
+            text: 'No camera',
           });
           done();
         });
