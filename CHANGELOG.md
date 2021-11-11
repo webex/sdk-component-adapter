@@ -1,3 +1,10 @@
+# [1.88.0](https://github.com/webex/sdk-component-adapter/compare/v1.87.4...v1.88.0) (2021-11-11)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** change joining state to lobby state ([a11986f](https://github.com/webex/sdk-component-adapter/commit/a11986ff42d1d23e9b98e0effdc23fc441e2701b))
+
 ## [1.87.4](https://github.com/webex/sdk-component-adapter/compare/v1.87.3...v1.87.4) (2021-11-11)
 
 
