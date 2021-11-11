@@ -7,6 +7,8 @@ import OrganizationsSDKAdapter from './OrganizationsSDKAdapter';
 import logger from './logger';
 import {name, version} from '../package.json';
 
+const LOG_ARGS = ['SDK', `${name}-${version}`];
+
 export default class WebexSDKAdapter extends WebexAdapter {
   /**
    * Creates a new instance of the WebexSDKAdapter.
@@ -17,6 +19,9 @@ export default class WebexSDKAdapter extends WebexAdapter {
    */
   constructor(sdk) {
     super(sdk);
+
+    logger.debug(...LOG_ARGS, 'constructor()', 'instantiating sdk component adapter');
+
     this.activitiesAdapter = {};
     this.peopleAdapter = new PeopleSDKAdapter(sdk);
     this.roomsAdapter = new RoomsSDKAdapter(sdk);
@@ -30,11 +35,12 @@ export default class WebexSDKAdapter extends WebexAdapter {
    * Connect to Webex services so SDK can listen for data updates.
    */
   async connect() {
-    logger.debug('SDK', `${name} ${version}`, 'connect()', 'calling sdk.internal.mercury.connect()');
+    logger.debug(...LOG_ARGS, 'connect()', 'called');
+    logger.debug(...LOG_ARGS, 'connect()', 'calling sdk.internal.mercury.connect()');
     await this.sdk.internal.device.register();
-    logger.debug('SDK', `${name} ${version}`, 'connect()', 'calling sdk.internal.mercury.connect()');
+    logger.debug(...LOG_ARGS, 'connect()', 'calling sdk.internal.mercury.connect()');
     await this.sdk.internal.mercury.connect();
-    logger.debug('SDK', `${name} ${version}`, 'connect()', 'calling metingsAdapter.connect()');
+    logger.debug(...LOG_ARGS, 'connect()', 'calling meetingsAdapter.connect()');
     await this.meetingsAdapter.connect();
   }
 
@@ -42,11 +48,12 @@ export default class WebexSDKAdapter extends WebexAdapter {
    * Disconnect from Webex services, closing any connections SDK may have opened.
    */
   async disconnect() {
-    logger.debug('SDK', `${name} ${version}`, 'disconnect()', 'calling metingsAdapter.disconnect()');
+    logger.debug(...LOG_ARGS, 'disconnect()', 'called');
+    logger.debug(...LOG_ARGS, 'disconnect()', 'calling meetingsAdapter.disconnect()');
     await this.meetingsAdapter.disconnect();
-    logger.debug('SDK', `${name} ${version}`, 'disconnect()', 'calling sdk.internal.mercury.disconnect()');
+    logger.debug(...LOG_ARGS, 'disconnect()', 'calling sdk.internal.mercury.disconnect()');
     await this.sdk.internal.mercury.disconnect();
-    logger.debug('SDK', `${name} ${version}`, 'disconnect()', 'calling metingsAdapter.unregister()');
+    logger.debug(...LOG_ARGS, 'disconnect()', 'calling meetingsAdapter.unregister()');
     await this.sdk.internal.device.unregister();
   }
 }
