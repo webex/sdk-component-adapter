@@ -1,3 +1,10 @@
+## [1.87.4](https://github.com/webex/sdk-component-adapter/compare/v1.87.3...v1.87.4) (2021-11-11)
+
+
+### Bug Fixes
+
+* **WebexSdkAdapter:** update debug logs ([7e80a60](https://github.com/webex/sdk-component-adapter/commit/7e80a603eca75c5d4efe75ca93a524ea7cc1f599))
+
 ## [1.87.3](https://github.com/webex/sdk-component-adapter/compare/v1.87.2...v1.87.3) (2021-11-11)
 
 
