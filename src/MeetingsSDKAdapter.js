@@ -335,6 +335,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   attachMedia(ID, {type, stream}) {
     logger.debug('MEETING', ID, 'attachMedia()', ['called with', {ID, type, stream}]);
     const meeting = {...this.meetings[ID]};
+    const audioTracks = (stream instanceof MediaStream && stream.getAudioTracks()) || [];
+    const videoTracks = (stream instanceof MediaStream && stream.getVideoTracks()) || [];
 
     switch (type) {
       case MEDIA_TYPE_LOCAL:
@@ -344,11 +346,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           // `disableLocalAudio/Video` change inside handle media stream methods
           localAudio: {
             ...meeting.localAudio,
-            stream: meeting.disabledLocalAudio ? null : new MediaStream(stream.getAudioTracks()),
+            stream: meeting.disabledLocalAudio || audioTracks.length === 0
+              ? null
+              : new MediaStream(audioTracks),
           },
           localVideo: {
             ...meeting.localVideo,
-            stream: meeting.disabledLocalVideo ? null : new MediaStream(stream.getVideoTracks()),
+            stream: meeting.disabledLocalVideo || videoTracks.length === 0
+              ? null
+              : new MediaStream(videoTracks),
           },
         };
         break;
