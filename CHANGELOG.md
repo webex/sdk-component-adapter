@@ -1,3 +1,10 @@
+# [1.89.0](https://github.com/webex/sdk-component-adapter/compare/v1.88.0...v1.89.0) (2021-11-12)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** add debug logs ([0b433f9](https://github.com/webex/sdk-component-adapter/commit/0b433f982097910ed2031f1f31cc26eceb9371a4))
+
 # [1.88.0](https://github.com/webex/sdk-component-adapter/compare/v1.87.4...v1.88.0) (2021-11-11)
 
 
