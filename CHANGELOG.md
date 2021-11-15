@@ -1,3 +1,10 @@
+## [1.89.1](https://github.com/webex/sdk-component-adapter/compare/v1.89.0...v1.89.1) (2021-11-15)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** correct the state of video/audio control when permissions are not granted ([026836a](https://github.com/webex/sdk-component-adapter/commit/026836ae7b1bcaf636c57929d2be5ba7bef037ba))
+
 # [1.89.0](https://github.com/webex/sdk-component-adapter/compare/v1.88.0...v1.89.0) (2021-11-12)
 
 
