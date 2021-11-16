@@ -2,7 +2,8 @@ import {
   defer,
   Observable,
 } from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 import {combineLatestImmediate} from '../../utils';
 /**
@@ -20,6 +21,8 @@ export default class SwitchCameraControl extends MeetingControl {
    * @param {string} cameraID  Id of the camera to switch to
    */
   async action(meetingID, cameraID) {
+    logger.debug('MEETING', meetingID, 'SwitchCameraControl::action()', ['called with', {meetingID}]);
+
     await this.adapter.switchCamera(meetingID, cameraID);
   }
 
@@ -30,6 +33,7 @@ export default class SwitchCameraControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of the switch camera control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'SwitchCameraControl::display()', ['called with', {meetingID}]);
     const cameraID$ = this.adapter.getMeeting(meetingID).pipe(
       map((meeting) => meeting.cameraID),
       distinctUntilChanged(),
@@ -51,6 +55,7 @@ export default class SwitchCameraControl extends MeetingControl {
         selected: cameraID || null,
         hint: 'Use arrow keys to navigate between camera options and hit "Enter" to select.',
       })),
+      tap((display) => logger.debug('MEETING', meetingID, 'SwitchCameraControl::display()', ['emitting', display])),
     );
   }
 }

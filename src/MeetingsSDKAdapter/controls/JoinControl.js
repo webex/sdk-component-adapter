@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -17,6 +18,8 @@ export default class JoinControl extends MeetingControl {
    * @param {string} meetingID  Id of the meeting to join
    */
   async action(meetingID) {
+    logger.debug('MEETING', meetingID, 'JoinControl::action()', ['called with', {meetingID}]);
+
     await this.adapter.joinMeeting(meetingID);
   }
 
@@ -27,6 +30,8 @@ export default class JoinControl extends MeetingControl {
    */
   // eslint-disable-next-line class-methods-use-this
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'JoinControl::display()', ['called with', {meetingID}]);
+
     return this.adapter.getMeeting(meetingID).pipe(
       map((meeting) => {
         const hint = (meeting.localAudio.stream ? 'Unmuted, ' : 'Muted, ')
@@ -49,6 +54,7 @@ export default class JoinControl extends MeetingControl {
         hint,
         state,
       })),
+      tap((display) => logger.debug('MEETING', meetingID, 'JoinControl::display()', ['emitting', display])),
     );
   }
 }

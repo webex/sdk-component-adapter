@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -17,6 +18,8 @@ export default class ShareControl extends MeetingControl {
    * @param {string} meetingID  ID of the meeting to share screen
    */
   async action(meetingID) {
+    logger.debug('MEETING', meetingID, 'ShareControl::action()', ['called with', {meetingID}]);
+
     await this.adapter.handleLocalShare(meetingID);
   }
 
@@ -27,6 +30,7 @@ export default class ShareControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the screen share control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'ShareControl::display()', ['called with', {meetingID}]);
     const inactive = {
       ID: this.ID,
       type: 'TOGGLE',
@@ -47,6 +51,7 @@ export default class ShareControl extends MeetingControl {
     return this.adapter.getMeeting(meetingID).pipe(
       map(({localShare: {stream}}) => (stream ? active : inactive)),
       distinctUntilChanged(),
+      tap((display) => logger.debug('MEETING', meetingID, 'ShareControl::display()', ['emitting', display])),
     );
   }
 }

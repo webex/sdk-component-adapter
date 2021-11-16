@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -18,6 +19,8 @@ export default class SettingsControl extends MeetingControl {
    * @param {string} meetingID  Meeting ID
    */
   action(meetingID) {
+    logger.debug('Meeting', meetingID, 'SettingsControl::action()', ['called with', {meetingID}]);
+
     this.adapter.toggleSettings(meetingID);
   }
 
@@ -28,6 +31,7 @@ export default class SettingsControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the settings control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'SettingsControl::display()', ['called with', {meetingID}]);
     const active = {
       ID: this.ID,
       type: 'BUTTON',
@@ -48,6 +52,7 @@ export default class SettingsControl extends MeetingControl {
     return this.adapter.getMeeting(meetingID).pipe(
       map(({showSettings}) => (showSettings ? active : inactive)),
       distinctUntilChanged(),
+      tap((display) => logger.debug('Meeting', meetingID, 'SettingsControl::display()', ['emitting', display])),
     );
   }
 }

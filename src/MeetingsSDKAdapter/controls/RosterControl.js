@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -18,6 +19,8 @@ export default class RosterControl extends MeetingControl {
    * @param {string} meetingID  Id of the meeting to toggle roster
    */
   async action(meetingID) {
+    logger.debug('MEETING', meetingID, 'RosterControl::action()', ['called with', {meetingID}]);
+
     await this.adapter.toggleRoster(meetingID);
   }
 
@@ -28,6 +31,7 @@ export default class RosterControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the roster control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'RosterControl::display()', ['called with', {meetingID}]);
     const active = {
       ID: this.ID,
       type: 'TOGGLE',
@@ -48,6 +52,7 @@ export default class RosterControl extends MeetingControl {
     return this.adapter.getMeeting(meetingID).pipe(
       map(({showRoster}) => (showRoster ? active : inactive)),
       distinctUntilChanged(),
+      tap((display) => logger.debug('MEETING', meetingID, 'RosterControl::display()', ['emitting', display])),
     );
   }
 }
