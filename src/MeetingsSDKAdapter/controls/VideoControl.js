@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -17,6 +18,8 @@ export default class VideoControl extends MeetingControl {
    * @param {string} meetingID  Meeting id
    */
   action(meetingID) {
+    logger.debug('MEETING', meetingID, 'VideoControl::action()', ['called with', {meetingID}]);
+
     return this.adapter.handleLocalVideo(meetingID);
   }
 
@@ -27,6 +30,7 @@ export default class VideoControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the video control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'VideoControl::display()', ['called with', {meetingID}]);
     const muted = {
       ID: this.ID,
       type: 'BUTTON',
@@ -56,6 +60,7 @@ export default class VideoControl extends MeetingControl {
         (stream && unmuted) || (disabledLocalVideo && muted) || disabled
       )),
       distinctUntilChanged(),
+      tap((display) => logger.debug('MEETING', meetingID, 'VideoControl::display()', ['emitting', display])),
     );
   }
 }

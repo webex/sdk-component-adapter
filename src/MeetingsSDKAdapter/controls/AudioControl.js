@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 
 /**
@@ -18,6 +19,8 @@ export default class AudioControl extends MeetingControl {
    * @param {string} meetingID  ID of the meeting to mute audio
    */
   action(meetingID) {
+    logger.debug('MEETING', meetingID, 'AudioControl::action()', ['called with', {meetingID}]);
+
     return this.adapter.handleLocalAudio(meetingID);
   }
 
@@ -29,6 +32,7 @@ export default class AudioControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable stream that emits display data of the audio control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'AudioControl::display()', ['called with', {meetingID}]);
     const muted = {
       ID: this.ID,
       type: 'BUTTON',
@@ -58,6 +62,7 @@ export default class AudioControl extends MeetingControl {
         (stream && unmuted) || (disabledLocalAudio && muted) || disabled
       )),
       distinctUntilChanged(),
+      tap((display) => logger.debug('MEETING', meetingID, 'AudioControl::display()', ['emitting', display])),
     );
   }
 }

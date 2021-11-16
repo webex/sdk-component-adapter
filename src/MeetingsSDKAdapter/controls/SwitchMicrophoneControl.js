@@ -2,7 +2,8 @@ import {
   defer,
   Observable,
 } from 'rxjs';
-import {map, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
+import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 import {combineLatestImmediate} from '../../utils';
 
@@ -21,6 +22,8 @@ export default class SwitchMicrophoneControl extends MeetingControl {
    * @param {string} microphoneID  Id of the microphone to switch to
    */
   async action(meetingID, microphoneID) {
+    logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::action()', ['called with', {meetingID}]);
+
     await this.adapter.switchMicrophone(meetingID, microphoneID);
   }
 
@@ -31,6 +34,7 @@ export default class SwitchMicrophoneControl extends MeetingControl {
    * @returns {Observable.<MeetingControlDisplay>} Observable that emits control display data of the switch microphone control
    */
   display(meetingID) {
+    logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::display()', ['called with', {meetingID}]);
     const microphoneID$ = this.adapter.getMeeting(meetingID).pipe(
       map((meeting) => meeting.microphoneID),
       distinctUntilChanged(),
@@ -53,6 +57,7 @@ export default class SwitchMicrophoneControl extends MeetingControl {
         selected: microphoneID || null,
         hint: 'Use arrow keys to navigate between microphone options and hit "Enter" to select.',
       })),
+      tap((display) => logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::display()', ['emitting', display])),
     );
   }
 }
