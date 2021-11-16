@@ -1,3 +1,10 @@
+# [1.90.0](https://github.com/webex/sdk-component-adapter/compare/v1.89.1...v1.90.0) (2021-11-16)
+
+
+### Features
+
+* **meeting-controls:** add debug logs ([bc2eeb7](https://github.com/webex/sdk-component-adapter/commit/bc2eeb7846659026bc3810b21066f3ec93091b39))
+
 ## [1.89.1](https://github.com/webex/sdk-component-adapter/compare/v1.89.0...v1.89.1) (2021-11-15)
 
 
