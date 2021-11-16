@@ -1125,29 +1125,31 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
         tap((event) => {
+          logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_STATE_CHANGE, 'event', event.payload]);
+
           const sdkState = event.payload.currentState;
-          let state;
+          const oldState = this.meetings[ID].state;
+
+          let newState;
 
           if (sdkState === 'INITIALIZING') {
-            logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change INITIALIZING');
-            state = MeetingState.LOBBY;
+            newState = MeetingState.LOBBY;
           } else if (sdkState === 'ACTIVE') {
-            logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change ACTIVE');
-            state = MeetingState.JOINED;
+            newState = MeetingState.JOINED;
             // do not await on this, otherwise the emitted message won't contain an updated state
             this.addMedia(ID).catch((error) => {
               logger.error('MEETING', ID, 'getMeeting()', 'Unable to add media', error);
             });
           } else if (sdkState === 'INACTIVE') {
-            logger.debug('MEETING', ID, 'getMeeting()', 'meeting state change INACTIVE');
-            state = MeetingState.LEFT;
-          } else {
-            state = this.meetings[ID].state;
+            newState = MeetingState.LEFT;
           }
 
-          logger.debug('MEETING', ID, 'getMeeting()', ['changing meeting state to ', {state}]);
-          this.meetings[ID] = {...this.meetings[ID], state};
-          logger.debug('MEETING', ID, 'getMeeting()', ['changed meeting state to ', {state}]);
+          if (newState && newState !== oldState) {
+            logger.debug('MEETING', ID, 'getMeeting()', ['changing meeting state', {oldState, newState}]);
+            this.meetings[ID] = {...this.meetings[ID], state: newState};
+          } else {
+            logger.debug('MEETING', ID, 'getMeeting()', ['NOT changing meeting state', {oldState}]);
+          }
         }),
       );
 
@@ -1162,16 +1164,9 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         meetingWithSwitchCameraEvent$,
         meetingWithSwitchMicrophoneEvent$,
         meetingWithLocalShareStartedEvent$,
-      ).pipe(map(() => this.meetings[ID]), // Return a meeting object from event
-        tap(() => {
-          logger.debug('MEETING', ID, 'getMeeting()', ['meeting after event is ', this.meetings[ID]]);
-        }));
+      ).pipe(map(() => this.meetings[ID])); // Return a meeting object from event
 
-      const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$).pipe(
-        tap(() => {
-          logger.debug('MEETING', ID, 'getMeeting()', ['meeting with events is ', this.meetings[ID]]);
-        }),
-      );
+      const getMeetingWithEvents$ = concat(getMeeting$, meetingsWithEvents$);
 
       // Convert to a multicast observable
       this.getMeetingObservables[ID] = getMeetingWithEvents$.pipe(
@@ -1179,7 +1174,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         refCount(),
         takeWhile((meeting) => meeting.state && meeting.state !== MeetingState.LEFT, true),
         tap(() => {
-          logger.debug('MEETING', ID, 'getMeeting()', ['emitting updated meeting object', this.meetings[ID]]);
+          logger.debug('MEETING', ID, 'getMeeting()', ['emitting', this.meetings[ID]]);
         }),
       );
     }
