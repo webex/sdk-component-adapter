@@ -521,7 +521,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         state: MeetingState.NOT_JOINED,
         cameraID: null,
         microphoneID: null,
-        speakerID: null,
+        speakerID: '',
       })),
       // if not provided by the sdk, compute a meeting title
       concatMap((meeting) => (

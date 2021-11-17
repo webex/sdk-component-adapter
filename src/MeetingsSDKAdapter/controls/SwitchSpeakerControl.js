@@ -43,6 +43,7 @@ export default class SwitchSpeakerControl extends MeetingControl {
         value: speaker.deviceId,
         label: speaker.label,
       }))),
+      map((options) => ([{value: '', label: 'Browser Default'}, ...options])),
     );
 
     return combineLatestImmediate(speakerID$, options$).pipe(
