@@ -22,6 +22,10 @@ describe('Switch Speaker Control', () => {
             noOptionsMessage: 'No available speakers',
             options: [
               {
+                value: '',
+                label: 'Browser Default',
+              },
+              {
                 value: 'default',
                 label: 'Default - Headset Earphone (Jabra EVOLVE 20 SE MS) (0b0e:0300)',
               },

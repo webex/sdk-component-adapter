@@ -404,7 +404,7 @@ describe('Meetings SDK Adapter', () => {
           state: 'NOT_JOINED',
           cameraID: null,
           microphoneID: null,
-          speakerID: null,
+          speakerID: '',
         });
         done();
       });
