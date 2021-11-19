@@ -1,3 +1,10 @@
+# [1.91.0](https://github.com/webex/sdk-component-adapter/compare/v1.90.0...v1.91.0) (2021-11-19)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add browser default speaker to the available speaker list ([e149789](https://github.com/webex/sdk-component-adapter/commit/e1497892523f5413bbe1937f1f35801949387cfb))
+
 # [1.90.0](https://github.com/webex/sdk-component-adapter/compare/v1.89.1...v1.90.0) (2021-11-16)
 
 
