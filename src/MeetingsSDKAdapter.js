@@ -11,6 +11,7 @@ import {
 import {
   catchError,
   concatMap,
+  distinctUntilChanged,
   filter,
   map,
   publishReplay,
@@ -53,7 +54,7 @@ import {chainWith, deepMerge} from './utils';
 // JS SDK Events
 const EVENT_MEDIA_READY = 'media:ready';
 const EVENT_MEDIA_STOPPED = 'media:stopped';
-const EVENT_STATE_CHANGE = 'meeting:stateChange';
+const EVENT_MEMBERS_UPDATE = 'members:update';
 const EVENT_LOCAL_SHARE_STOP = 'meeting:stoppedSharingLocal';
 const EVENT_LOCAL_SHARE_START = 'meeting:startedSharingLocal';
 const EVENT_REMOTE_SHARE_START = 'meeting:startedSharingRemote';
@@ -101,6 +102,12 @@ const mediaSettings = {
 
 const HYDRA_ID_TYPE_PEOPLE = 'PEOPLE';
 const HYDRA_ID_TYPE_ROOM = 'ROOM';
+
+const SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE = {
+  IN_LOBBY: MeetingState.LOBBY,
+  IN_MEETING: MeetingState.JOINED,
+  NOT_IN_MEETING: MeetingState.LEFT,
+};
 
 /**
  * The `MeetingsSDKAdapter` is an implementation of the `MeetingsAdapter` interface.
@@ -1123,35 +1130,27 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }),
       );
 
-      const meetingStateChange$ = fromEvent(sdkMeeting, EVENT_STATE_CHANGE).pipe(
-        tap((event) => {
-          logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_STATE_CHANGE, 'event', event.payload]);
+      const meetingStateChange$ = fromEvent(sdkMeeting && sdkMeeting.members, EVENT_MEMBERS_UPDATE)
+        .pipe(
+          map((event) => {
+            logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_MEMBERS_UPDATE, 'event']);
+            const self = Object.values(event.full).find((m) => m.isSelf);
 
-          const sdkState = event.payload.currentState;
-          const oldState = this.meetings[ID].state;
-
-          let newState;
-
-          if (sdkState === 'INITIALIZING') {
-            newState = MeetingState.LOBBY;
-          } else if (sdkState === 'ACTIVE') {
-            newState = MeetingState.JOINED;
-            // do not await on this, otherwise the emitted message won't contain an updated state
-            this.addMedia(ID).catch((error) => {
-              logger.error('MEETING', ID, 'getMeeting()', 'Unable to add media', error);
-            });
-          } else if (sdkState === 'INACTIVE') {
-            newState = MeetingState.LEFT;
-          }
-
-          if (newState && newState !== oldState) {
-            logger.debug('MEETING', ID, 'getMeeting()', ['changing meeting state', {oldState, newState}]);
-            this.meetings[ID] = {...this.meetings[ID], state: newState};
-          } else {
-            logger.debug('MEETING', ID, 'getMeeting()', ['NOT changing meeting state', {oldState}]);
-          }
-        }),
-      );
+            return SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE[self && self.status]
+              || MeetingState.NOT_JOINED;
+          }),
+          distinctUntilChanged(),
+          tap((state) => {
+            logger.debug('MEETING', ID, 'getMeeting()', ['changing meeting state to', state]);
+            this.meetings[ID] = {...this.meetings[ID], state};
+            if (state === MeetingState.JOINED) {
+              // do not await on this, otherwise the emitted message won't contain an updated state
+              this.addMedia(ID).catch((error) => {
+                logger.error('MEETING', ID, 'getMeeting()', 'Unable to add media', error);
+              });
+            }
+          }),
+        );
 
       const meetingsWithEvents$ = merge(
         meetingUpdateEvent$,
