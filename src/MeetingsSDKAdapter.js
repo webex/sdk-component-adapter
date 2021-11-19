@@ -861,17 +861,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         };
 
         if (meeting.state === MeetingState.JOINED) {
-          await sdkMeeting.updateVideo({
-            stream: meeting.settings.preview.video,
-            receiveVideo: mediaSettings.receiveVideo,
-            sendVideo: mediaSettings.sendVideo,
-          });
+          if (meeting.settings.preview.video) {
+            await sdkMeeting.updateVideo({
+              stream: meeting.settings.preview.video,
+              receiveVideo: mediaSettings.receiveVideo,
+              sendVideo: mediaSettings.sendVideo,
+            });
+          }
 
-          await sdkMeeting.updateAudio({
-            stream: meeting.settings.preview.audio,
-            receiveAudio: mediaSettings.receiveAudio,
-            sendAudio: mediaSettings.sendAudio,
-          });
+          if (meeting.settings.preview.audio) {
+            await sdkMeeting.updateAudio({
+              stream: meeting.settings.preview.audio,
+              receiveAudio: mediaSettings.receiveAudio,
+              sendAudio: mediaSettings.sendAudio,
+            });
+          }
         }
       }
 
