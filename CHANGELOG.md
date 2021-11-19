@@ -1,3 +1,10 @@
+## [1.91.1](https://github.com/webex/sdk-component-adapter/compare/v1.91.0...v1.91.1) (2021-11-19)
+
+
+### Bug Fixes
+
+* **package:** update js-sdk to 1.149.2 ([abf4ee2](https://github.com/webex/sdk-component-adapter/commit/abf4ee2a02cd2d7e696cf33538b2eef5ada78015))
+
 # [1.91.0](https://github.com/webex/sdk-component-adapter/compare/v1.90.0...v1.91.0) (2021-11-19)
 
 
