@@ -1,3 +1,10 @@
+## [1.91.2](https://github.com/webex/sdk-component-adapter/compare/v1.91.1...v1.91.2) (2021-11-22)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** check settings preview streams before updating sdk local streams ([e553368](https://github.com/webex/sdk-component-adapter/commit/e5533683cb68326154501c744d4b1921fb1a48d2))
+
 ## [1.91.1](https://github.com/webex/sdk-component-adapter/compare/v1.91.0...v1.91.1) (2021-11-19)
 
 
