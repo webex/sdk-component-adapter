@@ -21,7 +21,7 @@ describe('Audio Control', () => {
             type: 'BUTTON',
             icon: 'microphone-muted',
             state: 'disabled',
-            text: 'No microphone',
+            text: 'Unmute',
           });
           done();
         });

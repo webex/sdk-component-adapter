@@ -54,7 +54,7 @@ export default class AudioControl extends MeetingControl {
       type: 'BUTTON',
       icon: 'microphone-muted',
       state: MeetingControlState.DISABLED,
-      text: 'No microphone',
+      text: 'Unmute',
     };
 
     return this.adapter.getMeeting(meetingID).pipe(

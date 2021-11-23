@@ -52,7 +52,7 @@ export default class VideoControl extends MeetingControl {
       type: 'BUTTON',
       icon: 'camera-muted',
       state: MeetingControlState.DISABLED,
-      text: 'No camera',
+      text: 'Start video',
     };
 
     return this.adapter.getMeeting(meetingID).pipe(
