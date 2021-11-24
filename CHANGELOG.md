@@ -1,3 +1,10 @@
+## [1.91.3](https://github.com/webex/sdk-component-adapter/compare/v1.91.2...v1.91.3) (2021-11-24)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** password and hostKey validation ([dce3e7c](https://github.com/webex/sdk-component-adapter/commit/dce3e7c87f9ff7a7810f754cf8ab39f24172463b))
+
 ## [1.91.2](https://github.com/webex/sdk-component-adapter/compare/v1.91.1...v1.91.2) (2021-11-22)
 
 
