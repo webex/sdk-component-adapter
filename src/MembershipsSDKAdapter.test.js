@@ -61,6 +61,16 @@ describe('Memberships SDK Adapter', () => {
                 muted: false,
                 sharing: false,
                 host: false,
+                guest: true,
+              },
+              {
+                ID: 'device',
+                orgID: 'orgID',
+                inMeeting: true,
+                muted: false,
+                sharing: false,
+                host: false,
+                guest: false,
               },
             ]);
             done();

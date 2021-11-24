@@ -86,7 +86,7 @@ function sortRoomMembers(memberships, myID) {
 }
 
 /**
- * Gets the active members in a meeting
+ * Maps SDK members to adapter members
  *
  * @private
  * @param {object} sdkMembers Members object from sdk meeting, keyed by ID
@@ -96,7 +96,6 @@ function getMembers(sdkMembers) {
   logger.debug(...LOG_ARGS, 'getMembers()', ['called with', {sdkMembers}]);
   let members = Object.values(sdkMembers || {});
 
-  members = members.filter((member) => member.isUser);
   members = sortMeetingMembers(members);
 
   return members.map((member) => ({
