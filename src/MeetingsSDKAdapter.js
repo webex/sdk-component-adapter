@@ -597,15 +597,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       });
       logger.info('MEETING', ID, 'JOIN', 'Joining meeting');
     } catch (error) {
-      if (error.stack.includes('Meeting requires a moderator pin or guest')) {
+      if (error.joinIntentRequired) {
         logger.info('MEETING', ID, 'joinMeeting()', 'Meeting requires authentication');
-        const opts = error.joinOptions || {};
 
         this.updateMeeting(ID, () => (
           {
             passwordRequired: true,
-            invalidPassword: !!opts.pin && !opts.moderator,
-            invalidHostKey: !!opts.pin && opts.moderator,
+            invalidPassword: !!options.password,
+            invalidHostKey: !!options.hostKey,
           }));
       } else {
         logger.error('MEETING', ID, 'joinMeeting()', 'Unable to join', error);
