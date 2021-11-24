@@ -1,3 +1,10 @@
+# [1.92.0](https://github.com/webex/sdk-component-adapter/compare/v1.91.3...v1.92.0) (2021-11-24)
+
+
+### Features
+
+* **MembershipsSdkAdapter:** return non-user members from getMembers() ([6c4de60](https://github.com/webex/sdk-component-adapter/commit/6c4de60fe3f638742b38b8d088a8fcd6b38a0abc))
+
 ## [1.91.3](https://github.com/webex/sdk-component-adapter/compare/v1.91.2...v1.91.3) (2021-11-24)
 
 
