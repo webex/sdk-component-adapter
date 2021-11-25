@@ -907,7 +907,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         updates = {
           settings: {
             preview: {
-              stream,
+              video: stream,
             },
           },
           cameraID: deviceId,
