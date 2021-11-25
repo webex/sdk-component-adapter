@@ -35,7 +35,9 @@ export const createMockSDKMediaStreams = () => {
 export const createMockSDKMeeting = () => ({
   id: 'meetingID',
   sipuri: 'my meeting',
-  meetingInfo: {},
+  meetingInfo: {
+    isWebexScheduled: true,
+  },
   members: {
     membersCollection: {
       members: {
@@ -45,7 +47,7 @@ export const createMockSDKMeeting = () => ({
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
-          isHost: false,
+          isModerator: false,
           isGuest: false,
           isSelf: true,
           participant: {
@@ -61,7 +63,7 @@ export const createMockSDKMeeting = () => ({
           isUser: true,
           isAudioMuted: true,
           isContentSharing: true,
-          isHost: true,
+          isModerator: true,
           isGuest: true,
           participant: {
             person: {
@@ -76,7 +78,7 @@ export const createMockSDKMeeting = () => ({
           isUser: true,
           isAudioMuted: false,
           isContentSharing: false,
-          isHost: false,
+          isModerator: false,
           isGuest: true,
           participant: {
             person: {
@@ -90,7 +92,7 @@ export const createMockSDKMeeting = () => ({
           isUser: false,
           isAudioMuted: false,
           isContentSharing: false,
-          isHost: false,
+          isModerator: false,
           isGuest: false,
           participant: {
             person: {

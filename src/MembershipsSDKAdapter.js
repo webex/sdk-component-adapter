@@ -89,11 +89,12 @@ function sortRoomMembers(memberships, myID) {
  * Maps SDK members to adapter members
  *
  * @private
- * @param {object} sdkMembers Members object from sdk meeting, keyed by ID
+ * @param {object} sdkMembers  Members object from sdk meeting, keyed by ID
+ * @param {object} meeting  Sdk meeting object
  * @returns {Array.<Member>} List of meeting members
  */
-function getMembers(sdkMembers) {
-  logger.debug(...LOG_ARGS, 'getMembers()', ['called with', {sdkMembers}]);
+function getMembers(sdkMembers, meeting) {
+  logger.debug(...LOG_ARGS, 'getMembers()', ['called with', {sdkMembers, meeting}]);
   let members = Object.values(sdkMembers || {});
 
   members = sortMeetingMembers(members);
@@ -111,7 +112,7 @@ function getMembers(sdkMembers) {
     inMeeting: member.isInMeeting,
     muted: member.isAudioMuted,
     sharing: member.isContentSharing,
-    host: member.isHost,
+    host: !!meeting.meetingInfo.isWebexScheduled && member.isModerator,
     guest: member.isGuest,
   }));
 }
@@ -256,13 +257,13 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
 
       // Behavior subject will keep the last emitted object for new subscribers
       // https://rxjs.dev/guide/subject#behaviorsubject
-      members$ = new BehaviorSubject(getMembers(members));
+      members$ = new BehaviorSubject(getMembers(members, meeting));
 
       // Emit on membership updates
       meeting.members.on('members:update', (payload) => {
         logger.debug(...LOG_ARGS, 'getMeetingMembers()', ['received "members:update" event', {payload}]);
         if (payload && payload.full) {
-          members$.next(getMembers(payload.full));
+          members$.next(getMembers(payload.full, meeting));
         }
       });
     }
