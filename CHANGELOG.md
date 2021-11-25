@@ -1,3 +1,11 @@
+## [1.92.1](https://github.com/webex/sdk-component-adapter/compare/v1.92.0...v1.92.1) (2021-11-25)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** set preview video stream in correct field when switching camera ([1c99081](https://github.com/webex/sdk-component-adapter/commit/1c9908158d9d811f888de96b1e38024a2a727757))
+* **puppeteer:** code cleanup for testing interface ([15b4c34](https://github.com/webex/sdk-component-adapter/commit/15b4c343aeaf56f56ba773aa20243e3d78b21bdd))
+
 # [1.92.0](https://github.com/webex/sdk-component-adapter/compare/v1.91.3...v1.92.0) (2021-11-24)
 
 
