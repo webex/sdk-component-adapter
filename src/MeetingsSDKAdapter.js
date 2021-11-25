@@ -634,6 +634,30 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Returns the status of the specified local media (audio or video) in the form of an object
+   * with the following mutually exclusive boolean properties:
+   * - `unmuted` - the media is unmuted
+   * - `muted` - the media is muted
+   * - `muting` - the media is currently being muted
+   * - `unmuting` - the media is currently being unmuted
+   * - `disabled` - the media is disabled (there is no available media device)
+   *
+   * @param {object} localMedia  The local media object from the meeting
+   * @param {MediaStream|null} disabledLocalMedia  The disabled media stream
+   * @returns {{muting: boolean}|{unmuting: boolean}|{unmuted: boolean}|{muted: boolean}|{disabled: boolean}} The local media state
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getLocalMediaState(localMedia, disabledLocalMedia) {
+    return (
+      (localMedia.muting === true && {muting: true})
+      || (localMedia.muting === false && {unmuting: true})
+      || (localMedia.stream && {unmuted: true})
+      || (disabledLocalMedia && {muted: true})
+      || {disabled: true}
+    );
+  }
+
+  /**
    * Attempts to mute the microphone of the given meeting ID.
    * If the microphone is successfully muted, an audio mute event is dispatched.
    *
@@ -642,14 +666,36 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async handleLocalAudio(ID) {
     logger.debug('MEETING', ID, 'handleLocalAudio()', ['called with', {ID}]);
+
+    let state; // local audio state
+
+    // sanity checks and "(un)muting in-progress" state
+    await this.updateMeeting(ID, (meeting) => {
+      let updates;
+
+      state = this.getLocalMediaState(meeting.localAudio, meeting.disabledLocalAudio);
+
+      if (state.disabled) {
+        throw new Error('Can\'t mute/unmute disabled audio');
+      } else if (state.muting) {
+        throw new Error('Already muting audio');
+      } else if (state.unmuting) {
+        throw new Error('Already unmuting audio');
+      } else if (state.unmuted) {
+        updates = {localAudio: {muting: true}};
+      } else if (state.muted) {
+        updates = {localAudio: {muting: false}};
+      }
+
+      return updates;
+    });
+
     try {
       await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
         const isInSession = !!meeting.remoteAudio;
-        const audioDisabled = !!this.meetings[ID].disabledLocalAudio;
-        const audioEnabled = !!meeting.localAudio.stream;
         let updates;
 
-        if (audioEnabled) {
+        if (state.unmuted) {
           // Mute the audio only if there is an active meeting
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalAudio()', 'calling sdkMeeting.muteAudio()');
@@ -662,9 +708,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             disabledLocalAudio: meeting.localAudio.stream,
             localAudio: {
               stream: null,
+              muting: undefined,
             },
           };
-        } else if (audioDisabled) {
+        } else if (state.muted) {
           // Unmute the audio only if there is an active meeting
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalAudio()', 'calling sdkMeeting.unmuteAudio()');
@@ -677,6 +724,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
             disabledLocalAudio: null,
             localAudio: {
               stream: meeting.disabledLocalAudio,
+              muting: undefined,
             },
           };
         }
@@ -687,6 +735,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       });
     } catch (error) {
       logger.error('MEETING', ID, 'handleLocalAudio()', 'Unable to update local audio settings', error);
+      this.updateMeeting(ID, () => ({localAudio: {muting: undefined}}));
     }
   }
 
@@ -699,14 +748,36 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async handleLocalVideo(ID) {
     logger.debug('MEETING', ID, 'handleLocalVideo()', ['called with', {ID}]);
+
+    let state; // local video state
+
+    // sanity checks and "(un)muting in-progress" state
+    await this.updateMeeting(ID, (meeting) => {
+      let updates;
+
+      state = this.getLocalMediaState(meeting.localVideo, meeting.disabledLocalVideo);
+
+      if (state.disabled) {
+        throw new Error('Can\'t mute/unmute disabled video');
+      } else if (state.muting) {
+        throw new Error('Already muting video');
+      } else if (state.unmuting) {
+        throw new Error('Already unmuting video');
+      } else if (state.unmuted) {
+        updates = {localVideo: {muting: true}};
+      } else if (state.muted) {
+        updates = {localVideo: {muting: false}};
+      }
+
+      return updates;
+    });
+
     try {
       await this.updateMeeting(ID, async (meeting, sdkMeeting) => {
         const isInSession = !!meeting.remoteVideo;
-        const videoEnabled = !!meeting.localVideo.stream;
-        const videoDisabled = !!meeting.disabledLocalVideo;
         let updates;
 
-        if (videoEnabled) {
+        if (state.unmuted) {
           // Mute the video only if there is an active meeting
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalVideo()', 'calling sdkMeeting.muteVideo()');
@@ -716,10 +787,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
           // Store the current local video stream to avoid an extra request call
           updates = {
-            localVideo: {stream: null},
             disabledLocalVideo: meeting.localVideo.stream,
+            localVideo: {
+              stream: null,
+              muting: undefined,
+            },
           };
-        } else if (videoDisabled) {
+        } else if (state.muted) {
           // Unmute the video only if there is an active meeting
           if (isInSession) {
             logger.debug('MEETING', ID, 'handleLocalVideo()', 'calling sdkMeeting.unmuteVideo()');
@@ -729,8 +803,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
           // Retrieve the stored local video stream
           updates = {
-            localVideo: {stream: meeting.disabledLocalVideo},
             disabledLocalVideo: null,
+            localVideo: {
+              stream: meeting.disabledLocalVideo,
+              muting: undefined,
+            },
           };
         }
 
@@ -740,6 +817,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       });
     } catch (error) {
       logger.error('MEETING', ID, 'handleLocalVideo()', 'Unable to update local video settings', error);
+      this.updateMeeting(ID, () => ({localVideo: {muting: undefined}}));
     }
   }
 
@@ -1058,15 +1136,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     if (!(ID in this.getMeetingObservables)) {
       const sdkMeeting = this.fetchMeeting(ID);
       const getMeeting$ = Observable.create((observer) => {
-        if (this.meetings[ID]) {
+        if (sdkMeeting && this.meetings[ID]) {
           logger.debug('MEETING', ID, 'getMeeting()', ['initial meeting object', this.meetings[ID]]);
           observer.next(this.meetings[ID]);
+          observer.complete();
         } else {
           logger.error('MEETING', ID, 'getMeeting()', `Could not find meeting with ID "${ID}"`);
           observer.error(new Error(`Could not find meeting with ID "${ID}"`));
         }
-
-        observer.complete();
       });
 
       const meetingUpdateEvent$ = fromEvent(sdkMeeting, EVENT_MEETING_UPDATED).pipe(
