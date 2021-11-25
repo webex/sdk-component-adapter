@@ -521,13 +521,13 @@ describe('Meetings SDK Adapter', () => {
         );
       });
 
-      test('emits a meeting updated event', async () => {
+      test('emits 2 meeting updated events', async () => {
         await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
-        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
-        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
-          localAudio: {stream: null},
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(2);
+        expect(mockSDKMeeting.emit.mock.calls[1][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[1][1]).toMatchObject({
+          localAudio: {stream: null, muting: undefined},
           disabledLocalAudio: mockSDKMediaStreams.localAudio,
         });
       });
@@ -583,14 +583,15 @@ describe('Meetings SDK Adapter', () => {
         expect(meetingsSDKAdapter.meetings[meetingID].disabledLocalAudio).toBeNull();
       });
 
-      test('emits a meeting updated event', async () => {
+      test('emits 2 meeting updated events', async () => {
         await meetingsSDKAdapter.handleLocalAudio(meetingID);
 
-        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
-        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
-        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(2);
+        expect(mockSDKMeeting.emit.mock.calls[1][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[1][1]).toMatchObject({
           localAudio: {
             stream: mockSDKMediaStreams.localAudio,
+            muting: undefined,
           },
         });
       });
@@ -649,13 +650,13 @@ describe('Meetings SDK Adapter', () => {
         );
       });
 
-      test('emits a meeting updated event', async () => {
+      test('emits 2 meeting updated events', async () => {
         await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
-        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
-        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
-          localVideo: {stream: null},
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(2);
+        expect(mockSDKMeeting.emit.mock.calls[1][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[1][1]).toMatchObject({
+          localVideo: {stream: null, muting: undefined},
           disabledLocalVideo: mockSDKMediaStreams.localVideo,
         });
       });
@@ -711,14 +712,15 @@ describe('Meetings SDK Adapter', () => {
         expect(meetingsSDKAdapter.meetings[meetingID].disabledLocalVideo).toBeNull();
       });
 
-      test('emits a meeting updated event', async () => {
+      test('emits 2 meeting updated events', async () => {
         await meetingsSDKAdapter.handleLocalVideo(meetingID);
 
-        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
-        expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
-        expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({
+        expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(2);
+        expect(mockSDKMeeting.emit.mock.calls[1][0]).toBe('adapter:meeting:updated');
+        expect(mockSDKMeeting.emit.mock.calls[1][1]).toMatchObject({
           localVideo: {
             stream: mockSDKMediaStreams.localVideo,
+            muting: undefined,
           },
         });
       });

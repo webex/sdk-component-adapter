@@ -33,35 +33,55 @@ export default class AudioControl extends MeetingControl {
    */
   display(meetingID) {
     logger.debug('MEETING', meetingID, 'AudioControl::display()', ['called with', {meetingID}]);
-    const muted = {
+
+    const common = {
       ID: this.ID,
       type: 'BUTTON',
-      icon: 'microphone-muted',
-      tooltip: 'Unmute audio',
-      state: MeetingControlState.ACTIVE,
-      text: 'Unmute',
     };
-    const unmuted = {
-      ID: this.ID,
-      type: 'BUTTON',
-      icon: 'microphone',
-      tooltip: 'Mute audio',
-      state: MeetingControlState.INACTIVE,
-      text: 'Mute',
-    };
-    const disabled = {
-      ID: this.ID,
-      type: 'BUTTON',
-      icon: 'microphone-muted',
-      state: MeetingControlState.DISABLED,
-      text: 'No microphone',
+
+    const STATES = {
+      muted: {
+        icon: 'microphone-muted',
+        tooltip: 'Unmute audio',
+        state: MeetingControlState.ACTIVE,
+        text: 'Unmute',
+      },
+      unmuted: {
+        icon: 'microphone',
+        tooltip: 'Mute audio',
+        state: MeetingControlState.INACTIVE,
+        text: 'Mute',
+      },
+      muting: {
+        icon: 'microphone',
+        tooltip: 'Muting audio',
+        state: MeetingControlState.DISABLED,
+        text: 'Muting...',
+      },
+      unmuting: {
+        icon: 'microphone-muted',
+        tooltip: 'Unmuting audio',
+        state: MeetingControlState.DISABLED,
+        text: 'Unmuting...',
+      },
+      noMicrophone: {
+        icon: 'microphone-muted',
+        tooltip: 'No microphone available',
+        state: MeetingControlState.DISABLED,
+        text: 'No microphone',
+      },
     };
 
     return this.adapter.getMeeting(meetingID).pipe(
-      map(({localAudio: {stream}, disabledLocalAudio}) => (
-        (stream && unmuted) || (disabledLocalAudio && muted) || disabled
+      map(({localAudio: {stream, muting}, disabledLocalAudio}) => (
+        (muting === true && STATES.muting)
+          || (muting === false && STATES.unmuting)
+          || (stream && STATES.unmuted)
+          || (disabledLocalAudio && STATES.muted)
+          || STATES.noMicrophone
       )),
       distinctUntilChanged(),
+      map((state) => ({...common, ...state})),
       tap((display) => logger.debug('MEETING', meetingID, 'AudioControl::display()', ['emitting', display])),
     );
   }

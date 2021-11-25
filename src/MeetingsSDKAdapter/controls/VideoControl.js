@@ -31,35 +31,55 @@ export default class VideoControl extends MeetingControl {
    */
   display(meetingID) {
     logger.debug('MEETING', meetingID, 'VideoControl::display()', ['called with', {meetingID}]);
-    const muted = {
+
+    const common = {
       ID: this.ID,
       type: 'BUTTON',
-      icon: 'camera-muted',
-      tooltip: 'Start video',
-      state: MeetingControlState.ACTIVE,
-      text: 'Start video',
     };
-    const unmuted = {
-      ID: this.ID,
-      type: 'BUTTON',
-      icon: 'camera',
-      tooltip: 'Stop video',
-      state: MeetingControlState.INACTIVE,
-      text: 'Stop video',
-    };
-    const disabled = {
-      ID: this.ID,
-      type: 'BUTTON',
-      icon: 'camera-muted',
-      state: MeetingControlState.DISABLED,
-      text: 'No camera',
+
+    const STATES = {
+      muted: {
+        icon: 'camera-muted',
+        tooltip: 'Start video',
+        state: MeetingControlState.ACTIVE,
+        text: 'Start video',
+      },
+      unmuted: {
+        icon: 'camera',
+        tooltip: 'Stop video',
+        state: MeetingControlState.INACTIVE,
+        text: 'Stop video',
+      },
+      muting: {
+        icon: 'camera',
+        tooltip: 'Stopping video',
+        state: MeetingControlState.DISABLED,
+        text: 'Stopping...',
+      },
+      unmuting: {
+        icon: 'camera-muted',
+        tooltip: 'Starting video',
+        state: MeetingControlState.DISABLED,
+        text: 'Starting...',
+      },
+      noCamera: {
+        icon: 'camera-muted',
+        tooltip: 'No camera available',
+        state: MeetingControlState.DISABLED,
+        text: 'No camera',
+      },
     };
 
     return this.adapter.getMeeting(meetingID).pipe(
-      map(({localVideo: {stream}, disabledLocalVideo}) => (
-        (stream && unmuted) || (disabledLocalVideo && muted) || disabled
+      map(({localVideo: {stream, muting}, disabledLocalVideo}) => (
+        (muting === true && STATES.muting)
+        || (muting === false && STATES.unmuting)
+        || (stream && STATES.unmuted)
+        || (disabledLocalVideo && STATES.muted)
+        || STATES.noCamera
       )),
       distinctUntilChanged(),
+      map((state) => ({...common, ...state})),
       tap((display) => logger.debug('MEETING', meetingID, 'VideoControl::display()', ['emitting', display])),
     );
   }
