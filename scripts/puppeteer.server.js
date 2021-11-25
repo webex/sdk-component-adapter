@@ -2,8 +2,8 @@
 import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
-import WebexSDKAdapter from '../src/WebexSDKAdapter';
 import {last, tap, first} from 'rxjs/operators';
+import WebexSDKAdapter from '../src/WebexSDKAdapter';
 
 let MEETING_ID = null;
 let webexSDKAdapter;
@@ -41,14 +41,18 @@ function handleRoster() {
 }
 
 function setSelectOptions(select, options) {
-  options.forEach((option, key)  => { select[key] = new Option(option.label, option.value); });
+  options.forEach((option) => {
+    select.add(new Option(option.label, option.value));
+  });
 }
 
 function handleCameraSelect() {
   const switchCameraSelect = document.getElementById('switch-camera');
+
   webexSDKAdapter.meetingsAdapter.meetingControls['switch-camera']
     .display(MEETING_ID).pipe(
-      first(display => Array.isArray(display.options)))
+      first((display) => Array.isArray(display.options)),
+    )
     .subscribe((display) => {
       setSelectOptions(switchCameraSelect, display.options);
     });
@@ -56,9 +60,11 @@ function handleCameraSelect() {
 
 function handleMicrophoneSelect() {
   const switchMicrophoneSelect = document.getElementById('switch-microphone');
+
   webexSDKAdapter.meetingsAdapter.meetingControls['switch-microphone']
     .display(MEETING_ID).pipe(
-      first(display => Array.isArray(display.options)))
+      first((display) => Array.isArray(display.options)),
+    )
     .subscribe((display) => {
       setSelectOptions(switchMicrophoneSelect, display.options);
     });
@@ -66,18 +72,21 @@ function handleMicrophoneSelect() {
 
 function handleSpeakerSelect() {
   const switchSpeakerSelect = document.getElementById('switch-speaker');
+
   webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].display(MEETING_ID).pipe(
-    first(display => Array.isArray(display.options))).subscribe((display) => {
+    first((display) => Array.isArray(display.options)),
+  ).subscribe((display) => {
     setSelectOptions(switchSpeakerSelect, display.options);
   });
 }
 
 function handleSettings() {
-  webexSDKAdapter.meetingsAdapter.meetingControls['settings'].display(MEETING_ID).subscribe((display) => {
-    const settings = document.getElementById('settings');
+  webexSDKAdapter.meetingsAdapter.meetingControls.settings
+    .display(MEETING_ID).subscribe((display) => {
+      const settings = document.getElementById('settings');
 
-    settings.innerText = display.tooltip;
-  });
+      settings.innerText = display.tooltip;
+    });
 }
 
 function getMeeting() {
@@ -88,8 +97,8 @@ function getMeeting() {
       document.getElementById('meeting-state').value = meeting.state;
       document.getElementById('remote-audio').srcObject = meeting.remoteAudio;
       document.getElementById('remote-video').srcObject = meeting.remoteVideo;
-      document.getElementById('local-audio').srcObject = meeting.localAudio.stream;
-      document.getElementById('local-video').srcObject = meeting.localVideo.stream;
+      document.getElementById('local-audio').srcObject = meeting.settings.preview.audio || meeting.localAudio.stream;
+      document.getElementById('local-video').srcObject = meeting.settings.preview.video || meeting.localVideo.stream;
       document.getElementById('local-share').srcObject = meeting.localShare.stream;
       document.getElementById('remote-share').srcObject = meeting.remoteShare;
       document.getElementById('meeting-title').innerText = meeting.title;
@@ -97,7 +106,7 @@ function getMeeting() {
     (error) => {
       console.error('Get Meeting error: ', error);
     },
-    () => console.log(`Meeting "${MEETING_ID}" has ended.`)
+    () => console.log(`Meeting "${MEETING_ID}" has ended.`),
   );
 }
 
@@ -128,18 +137,20 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
   event.preventDefault();
 
   const destination = document.getElementById('destination').value;
+  const password = document.getElementById('password').value || undefined;
+  const hostKey = document.getElementById('host-key').value || undefined;
 
   try {
     switch (event.target.id) {
       case 'create-meeting':
         webexSDKAdapter.meetingsAdapter.createMeeting(destination).pipe(
-          tap(meeting => console.log('Creating meeting:', meeting)),
-          tap((meeting) => MEETING_ID = meeting.ID),
+          tap((meeting) => console.log('Creating meeting:', meeting)),
+          tap((meeting) => { MEETING_ID = meeting.ID; }),
           tap((meeting) => {
             document.getElementById('proceed-without-camera').disabled = !meeting.localVideo.ignoreMediaAccessPrompt;
             document.getElementById('proceed-without-microphone').disabled = !meeting.localAudio.ignoreMediaAccessPrompt;
           }),
-          last()
+          last(),
         ).subscribe(() => {
           getMeeting();
           handleAudio();
@@ -153,12 +164,12 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
         });
         break;
       case 'join-meeting':
-        const password = document.getElementById('password').value || undefined;
-        const hostKey = document.getElementById('host-key').value || undefined;
         await webexSDKAdapter.meetingsAdapter.joinMeeting(MEETING_ID, {password, hostKey});
         break;
       case 'leave-meeting':
         await webexSDKAdapter.meetingsAdapter.meetingControls['leave-meeting'].action(MEETING_ID);
+        break;
+      default:
         break;
     }
   } catch (error) {
@@ -184,14 +195,16 @@ document.getElementById('actions').addEventListener('click', async (event) => {
         await webexSDKAdapter.meetingsAdapter.meetingControls['member-roster'].action(MEETING_ID);
         break;
       case 'settings':
-        await webexSDKAdapter.meetingsAdapter.meetingControls['settings'].action(MEETING_ID);
+        await webexSDKAdapter.meetingsAdapter.meetingControls.settings.action(MEETING_ID);
         break;
-      case 'proceed-without-camera': 
+      case 'proceed-without-camera':
         await webexSDKAdapter.meetingsAdapter.ignoreVideoAccessPrompt(MEETING_ID);
         break;
-      case 'proceed-without-microphone': 
+      case 'proceed-without-microphone':
         await webexSDKAdapter.meetingsAdapter.ignoreAudioAccessPrompt(MEETING_ID);
-        break
+        break;
+      default:
+        break;
     }
   } catch (error) {
     console.error('Unable to perform an action:', error);
@@ -202,6 +215,7 @@ document.getElementById('switch-camera').addEventListener('change', async () => 
   try {
     const switchCameraSelect = document.getElementById('switch-camera');
     const cameraID = switchCameraSelect.value;
+
     await webexSDKAdapter.meetingsAdapter.meetingControls['switch-camera'].action(MEETING_ID, cameraID);
   } catch (error) {
     console.error('Unable to switch camera:', error);
@@ -212,6 +226,7 @@ document.getElementById('switch-microphone').addEventListener('change', async ()
   try {
     const switchMicrophoneSelect = document.getElementById('switch-microphone');
     const microphoneID = switchMicrophoneSelect.value;
+
     await webexSDKAdapter.meetingsAdapter.meetingControls['switch-microphone'].action(MEETING_ID, microphoneID);
   } catch (error) {
     console.error('Unable to switch microphone:', error);
@@ -222,10 +237,11 @@ document.getElementById('switch-speaker').addEventListener('change', async () =>
   try {
     const switchSpeakerSelect = document.getElementById('switch-speaker');
     const speakerID = switchSpeakerSelect.value;
-    const nodeAudio = document.getElementById('remote-audio');
+    const audioNode = document.getElementById('remote-audio');
+
     await webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].action(MEETING_ID, speakerID);
-    if (nodeAudio?.setSinkId) {
-      nodeAudio.setSinkId(speakerID);
+    if (audioNode.setSinkId) {
+      audioNode.setSinkId(speakerID);
     }
   } catch (error) {
     console.log('Unable to switch speaker:', error);
