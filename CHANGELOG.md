@@ -1,3 +1,10 @@
+# [1.93.0](https://github.com/webex/sdk-component-adapter/compare/v1.92.1...v1.93.0) (2021-11-26)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add muting/unmuting intermediary states ([09e635a](https://github.com/webex/sdk-component-adapter/commit/09e635a5d9dee9d55ba74f30752f5848a4d75954))
+
 ## [1.92.1](https://github.com/webex/sdk-component-adapter/compare/v1.92.0...v1.92.1) (2021-11-25)
 
 
