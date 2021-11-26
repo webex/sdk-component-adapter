@@ -8,35 +8,13 @@ import WebexSDKAdapter from '../src/WebexSDKAdapter';
 let MEETING_ID = null;
 let webexSDKAdapter;
 
-function handleAudio() {
-  webexSDKAdapter.meetingsAdapter.meetingControls['mute-audio'].display(MEETING_ID).subscribe((data) => {
-    const muteAudio = document.getElementById('mute-audio');
+function setupControlButton(name) {
+  webexSDKAdapter.meetingsAdapter.meetingControls[name].display(MEETING_ID).subscribe((data) => {
+    const button = document.getElementById(name);
 
-    muteAudio.innerHTML = data.tooltip;
-  });
-}
-
-function handleVideo() {
-  webexSDKAdapter.meetingsAdapter.meetingControls['mute-video'].display(MEETING_ID).subscribe((data) => {
-    const muteVideo = document.getElementById('mute-video');
-
-    muteVideo.innerHTML = data.tooltip;
-  });
-}
-
-function handleShare() {
-  webexSDKAdapter.meetingsAdapter.meetingControls['share-screen'].display(MEETING_ID).subscribe((data) => {
-    const startShare = document.getElementById('share-screen');
-
-    startShare.innerHTML = data.tooltip;
-  });
-}
-
-function handleRoster() {
-  webexSDKAdapter.meetingsAdapter.meetingControls['member-roster'].display(MEETING_ID).subscribe((display) => {
-    const memberRoster = document.getElementById('member-roster');
-
-    memberRoster.innerText = display.tooltip;
+    button.innerHTML = data.text;
+    button.title = data.tooltip;
+    button.disabled = data.state === 'disabled';
   });
 }
 
@@ -80,35 +58,39 @@ function handleSpeakerSelect() {
   });
 }
 
-function handleSettings() {
-  webexSDKAdapter.meetingsAdapter.meetingControls.settings
-    .display(MEETING_ID).subscribe((display) => {
-      const settings = document.getElementById('settings');
+function setMediaStream(elemId, mediaStream) {
+  const elem = document.getElementById(elemId);
 
-      settings.innerText = display.tooltip;
-    });
+  if (elem.srcObject !== mediaStream) {
+    elem.srcObject = mediaStream;
+  }
 }
 
 function getMeeting() {
   webexSDKAdapter.meetingsAdapter.getMeeting(MEETING_ID).subscribe(
     (meeting) => {
-      console.log('Received meeting update: ', meeting);
+      console.log('Received meeting update: ', JSON.stringify(meeting, null, 4));
 
-      document.getElementById('meeting-state').value = meeting.state;
-      document.getElementById('remote-audio').srcObject = meeting.remoteAudio;
-      document.getElementById('remote-video').srcObject = meeting.remoteVideo;
-      document.getElementById('local-audio').srcObject = meeting.settings.preview.audio || meeting.localAudio.stream;
-      document.getElementById('local-video').srcObject = meeting.settings.preview.video || meeting.localVideo.stream;
-      document.getElementById('local-share').srcObject = meeting.localShare.stream;
-      document.getElementById('remote-share').srcObject = meeting.remoteShare;
       document.getElementById('meeting-title').innerText = meeting.title;
+      document.getElementById('meeting-state').value = meeting.state;
+
+      setMediaStream('remote-audio', meeting.remoteAudio);
+      setMediaStream('remote-video', meeting.remoteVideo);
+      setMediaStream('remote-share', meeting.remoteShare);
+
+      setMediaStream('local-audio', meeting.settings.preview.audio || meeting.localAudio.stream);
+      setMediaStream('local-video', meeting.settings.preview.video || meeting.localVideo.stream);
+      setMediaStream('local-share', meeting.localShare.stream);
     },
     (error) => {
-      console.error('Get Meeting error: ', error);
+      console.error('getMeeting error:', error);
     },
     () => console.log(`Meeting "${MEETING_ID}" has ended.`),
   );
 }
+
+document.getElementById('credentials').value = localStorage.getItem('access-token') || '';
+document.getElementById('destination').value = localStorage.getItem('meeting-destination') || '';
 
 document.getElementById('connector').addEventListener('click', async (event) => {
   event.preventDefault();
@@ -117,19 +99,23 @@ document.getElementById('connector').addEventListener('click', async (event) => 
 
   try {
     if (event.target.id === 'connect') {
+      status.innerText = 'Connecting... 🕑';
+      localStorage.setItem('access-token', credentials);
+
       const webex = new Webex({
         credentials,
       });
 
       webexSDKAdapter = new WebexSDKAdapter(webex);
       await webexSDKAdapter.connect();
-      status.innerHTML = 'Connected ✅';
+      status.innerText = 'Connected ✅';
     } else if (event.target.id === 'disconnect') {
       await webexSDKAdapter.disconnect();
-      status.innerHTML = 'Disconnected ❌';
+      status.innerText = 'Disconnected ❌';
     }
   } catch (error) {
     console.error('Unable to connect/disconnect:', error);
+    status.innerText = error;
   }
 });
 
@@ -143,6 +129,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
   try {
     switch (event.target.id) {
       case 'create-meeting':
+        localStorage.setItem('meeting-destination', destination);
         webexSDKAdapter.meetingsAdapter.createMeeting(destination).pipe(
           tap((meeting) => console.log('Creating meeting:', meeting)),
           tap((meeting) => { MEETING_ID = meeting.ID; }),
@@ -153,11 +140,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           last(),
         ).subscribe(() => {
           getMeeting();
-          handleAudio();
-          handleVideo();
-          handleShare();
-          handleRoster();
-          handleSettings();
+          ['mute-audio', 'mute-video', 'share-screen', 'member-roster', 'settings'].forEach(setupControlButton);
           handleCameraSelect();
           handleMicrophoneSelect();
           handleSpeakerSelect();
