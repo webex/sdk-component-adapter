@@ -1,3 +1,10 @@
+# [1.94.0](https://github.com/webex/sdk-component-adapter/compare/v1.93.0...v1.94.0) (2021-11-26)
+
+
+### Features
+
+* **puppeteer:** testing interface improvements: ([e9fde42](https://github.com/webex/sdk-component-adapter/commit/e9fde42983585f04170b6b425fa097c4e947c0fe))
+
 # [1.93.0](https://github.com/webex/sdk-component-adapter/compare/v1.92.1...v1.93.0) (2021-11-26)
 
 
