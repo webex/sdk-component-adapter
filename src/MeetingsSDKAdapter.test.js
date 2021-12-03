@@ -49,39 +49,26 @@ describe('Meetings SDK Adapter', () => {
       });
     });
 
-    test('throws errors if the local media is not retrieved successfully', (done) => {
+    test('emits permission=ERROR if the local media is not retrieved successfully', (done) => {
       logger.error = jest.fn();
-      const mockLogger = logger.error;
+      const sdkError = {error: {}};
 
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
       meetingsSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe(
-        () => {
-          expect(mockLogger).toHaveBeenCalledWith(
-            'MEETING',
-            'meetingID',
-            'getStream()',
-            ['Unable to retrieve local media stream', {mediaDirection: expect.anything(), audioVideo: undefined}],
-            undefined,
-          );
+        (localMedia) => {
+          expect(localMedia).toMatchObject({
+            localAudio: {
+              stream: null,
+              permission: 'ERROR',
+            },
+            localVideo: {
+              stream: null,
+              permission: 'ERROR',
+            },
+          });
           done();
         },
       );
-    });
-
-    test('nullifies local Audio if the local media is not retrieved successfully', (done) => {
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
-      meetingsSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe((localMedia) => {
-        expect(localMedia.localAudio.stream).toBeNull();
-        done();
-      });
-    });
-
-    test('nullifies local Video if the local media is not retrieved successfully', (done) => {
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
-      meetingsSDKAdapter.getLocalMedia(meetingID).subscribe((localMedia) => {
-        expect(localMedia.localVideo.stream).toBeNull();
-        done();
-      });
     });
   });
 
@@ -95,8 +82,10 @@ describe('Meetings SDK Adapter', () => {
     });
 
     test('logs errors and returns a null stream and error status if stream cannot be retrieved', (done) => {
+      const sdkError = {error: {}};
+
       logger.error = jest.fn();
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
       meetingsSDKAdapter.getStream(meetingID, {sendAudio: true}).pipe(last()).subscribe(
         ({permission, stream}) => {
           expect(stream).toBeNull();
@@ -107,7 +96,7 @@ describe('Meetings SDK Adapter', () => {
             'getStream()',
             ['Unable to retrieve local media stream',
               {mediaDirection: {sendAudio: true}, audioVideo: undefined}],
-            undefined,
+            sdkError.error,
           );
           done();
         },
@@ -120,8 +109,9 @@ describe('Meetings SDK Adapter', () => {
         'DISMISSED',
         'ERROR',
       ];
+      const sdkError = {error: {}};
 
-      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject());
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
       logger.error = jest.fn();
       meetingsSDKAdapter.getStream(meetingID, {sendVideo: true}).pipe(
         last(),
