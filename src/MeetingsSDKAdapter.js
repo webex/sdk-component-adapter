@@ -261,14 +261,23 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
         if (!ignored) {
           let perm;
+          const ee = error.error;
 
-          logger.error('MEETING', ID, 'getStream()', ['Unable to retrieve local media stream', {mediaDirection, audioVideo}], error);
+          logger.error('MEETING', ID, 'getStream()', ['Unable to retrieve local media stream', {mediaDirection, audioVideo}], ee);
 
-          if (error instanceof DOMException && error.name === 'NotAllowedError') {
-            if (error.message === 'Permission dismissed') {
-              perm = 'DISMISSED';
+          if (ee instanceof DOMException) {
+            if (ee.name === 'NotAllowedError') {
+              if (ee.message === 'Permission dismissed') {
+                perm = 'DISMISSED';
+              } else if (ee.message === 'Permission denied by system') {
+                perm = 'DISABLED';
+              } else {
+                perm = 'DENIED';
+              }
+            } else if (ee.name === 'NotReadableError') {
+              perm = 'DISABLED';
             } else {
-              perm = 'DENIED';
+              perm = 'ERROR';
             }
           } else {
             perm = 'ERROR';
