@@ -1,3 +1,10 @@
+## [1.94.1](https://github.com/webex/sdk-component-adapter/compare/v1.94.0...v1.94.1) (2021-12-06)
+
+
+### Bug Fixes
+
+* **MembershipsSdkAdapter:** treat sdk members with isModerator set to true as meeting hosts ([493a261](https://github.com/webex/sdk-component-adapter/commit/493a2616b73a41b8a15899d7701d30cd27a781f8))
+
 # [1.94.0](https://github.com/webex/sdk-component-adapter/compare/v1.93.0...v1.94.0) (2021-11-26)
 
 
