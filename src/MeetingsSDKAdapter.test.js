@@ -993,6 +993,28 @@ describe('Meetings SDK Adapter', () => {
     });
   });
 
+  describe('getLayoutTypes()', () => {
+    test('returns an array containing the available layout types', () => {
+      const availableLayouts = meetingsSDKAdapter.getLayoutTypes();
+
+      expect(availableLayouts.sort()).toEqual([
+        'ActivePresence',
+        'Equal',
+        'OnePlusN',
+        'Prominent',
+        'Single',
+      ]);
+    });
+  });
+
+  describe('changeLayout()', () => {
+    test('calls the SDK changeVideoLayout function with the provided layout type', async () => {
+      await meetingsSDKAdapter.changeLayout(meetingID, 'Equal');
+
+      expect(mockSDKMeeting.changeVideoLayout).toHaveBeenCalledWith('Equal');
+    });
+  });
+
   describe('clearPasswordRequiredFlag()', () => {
     test('clears the passwordRequired flag if set', async () => {
       meetingsSDKAdapter.meetings[meetingID].passwordRequired = true;

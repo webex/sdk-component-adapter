@@ -102,6 +102,7 @@ const mediaSettings = {
 
 const HYDRA_ID_TYPE_PEOPLE = 'PEOPLE';
 const HYDRA_ID_TYPE_ROOM = 'ROOM';
+const LAYOUT_TYPES = ['Single', 'Equal', 'ActivePresence', 'Prominent', 'OnePlusN'];
 
 const SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE = {
   IN_LOBBY: MeetingState.LOBBY,
@@ -1039,6 +1040,18 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
+   * Switches the layout control.
+   *
+   * @param {string} ID  Meeting ID
+   * @param {string} layoutType  Type of layout
+   */
+  async changeLayout(ID, layoutType) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    await sdkMeeting.changeVideoLayout(layoutType);
+  }
+
+  /**
    * Switches the speaker control.
    *
    * @param {string} ID  Meeting ID
@@ -1302,6 +1315,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   supportedControls() {
     return Object.keys(this.meetingControls);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getLayoutTypes() {
+    return LAYOUT_TYPES;
   }
 
   /**

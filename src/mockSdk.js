@@ -126,6 +126,7 @@ export const createMockSDKMeeting = () => ({
   unmuteVideo: jest.fn(() => Promise.resolve()),
   canUpdateMedia: jest.fn(() => true),
   updateShare: jest.fn(() => Promise.resolve()),
+  changeVideoLayout: jest.fn(() => Promise.resolve()),
 });
 
 export const mockSDKMembership = {
