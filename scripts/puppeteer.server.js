@@ -36,6 +36,16 @@ function handleCameraSelect() {
     });
 }
 
+function handleLayoutSelect() {
+  const switchLayoutSelect = document.getElementById('switch-layout');
+  const options = ['', ...webexSDKAdapter.meetingsAdapter.getLayoutTypes()].map((type) => ({
+    label: type,
+    value: type,
+  }));
+
+  setSelectOptions(switchLayoutSelect, options);
+}
+
 function handleMicrophoneSelect() {
   const switchMicrophoneSelect = document.getElementById('switch-microphone');
 
@@ -144,6 +154,7 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
           handleCameraSelect();
           handleMicrophoneSelect();
           handleSpeakerSelect();
+          handleLayoutSelect();
         });
         break;
       case 'join-meeting':
@@ -228,6 +239,17 @@ document.getElementById('switch-speaker').addEventListener('change', async () =>
     }
   } catch (error) {
     console.log('Unable to switch speaker:', error);
+  }
+});
+
+document.getElementById('switch-layout').addEventListener('change', async () => {
+  try {
+    const switchLayoutSelect = document.getElementById('switch-layout');
+    const layoutType = switchLayoutSelect.value;
+
+    await webexSDKAdapter.meetingsAdapter.changeLayout(MEETING_ID, layoutType);
+  } catch (error) {
+    console.error('Unable to switch layout:', error);
   }
 });
 
