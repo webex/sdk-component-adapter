@@ -2,7 +2,13 @@ import {
   defer,
   Observable,
 } from 'rxjs';
-import {distinctUntilChanged, map, tap} from 'rxjs/operators';
+import {
+  first,
+  concatMap,
+  distinctUntilChanged,
+  map,
+  tap,
+} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
 import {combineLatestImmediate} from '../../utils';
@@ -40,7 +46,9 @@ export default class SwitchMicrophoneControl extends MeetingControl {
       distinctUntilChanged(),
     );
 
-    const options$ = defer(() => this.adapter.getAvailableDevices(meetingID, 'audioinput')).pipe(
+    const options$ = this.adapter.getMeeting(meetingID).pipe(
+      first(),
+      concatMap(() => defer(() => this.adapter.getAvailableDevices(meetingID, 'audioinput'))),
       map((availableMicrophones) => availableMicrophones.map((microphone) => ({
         value: microphone.deviceId,
         label: microphone.label,
