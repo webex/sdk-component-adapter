@@ -1,3 +1,10 @@
+# [1.96.0](https://github.com/webex/sdk-component-adapter/compare/v1.95.0...v1.96.0) (2021-12-07)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** mapping layout types ([0cb1567](https://github.com/webex/sdk-component-adapter/commit/0cb156738da377043e43e436060ba78b2eb82142))
+
 # [1.95.0](https://github.com/webex/sdk-component-adapter/compare/v1.94.1...v1.95.0) (2021-12-07)
 
 
