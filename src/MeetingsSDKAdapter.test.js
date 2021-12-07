@@ -988,18 +988,18 @@ describe('Meetings SDK Adapter', () => {
       const availableLayouts = meetingsSDKAdapter.getLayoutTypes();
 
       expect(availableLayouts.sort()).toEqual([
-        'ActivePresence',
-        'Equal',
-        'OnePlusN',
+        'Focus',
+        'Grid',
+        'Overlay',
         'Prominent',
-        'Single',
+        'Stack',
       ]);
     });
   });
 
   describe('changeLayout()', () => {
     test('calls the SDK changeVideoLayout function with the provided layout type', async () => {
-      await meetingsSDKAdapter.changeLayout(meetingID, 'Equal');
+      await meetingsSDKAdapter.changeLayout(meetingID, 'Grid');
 
       expect(mockSDKMeeting.changeVideoLayout).toHaveBeenCalledWith('Equal');
     });
