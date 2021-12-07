@@ -102,7 +102,14 @@ const mediaSettings = {
 
 const HYDRA_ID_TYPE_PEOPLE = 'PEOPLE';
 const HYDRA_ID_TYPE_ROOM = 'ROOM';
-const LAYOUT_TYPES = ['Single', 'Equal', 'ActivePresence', 'Prominent', 'OnePlusN'];
+
+const LAYOUT_TYPES_MAP = {
+  Overlay: 'ActivePresence',
+  Grid: 'Equal',
+  Stack: 'Prominent',
+  Prominent: 'OnePlusN',
+  Focus: 'Single',
+};
 
 const SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE = {
   IN_LOBBY: MeetingState.LOBBY,
@@ -1051,13 +1058,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   /**
    * Switches the layout control.
    *
+   * @async
    * @param {string} ID  Meeting ID
    * @param {string} layoutType  Type of layout
+   * @returns {Promise}  Resolves when the layout has been changed
    */
   async changeLayout(ID, layoutType) {
     const sdkMeeting = this.fetchMeeting(ID);
 
-    await sdkMeeting.changeVideoLayout(layoutType);
+    await sdkMeeting.changeVideoLayout(LAYOUT_TYPES_MAP[layoutType]);
   }
 
   /**
@@ -1326,9 +1335,14 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     return Object.keys(this.meetingControls);
   }
 
+  /**
+   * Displays the available layout types.
+   *
+   * @returns {string[]} Array containing the layout types.
+   */
   // eslint-disable-next-line class-methods-use-this
   getLayoutTypes() {
-    return LAYOUT_TYPES;
+    return Object.keys(LAYOUT_TYPES_MAP);
   }
 
   /**
