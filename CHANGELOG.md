@@ -1,3 +1,11 @@
+# [1.95.0](https://github.com/webex/sdk-component-adapter/compare/v1.94.1...v1.95.0) (2021-12-07)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** add changeLayout function ([e690972](https://github.com/webex/sdk-component-adapter/commit/e690972084c0a62d2212a3c1a004cee92d034cfc))
+* **MeetingsSdkAdapter:** set media permissions according to received sdk media error ([c769bfa](https://github.com/webex/sdk-component-adapter/commit/c769bfab4f4205ecd09ea473f5b73a0f16b6f95c))
+
 ## [1.94.1](https://github.com/webex/sdk-component-adapter/compare/v1.94.0...v1.94.1) (2021-12-06)
 
 
