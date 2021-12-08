@@ -1,7 +1,4 @@
-import {
-  defer,
-  Observable,
-} from 'rxjs';
+import {Observable} from 'rxjs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
@@ -34,11 +31,13 @@ export default class SwitchCameraControl extends MeetingControl {
    */
   display(meetingID) {
     logger.debug('MEETING', meetingID, 'SwitchCameraControl::display()', ['called with', {meetingID}]);
+
     const cameraID$ = this.adapter.getMeeting(meetingID).pipe(
       map((meeting) => meeting.cameraID),
       distinctUntilChanged(),
     );
-    const options$ = defer(() => this.adapter.getAvailableDevices(meetingID, 'videoinput')).pipe(
+
+    const options$ = this.adapter.getAvailableDevices(meetingID, 'videoinput').pipe(
       map((availableCameras) => availableCameras.map((camera) => ({
         value: camera.deviceId,
         label: camera.label,

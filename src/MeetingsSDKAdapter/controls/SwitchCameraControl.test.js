@@ -3,9 +3,12 @@ import {meetingID, createTestMeetingsSDKAdapter} from '../testHelper';
 
 describe('Switch Camera Control', () => {
   let meetingsSDKAdapter;
+  let meeting;
 
   beforeEach(() => {
     meetingsSDKAdapter = createTestMeetingsSDKAdapter();
+    meeting = meetingsSDKAdapter.meetings[meetingID];
+    meeting.localVideo.permission = 'ALLOWED';
   });
 
   afterEach(() => {
