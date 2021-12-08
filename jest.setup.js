@@ -1,11 +1,12 @@
 import logger from './src/logger';
+import mockDevices from './src/mockDevices';
 
 // set the error level
 logger.setLevel('error');
 
 // Mock Web Media APIs
 
-global.MediaStream = jest.fn(function(tracksOrStream = []) {
+global.MediaStream = jest.fn(function MockMediaStream(tracksOrStream = []) {
   let tracks;
 
   if (tracksOrStream instanceof global.MediaStream) {
@@ -35,13 +36,19 @@ global.MediaStream = jest.fn(function(tracksOrStream = []) {
   });
 });
 
+global.navigator = {
+  mediaDevices: {
+    enumerateDevices: () => Promise.resolve(mockDevices),
+  },
+};
+
 expect.extend({
   /**
    * Custom jest matcher that checks that two media streams have the same tracks
    *
-   * @param {MediaStream} received
-   * @param {MediaStream} expected
-   * @returns {object}
+   * @param {MediaStream} received  The received media stream object
+   * @param {MediaStream} expected  The expected media stream object
+   * @returns {object} Match result
    */
   toMatchMediaStream(received, expected) {
     const options = {
@@ -50,7 +57,7 @@ expect.extend({
       promise: this.promise,
     };
 
-    const pass = this.equals(received.getTracks(), expected.getTracks());
+    const pass = this.equals(received && received.getTracks(), expected && expected.getTracks());
 
     const message = () => `${this.utils.matcherHint('toMatchMediaStream', undefined, undefined, options)}\n
 Expected: ${this.utils.printExpected(expected && expected.getTracks())}

@@ -3,9 +3,12 @@ import {meetingID, createTestMeetingsSDKAdapter} from '../testHelper';
 
 describe('Switch Microphone Control', () => {
   let meetingsSDKAdapter;
+  let meeting;
 
   beforeEach(() => {
     meetingsSDKAdapter = createTestMeetingsSDKAdapter();
+    meeting = meetingsSDKAdapter.meetings[meetingID];
+    meeting.localAudio.permission = 'ALLOWED';
   });
 
   afterEach(() => {

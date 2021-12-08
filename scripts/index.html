@@ -68,12 +68,23 @@
         <form id="devices">
           <fieldset>
             <legend>Media Devices</legend>
-            <label for="switch-camera">Choose preferred camera:</label>
-            <select id="switch-camera"></select>
-            <label for="switch-microphone">Choose preferred microphone:</label>
-            <select id="switch-microphone"></select>
-            <label for="switch-speaker">Choose preferred speaker:</label>
-            <select id="switch-speaker"></select>
+            <table>
+              <tr>
+                <td><label for="switch-camera">Camera:</label></td>
+                <td id="video-perm"></td>
+                <td><select id="switch-camera"></select></td>
+              </tr>
+              <tr>
+                <td><label for="switch-camera">Microphone:</label></td>
+                <td id="audio-perm"></td>
+                <td><select id="switch-microphone"></select></td>
+              </tr>
+              <tr>
+                <td><label for="switch-camera">Speaker:</label></td>
+                <td></td>
+                <td><select id="switch-speaker"></select></td>
+              </tr>
+            </table>
           </fieldset>
         </form>
         <form id="members">

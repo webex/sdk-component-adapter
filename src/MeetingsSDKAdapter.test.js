@@ -39,12 +39,12 @@ describe('Meetings SDK Adapter', () => {
 
   describe('getLocalMedia()', () => {
     test('returns local media in a proper shape', (done) => {
-      meetingsSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe((dataDisplay) => {
-        expect(dataDisplay.localAudio.stream).toMatchMediaStream(mockSDKMediaStreams.localAudio);
-        expect(dataDisplay.localVideo.stream).toMatchMediaStream(mockSDKMediaStreams.localVideo);
+      meetingsSDKAdapter.getLocalMedia(meetingID).pipe(last()).subscribe((localMedia) => {
+        expect(localMedia.localAudio.stream).toMatchMediaStream(mockSDKMediaStreams.localAudio);
+        expect(localMedia.localVideo.stream).toMatchMediaStream(mockSDKMediaStreams.localVideo);
 
-        expect(dataDisplay.localAudio.permission).toBe('ALLOWED');
-        expect(dataDisplay.localVideo.permission).toBe('ALLOWED');
+        expect(localMedia.localAudio.permission).toBe('ALLOWED');
+        expect(localMedia.localVideo.permission).toBe('ALLOWED');
         done();
       });
     });
@@ -94,8 +94,7 @@ describe('Meetings SDK Adapter', () => {
             'MEETING',
             'meetingID',
             'getStream()',
-            ['Unable to retrieve local media stream',
-              {mediaDirection: {sendAudio: true}, audioVideo: undefined}],
+            'Unable to retrieve local media stream',
             sdkError.error,
           );
           done();

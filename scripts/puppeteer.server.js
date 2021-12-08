@@ -2,7 +2,7 @@
 import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
-import {last, tap, first} from 'rxjs/operators';
+import {tap} from 'rxjs/operators';
 import WebexSDKAdapter from '../src/WebexSDKAdapter';
 
 let MEETING_ID = null;
@@ -18,21 +18,30 @@ function setupControlButton(name) {
   });
 }
 
-function setSelectOptions(select, options) {
-  options.forEach((option) => {
-    select.add(new Option(option.label, option.value));
-  });
+function setSelectOptions(select, options, noOptionsMessage) {
+  while (select.options.length) {
+    select.remove(0);
+  }
+  if (options === null) {
+    select.disabled = true;
+    select.add(new Option('loading...'));
+  } else if (options && !options.length && noOptionsMessage) {
+    select.disabled = true;
+    select.add(new Option(noOptionsMessage));
+  } else {
+    select.disabled = false;
+    options.forEach((option) => {
+      select.add(new Option(option.label, option.value));
+    });
+  }
 }
 
 function handleCameraSelect() {
   const switchCameraSelect = document.getElementById('switch-camera');
 
   webexSDKAdapter.meetingsAdapter.meetingControls['switch-camera']
-    .display(MEETING_ID).pipe(
-      first((display) => Array.isArray(display.options)),
-    )
-    .subscribe((display) => {
-      setSelectOptions(switchCameraSelect, display.options);
+    .display(MEETING_ID).subscribe((display) => {
+      setSelectOptions(switchCameraSelect, display.options, display.noOptionsMessage);
     });
 }
 
@@ -50,22 +59,18 @@ function handleMicrophoneSelect() {
   const switchMicrophoneSelect = document.getElementById('switch-microphone');
 
   webexSDKAdapter.meetingsAdapter.meetingControls['switch-microphone']
-    .display(MEETING_ID).pipe(
-      first((display) => Array.isArray(display.options)),
-    )
-    .subscribe((display) => {
-      setSelectOptions(switchMicrophoneSelect, display.options);
+    .display(MEETING_ID).subscribe((display) => {
+      setSelectOptions(switchMicrophoneSelect, display.options, display.noOptionsMessage);
     });
 }
 
 function handleSpeakerSelect() {
   const switchSpeakerSelect = document.getElementById('switch-speaker');
 
-  webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker'].display(MEETING_ID).pipe(
-    first((display) => Array.isArray(display.options)),
-  ).subscribe((display) => {
-    setSelectOptions(switchSpeakerSelect, display.options);
-  });
+  webexSDKAdapter.meetingsAdapter.meetingControls['switch-speaker']
+    .display(MEETING_ID).subscribe((display) => {
+      setSelectOptions(switchSpeakerSelect, display.options, display.noOptionsMessage);
+    });
 }
 
 function setMediaStream(elemId, mediaStream) {
@@ -83,6 +88,12 @@ function getMeeting() {
 
       document.getElementById('meeting-title').innerText = meeting.title;
       document.getElementById('meeting-state').value = meeting.state;
+
+      document.getElementById('proceed-without-camera').disabled = !meeting.localVideo.ignoreMediaAccessPrompt;
+      document.getElementById('proceed-without-microphone').disabled = !meeting.localAudio.ignoreMediaAccessPrompt;
+
+      document.getElementById('video-perm').innerText = `(${meeting.localVideo.permission})`;
+      document.getElementById('audio-perm').innerText = `(${meeting.localAudio.permission})`;
 
       setMediaStream('remote-audio', meeting.remoteAudio);
       setMediaStream('remote-video', meeting.remoteVideo);
@@ -140,21 +151,19 @@ document.getElementById('dialer').addEventListener('click', async (event) => {
     switch (event.target.id) {
       case 'create-meeting':
         localStorage.setItem('meeting-destination', destination);
+        MEETING_ID = null;
         webexSDKAdapter.meetingsAdapter.createMeeting(destination).pipe(
           tap((meeting) => console.log('Creating meeting:', meeting)),
-          tap((meeting) => { MEETING_ID = meeting.ID; }),
-          tap((meeting) => {
-            document.getElementById('proceed-without-camera').disabled = !meeting.localVideo.ignoreMediaAccessPrompt;
-            document.getElementById('proceed-without-microphone').disabled = !meeting.localAudio.ignoreMediaAccessPrompt;
-          }),
-          last(),
-        ).subscribe(() => {
-          getMeeting();
-          ['mute-audio', 'mute-video', 'share-screen', 'member-roster', 'settings'].forEach(setupControlButton);
-          handleCameraSelect();
-          handleMicrophoneSelect();
-          handleSpeakerSelect();
-          handleLayoutSelect();
+        ).subscribe((meeting) => {
+          if (!MEETING_ID) {
+            MEETING_ID = meeting.ID;
+            getMeeting();
+            ['mute-audio', 'mute-video', 'share-screen', 'member-roster', 'settings'].forEach(setupControlButton);
+            handleCameraSelect();
+            handleMicrophoneSelect();
+            handleSpeakerSelect();
+            handleLayoutSelect();
+          }
         });
         break;
       case 'join-meeting':

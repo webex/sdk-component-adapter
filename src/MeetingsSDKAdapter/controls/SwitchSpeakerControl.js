@@ -1,7 +1,4 @@
-import {
-  defer,
-  Observable,
-} from 'rxjs';
+import {Observable} from 'rxjs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
@@ -34,11 +31,13 @@ export default class SwitchSpeakerControl extends MeetingControl {
    */
   display(meetingID) {
     logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::display()', ['called with', {meetingID}]);
+
     const speakerID$ = this.adapter.getMeeting(meetingID).pipe(
       map((meeting) => meeting.speakerID),
       distinctUntilChanged(),
     );
-    const options$ = defer(() => this.adapter.getAvailableDevices(meetingID, 'audiooutput')).pipe(
+
+    const options$ = this.adapter.getAvailableDevices(meetingID, 'audiooutput').pipe(
       map((availableSpeakers) => availableSpeakers.map((speaker) => ({
         value: speaker.deviceId,
         label: speaker.label,

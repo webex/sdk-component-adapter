@@ -74,6 +74,7 @@
     "newline-after-var": "error",
     "newline-before-return": "error",
     "lines-around-directive": "error",
+    "operator-linebreak": "off",
     "no-useless-call": "error"
   },
   "overrides": [

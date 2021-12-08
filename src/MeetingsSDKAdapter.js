@@ -244,7 +244,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         }, 2000);
 
         const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
-        const availableDevices = await this.getAvailableDevices(ID);
+        const availableDevices = await navigator.mediaDevices.enumerateDevices();
         const [{label: deviceLabel}] = localStream.getTracks();
         const mediaDevice = availableDevices.find((device) => device.label === deviceLabel);
         const deviceId = mediaDevice && mediaDevice.deviceId;
@@ -271,7 +271,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           let perm;
           const ee = error.error;
 
-          logger.error('MEETING', ID, 'getStream()', ['Unable to retrieve local media stream', {mediaDirection, audioVideo}], ee);
+          logger.error('MEETING', ID, 'getStream()', 'Unable to retrieve local media stream', ee || error);
 
           if (ee instanceof DOMException) {
             if (ee.name === 'NotAllowedError') {
@@ -318,33 +318,42 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   }
 
   /**
-   * Returns available media devices.
+   * Emits available media devices.
+   * If the user did no grant access to media (browser and OS), the returned observable
+   * will emit an empty array.
    *
-   * @param {string} ID ID of the meeting
-   * @param {'videoinput'|'audioinput'|'audiooutput'} [type] String specifying the device type.
+   * @param {string} ID  Id of the meeting
+   * @param {'videoinput'|'audioinput'|'audiooutput'} type  String specifying the device type.
    * See {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDeviceInfo/kind|MDN}
-   * @returns {MediaDeviceInfo[]} Array containing media devices.
+   * @returns {Observable<MediaDeviceInfo[]>} Observable that emits arrays containing media devices.
    * @private
    */
-  // eslint-disable-next-line class-methods-use-this
-  async getAvailableDevices(ID, type) {
+  getAvailableDevices(ID, type) {
     logger.debug('MEETING', ID, 'getAvailableDevices()', ['called with', {ID, type}]);
-    let devices;
 
-    try {
-      const sdkMeeting = this.fetchMeeting(ID);
+    const getDevices = async () => {
+      let devices = [];
 
-      devices = await sdkMeeting.getDevices();
-      devices = devices.filter((device) => !type || (device.kind === type && device.deviceId));
-    } catch (error) {
-      logger.error('MEETING', ID, 'getAvailableDevices()', 'Unable to retrieve devices', error);
+      try {
+        devices = await this.fetchMeeting(ID).getDevices();
+        devices = devices.filter((device) => !type || (device.kind === type && device.deviceId));
+      } catch (error) {
+        logger.error('MEETING', ID, 'getAvailableDevices()', 'Unable to retrieve devices', error);
+      }
 
-      devices = [];
-    }
+      return devices;
+    };
 
-    logger.debug('MEETING', ID, 'getAvailabelDevices()', ['return', devices]);
-
-    return devices;
+    return this.getMeeting(ID).pipe(
+      map((meeting) => (
+        (type !== 'videoinput' && type !== 'audioinput') ||
+        (type === 'videoinput' && meeting.localVideo.permission === 'ALLOWED') ||
+        (type === 'audioinput' && meeting.localAudio.permission === 'ALLOWED')
+      )),
+      distinctUntilChanged(),
+      concatMap((allowed) => from(allowed ? getDevices() : [[]])),
+      tap((devices) => logger.debug('MEETING', ID, 'getAvailabelDevices()', ['emitting', devices])),
+    );
   }
 
   /**
