@@ -1,3 +1,10 @@
+# [1.97.0](https://github.com/webex/sdk-component-adapter/compare/v1.96.0...v1.97.0) (2021-12-09)
+
+
+### Features
+
+* **MeetingsSdkAdapter:** emit empty list from getAvailableDevices() if media not accessible ([6f206f7](https://github.com/webex/sdk-component-adapter/commit/6f206f76da76c7dfc3dc7bb2d15d3a584c19fa0e))
+
 # [1.96.0](https://github.com/webex/sdk-component-adapter/compare/v1.95.0...v1.96.0) (2021-12-07)
 
 
