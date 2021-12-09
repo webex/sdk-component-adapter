@@ -1,8 +1,4 @@
-import logger from './src/logger';
 import mockDevices from './src/mockDevices';
-
-// set the error level
-logger.setLevel('error');
 
 // Mock Web Media APIs
 
