@@ -401,15 +401,27 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         this.meetings[ID] = {...meeting, localShare: {stream}};
         break;
       case MEDIA_TYPE_REMOTE_SHARE:
-        this.meetings[ID] = {...meeting, remoteShareStream: stream};
+        this.meetings[ID] = {
+          ...meeting,
+          remoteShareStream: stream,
+          remoteShare: meeting.remoteSharing ? stream : null,
+        };
         break;
       case EVENT_REMOTE_SHARE_START:
         // Only activate the remote stream when get get the start notification
-        this.meetings[ID] = {...meeting, remoteShare: meeting.remoteShareStream};
+        this.meetings[ID] = {
+          ...meeting,
+          remoteShare: meeting.remoteShareStream || null,
+          remoteSharing: true,
+        };
         break;
       case EVENT_REMOTE_SHARE_STOP:
         // Remove remote share on stop event
-        this.meetings[ID] = {...meeting, remoteShare: null};
+        this.meetings[ID] = {
+          ...meeting,
+          remoteShare: null,
+          remoteSharing: false,
+        };
         break;
       default:
         break;
