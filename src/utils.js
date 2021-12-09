@@ -73,7 +73,47 @@ export function deepMerge(dest, src) {
   }
 }
 
-export default {chainWith, combineLatestImmediate, deepMerge};
+/**
+ * Safe JSON stringifier that:
+ * - replaces circular references with the text [circular-reference]
+ * - catches any JSON.stringify error and returns [error-stringifying:<ERROR-MESSAGE>]
+ *
+ * @param {any} data  Data to be stringified
+ * @param {function} [replacer]  JSON.stringify() replacer parameter
+ * @param {string|number} [space]  JSON.stringify() space parameter
+ * @returns {string} The string result
+ */
+export function safeJsonStringify(data, replacer, space) {
+  const seen = new WeakSet();
+  let str;
+
+  try {
+    str = JSON.stringify(data, (key, value) => {
+      let replaced = replacer ? replacer(key, value) : value;
+
+      if (typeof replaced === 'object' && replaced !== null) {
+        if (seen.has(replaced)) {
+          replaced = '[circular-reference]';
+        } else {
+          seen.add(replaced);
+        }
+      }
+
+      return replaced;
+    }, space);
+  } catch (error) {
+    str = `[error-stringifying:${error.message}]`;
+  }
+
+  return str;
+}
+
+export default {
+  chainWith,
+  combineLatestImmediate,
+  deepMerge,
+  safeJsonStringify,
+};
 
 // Checks for the existence of setSinkId on a media element.
 export const isSpeakerSupported = !!document.createElement('audio').setSinkId;

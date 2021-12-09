@@ -1,4 +1,5 @@
 import {createLogger, format, transports} from 'winston';
+import {safeJsonStringify} from './utils';
 
 const logFormat = format.printf(({
   timestamp, level, resourceType, resourceID, action, message, error,
@@ -8,7 +9,7 @@ const logFormat = format.printf(({
   if (Array.isArray(message)) {
     msgString = message.map((item) => (
       (typeof item === 'string' && item)
-      || JSON.stringify(item, (key, value) => (
+      || safeJsonStringify(item, (key, value) => (
         (value instanceof MediaStream && `MediaStream([${value.getTracks().map((track) => track.kind)}])`)
         || value
       ), 2)
