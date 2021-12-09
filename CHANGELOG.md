@@ -1,3 +1,10 @@
+## [1.97.1](https://github.com/webex/sdk-component-adapter/compare/v1.97.0...v1.97.1) (2021-12-09)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** obtain remote sharing stream for a user who joins after sharing is started ([06d5db5](https://github.com/webex/sdk-component-adapter/commit/06d5db541f95b68a0f5d83e360c9bf0c892ac2f4))
+
 # [1.97.0](https://github.com/webex/sdk-component-adapter/compare/v1.96.0...v1.97.0) (2021-12-09)
 
 
