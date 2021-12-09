@@ -1,3 +1,10 @@
+## [1.97.2](https://github.com/webex/sdk-component-adapter/compare/v1.97.1...v1.97.2) (2021-12-09)
+
+
+### Bug Fixes
+
+* **logger:** prevent logger js errors by handling logging objects with circular references ([a154bd6](https://github.com/webex/sdk-component-adapter/commit/a154bd6be82321812fbef83b404f0b5a140e2baa))
+
 ## [1.97.1](https://github.com/webex/sdk-component-adapter/compare/v1.97.0...v1.97.1) (2021-12-09)
 
 
