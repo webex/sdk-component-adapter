@@ -148,6 +148,37 @@ export const mockSDKOrganization = {
   displayName: 'Cisco Systems, Inc.',
 };
 
+export const mockSDKActivity = {
+  id: 'activityID',
+  roomId: 'roomID',
+  text: 'text',
+  personId: 'personID',
+  created: '2015-10-18T14:26:16+00:00',
+  attachments: [
+    {
+      contentType: 'application/vnd.microsoft.card.adaptive',
+      content: {
+        type: 'AdaptiveCard',
+        version: '1.0',
+        body: [
+          {
+            type: 'TextBlock',
+            text: 'Adaptive Cards',
+            size: 'large',
+          },
+        ],
+        actions: [
+          {
+            type: 'Action.OpenUrl',
+            url: 'http://adaptivecards.io',
+            title: 'Learn More',
+          },
+        ],
+      },
+    },
+  ],
+};
+
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
