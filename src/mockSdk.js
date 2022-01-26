@@ -153,13 +153,14 @@ export const mockSDKActivity = {
   roomId: 'roomID',
   text: 'text',
   personId: 'personID',
-  created: '2015-10-18T14:26:16+00:00',
+  created: '2022-02-02T14:38:16+00:00',
   attachments: [
     {
       contentType: 'application/vnd.microsoft.card.adaptive',
       content: {
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
         type: 'AdaptiveCard',
-        version: '1.0',
+        version: '1.2',
         body: [
           {
             type: 'TextBlock',
@@ -177,6 +178,25 @@ export const mockSDKActivity = {
       },
     },
   ],
+  card: {
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    type: 'AdaptiveCard',
+    version: '1.2',
+    body: [
+      {
+        type: 'TextBlock',
+        text: 'Adaptive Cards',
+        size: 'large',
+      },
+    ],
+    actions: [
+      {
+        type: 'Action.OpenUrl',
+        url: 'http://adaptivecards.io',
+        title: 'Learn More',
+      },
+    ],
+  },
 };
 
 export const mockSDKAttachmentAction = {
@@ -259,6 +279,9 @@ export default function createMockSDK() {
     },
     attachmentActions: {
       create: jest.fn(() => Promise.resolve(mockSDKAttachmentAction)),
+    },
+    messages: {
+      create: jest.fn(() => Promise.resolve(mockSDKActivity)),
     },
   };
 }

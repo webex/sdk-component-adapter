@@ -44,8 +44,9 @@ describe('Activities SDK Adapter', () => {
               {
                 contentType: 'application/vnd.microsoft.card.adaptive',
                 content: {
+                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
                   type: 'AdaptiveCard',
-                  version: '1.0',
+                  version: '1.2',
                   body: [
                     {
                       type: 'TextBlock',
@@ -64,8 +65,9 @@ describe('Activities SDK Adapter', () => {
               },
             ],
             card: {
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
               type: 'AdaptiveCard',
-              version: '1.0',
+              version: '1.2',
               body: [
                 {
                   type: 'TextBlock',
@@ -81,26 +83,105 @@ describe('Activities SDK Adapter', () => {
                 },
               ],
             },
-            created: '2015-10-18T14:26:16+00:00',
+            created: '2022-02-02T14:38:16+00:00',
           });
+          done();
+        },
+      );
+    });
+
+    test('throws an error on invalid activity ID', (done) => {
+      const sdkError = new Error('Could not find activity with ID "badActivityID"');
+
+      activitiesSDKAdapter.fetchActivity = jest.fn(() => Promise.reject(sdkError));
+
+      activitiesSDKAdapter.getActivity('badActivityID').subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe(sdkError.message);
           done();
         },
       );
     });
   });
 
-  test('throws an error on invalid activity ID', (done) => {
-    const sdkError = new Error('Could not find activity with ID "badActivityID"');
+  describe('postActivity()', () => {
+    test('emits the posted Activity object', (done) => {
+      const activityData = {
+        roomID: 'roomID',
+        text: 'text',
+        card: {
+          $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+          type: 'AdaptiveCard',
+          version: '1.2',
+          body: [
+            {
+              type: 'TextBlock',
+              text: 'Adaptive Cards',
+              size: 'large',
+            },
+          ],
+          actions: [
+            {
+              type: 'Action.OpenUrl',
+              url: 'http://adaptivecards.io',
+              title: 'Learn More',
+            },
+          ],
+        },
+      };
 
-    activitiesSDKAdapter.fetchActivity = jest.fn(() => Promise.reject(sdkError));
-
-    activitiesSDKAdapter.getActivity('badActivityID').subscribe(
-      () => {},
-      (error) => {
-        expect(error.message).toBe(sdkError.message);
+      activitiesSDKAdapter.postActivity(activityData).pipe(last()).subscribe((activity) => {
+        expect(activity).toMatchObject({
+          ID: 'activityID',
+          roomID: 'roomID',
+          text: 'text',
+          personID: 'personID',
+          created: '2022-02-02T14:38:16+00:00',
+          attachments: [
+            {
+              contentType: 'application/vnd.microsoft.card.adaptive',
+              content: {
+                $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                type: 'AdaptiveCard',
+                version: '1.2',
+                body: [
+                  {
+                    type: 'TextBlock',
+                    text: 'Adaptive Cards',
+                    size: 'large',
+                  },
+                ],
+                actions: [
+                  {
+                    type: 'Action.OpenUrl',
+                    url: 'http://adaptivecards.io',
+                    title: 'Learn More',
+                  },
+                ],
+              },
+            },
+          ],
+        });
         done();
-      },
-    );
+      });
+    });
+
+    test('emits the sdk error when messages.create returns a rejected promise', (done) => {
+      const sdkError = new Error('sdk-error');
+
+      activitiesSDKAdapter.datasource.messages.create = jest.fn(() => Promise.reject(sdkError));
+
+      activitiesSDKAdapter.postActivity({}).subscribe(
+        () => {
+          done.fail('Posted an activity instead of returning error');
+        },
+        (error) => {
+          expect(error).toBe(sdkError);
+          done();
+        },
+      );
+    });
   });
 
   describe('postAction()', () => {

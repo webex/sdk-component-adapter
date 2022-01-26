@@ -127,4 +127,43 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
 
     return action$;
   }
+
+  /**
+   * Posts an activity and returns an observable to the new activity data
+   *
+   * @param {object} activity  The activity to post
+   * @returns {Observable.<Activity>} Observable that emits the posted activity (including id)
+   */
+  postActivity(activity) {
+    const activity$ = from(this.datasource.messages.create({
+      roomId: activity.roomID,
+      text: activity.text,
+      attachments: activity.card ? [{
+        contentType: 'application/vnd.microsoft.card.adaptive',
+        content: activity.card,
+      }] : activity.attachments,
+    })).pipe(
+      map(({
+        id,
+        roomId,
+        text,
+        personId,
+        attachments,
+        created,
+      }) => ({
+        ID: id,
+        roomID: roomId,
+        text,
+        personID: personId,
+        attachments,
+        created,
+      })),
+      catchError((err) => {
+        logger.error('ACTIVITY', undefined, 'postActivity()', ['Unable to post activity', activity], err);
+        throw err;
+      }),
+    );
+
+    return activity$;
+  }
 }
