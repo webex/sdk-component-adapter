@@ -1,3 +1,11 @@
+# [1.98.0](https://github.com/webex/sdk-component-adapter/compare/v1.97.2...v1.98.0) (2022-01-26)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** create a method to fetch an activity by id ([bf83567](https://github.com/webex/sdk-component-adapter/commit/bf83567f558e32eb36603d6b8723850f76f349c5))
+* **ActivitiesSdkAdapter:** implement empty ActivitiesSDKAdapter ([e4495b2](https://github.com/webex/sdk-component-adapter/commit/e4495b255c2220182474af57a1232109862f662c))
+
 ## [1.97.2](https://github.com/webex/sdk-component-adapter/compare/v1.97.1...v1.97.2) (2021-12-09)
 
 
