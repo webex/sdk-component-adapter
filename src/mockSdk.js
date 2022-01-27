@@ -179,6 +179,17 @@ export const mockSDKActivity = {
   ],
 };
 
+export const mockSDKAttachmentAction = {
+  id: 'actionID',
+  type: 'submit',
+  messageId: 'activityID',
+  roomId: 'roomID',
+  inputs: {
+    firstName: 'My first name',
+    lastName: 'My last name',
+  },
+};
+
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
@@ -245,6 +256,9 @@ export default function createMockSDK() {
       stopListening: jest.fn(() => Promise.resolve()),
       on: jest.fn(),
       off: jest.fn(),
+    },
+    attachmentActions: {
+      create: jest.fn(() => Promise.resolve(mockSDKAttachmentAction)),
     },
   };
 }

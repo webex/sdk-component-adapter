@@ -1,4 +1,5 @@
 import {isObservable} from 'rxjs';
+import {last} from 'rxjs/operators';
 
 import ActivitiesSDKAdapter from './ActivitiesSDKAdapter';
 import createMockSDK, {mockSDKActivity} from './mockSdk';
@@ -11,16 +12,17 @@ describe('Activities SDK Adapter', () => {
   beforeEach(() => {
     mockSDK = createMockSDK();
     activitiesSDKAdapter = new ActivitiesSDKAdapter(mockSDK);
+    activityID = 'activityID';
   });
 
   afterEach(() => {
     mockSDK = null;
     activitiesSDKAdapter = null;
+    activityID = null;
   });
 
   describe('getActivity()', () => {
     beforeEach(() => {
-      activityID = 'activityID';
       activitiesSDKAdapter.fetchActivity = jest.fn(
         () => Promise.resolve(mockSDKActivity),
       );
@@ -99,5 +101,46 @@ describe('Activities SDK Adapter', () => {
         done();
       },
     );
+  });
+
+  describe('postAction()', () => {
+    test('emits the posted action object', (done) => {
+      const inputs = {
+        firstName: 'My first name',
+        lastname: 'My last name',
+      };
+
+      activitiesSDKAdapter.postAction(activityID, inputs).pipe(last()).subscribe((action) => {
+        expect(action).toMatchObject({
+          actionID: 'actionID',
+          activityID: 'activityID',
+          inputs: {
+            firstName: 'My first name',
+            lastName: 'My last name',
+          },
+          roomID: 'roomID',
+          type: 'submit',
+        });
+        done();
+      });
+    });
+
+    test('emits the sdk error when attachmentActions.create returns a rejected promise', (done) => {
+      const sdkError = new Error('sdk-error');
+
+      activitiesSDKAdapter.datasource.attachmentActions.create = jest.fn(
+        () => Promise.reject(sdkError),
+      );
+
+      activitiesSDKAdapter.postAction({}).subscribe(
+        () => {
+          done.fail('Created attachment action instead of returning error');
+        },
+        (error) => {
+          expect(error).toBe(sdkError);
+          done();
+        },
+      );
+    });
   });
 });
