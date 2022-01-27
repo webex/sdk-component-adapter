@@ -1,6 +1,15 @@
 import {ActivitiesAdapter} from '@webex/component-adapter-interfaces';
-import {ReplaySubject, defer} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {
+  from,
+  Observable,
+  ReplaySubject,
+  defer,
+} from 'rxjs';
+import {
+  catchError,
+  map,
+  tap,
+} from 'rxjs/operators';
 
 import logger from './logger';
 
@@ -83,5 +92,39 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     }
 
     return this.activityObservables[ID];
+  }
+
+  /**
+   * Posts an attachment action, returns an observable that emits the created action
+   *
+   * @param {string} activityID  ID of the activity corresponding to this submit action
+   * @param {object} inputs  The message content
+   * @returns {Observable.<object>} Observable stream that emits data of the newly created action
+   */
+  postAction(activityID, inputs) {
+    logger.debug('ATTACHMENT-ACTION', undefined, 'postAction()', ['called with', {activityID, inputs}]);
+
+    const action$ = from(this.datasource.attachmentActions.create({
+      type: 'submit',
+      messageId: activityID,
+      inputs,
+    })).pipe(
+      map((action) => ({
+        actionID: action.id,
+        activityID: action.messageId,
+        inputs: action.inputs,
+        roomID: action.roomId,
+        type: action.type,
+      })),
+      tap((action) => {
+        logger.debug('ATTACHMENT-ACTION', action.actionID, 'postAction()', ['emitting posted attachment action', action]);
+      }),
+      catchError((err) => {
+        logger.error('ATTACHMENT-ACTION', undefined, 'postAction()', `Unable to create an attachment for activity with id "${activityID}"`, err);
+        throw err;
+      }),
+    );
+
+    return action$;
   }
 }
