@@ -1,3 +1,10 @@
+# [1.99.0](https://github.com/webex/sdk-component-adapter/compare/v1.98.0...v1.99.0) (2022-01-31)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** implement a method to post an attachment action ([a269558](https://github.com/webex/sdk-component-adapter/commit/a2695582a3671f8f095221dc19a1ca95e9582949))
+
 # [1.98.0](https://github.com/webex/sdk-component-adapter/compare/v1.97.2...v1.98.0) (2022-01-26)
 
 
