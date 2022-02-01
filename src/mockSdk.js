@@ -1,7 +1,8 @@
 import mockDevices from './mockDevices';
+import mockActivities from './mockActivities';
 
 export const mockSDKRoom = {
-  id: 'abc',
+  id: 'Y2lzY29zcGFyazovL3VzL1JPT00vYmMyMjY2YjAtZDZjMy0xMWViLWFlZjUtNmQ3NzkwOGJmY2Ji',
   type: 'group',
   title: 'mock room',
 };
@@ -164,6 +165,10 @@ export const mockSDKOrganization = {
   displayName: 'Cisco Systems, Inc.',
 };
 
+const mockInternalConversationAPI = {
+  listActivities: jest.fn(() => Promise.resolve(mockActivities)),
+};
+
 export const mockSDKCardActivity = {
   id: 'activityID',
   roomId: 'roomID',
@@ -210,9 +215,10 @@ export const mockSDKAttachmentAction = {
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
+ * @param api
  * @returns {object} mockSDK Instance
  */
-export default function createMockSDK() {
+export default function createMockSDK(api = {}) {
   const mockSDKMeeting = createMockSDKMeeting();
 
   return {
@@ -234,6 +240,7 @@ export default function createMockSDK() {
         subscribe: jest.fn(() => Promise.resolve({responses: [{status: {status: 'active'}}]})),
         unsubscribe: jest.fn(() => Promise.resolve()),
       },
+      conversation: mockInternalConversationAPI,
     },
     people: {
       get: jest.fn(() => Promise.resolve(mockSDKPerson)),
@@ -280,5 +287,6 @@ export default function createMockSDK() {
     messages: {
       create: jest.fn(() => Promise.resolve(mockSDKCardActivity)),
     },
+    ...api,
   };
 }
