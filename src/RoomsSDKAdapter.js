@@ -1,9 +1,11 @@
 import {
+  Subject,
   concat,
   from,
   fromEvent,
   BehaviorSubject,
   Observable,
+  throwError,
 } from 'rxjs';
 import {
   filter,
@@ -28,6 +30,11 @@ import logger from './logger';
 export const ROOM_UPDATED_EVENT = 'updated';
 export const CONVERSATION_ACTIVITY_EVENT = 'event:conversation.activity';
 
+const sortByPublished = (arr) => arr.sort((a, b) => new Date(b.published) - new Date(a.published));
+
+// TODO: Need to remove this once we figure out why we need to pre-cache conversations
+let FETCHED_CONVERSATIONS = false;
+
 /**
  * The `RoomsSDKAdapter` is an implementation of the `RoomsAdapter` interface.
  * This adapter utilizes the Webex JS SDK to fetch data about a room.
@@ -41,6 +48,10 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     this.getRoomObservables = {};
     this.getRoomActivitiesCache = {};
     this.listenerCount = 0;
+
+    this.activityLimit = 50;
+    this.activitiesObservableCache = new Map();
+    this.roomActivities = new Map();
   }
 
   /**
@@ -51,12 +62,18 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * @returns {Room} Information about the room of the given ID
    */
   async fetchRoom(ID) {
-    const {id, title, type} = await this.datasource.rooms.get(ID);
+    const {
+      id,
+      title,
+      type,
+      lastActivity,
+    } = await this.datasource.rooms.get(ID);
 
     return {
       ID: id,
       title,
       type,
+      lastActivity,
     };
   }
 
@@ -138,6 +155,135 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     }
 
     return this.getRoomObservables[ID];
+  }
+
+  /**
+   * Returns an array of IDs of the most recent activities in a conversation up to the specified limit.
+   *
+   * @param {string} ID ID for the room
+   * @param {string} earliestActivityDate  Get all child activities before this date
+   * @returns {Promise} Resolves with array of activities
+   * @private
+   */
+  async fetchActivities(ID, earliestActivityDate) {
+    const {activityLimit} = this;
+    const conversationId = deconstructHydraId(ID).id;
+
+    logger.debug('ROOM', ID, 'fetchActivities()', ['called with', {
+      earliestActivityDate,
+      activityLimit,
+    }]);
+
+    if (!FETCHED_CONVERSATIONS) {
+      await this.datasource.internal.conversation.list();
+      FETCHED_CONVERSATIONS = true;
+    }
+
+    return this.datasource.internal.conversation.listActivities({
+      conversationId,
+      limit: activityLimit + 1, // Fetch one extra activity to determine if there are more activities to fetch later
+      lastActivityFirst: true,
+      maxDate: earliestActivityDate === null ? undefined : earliestActivityDate,
+    });
+  }
+
+  /**
+   * Returns `true` if there are more activities to load from the room of the given ID.
+   * Otherwise, it returns `false`.
+   *
+   * @param {string} ID ID of the room for which to verify activities.
+   * @returns {boolean} `true` if room has more activities to load, `false` otherwise
+   */
+  hasMoreActivities(ID) {
+    const pastActivities$Cache = this.activitiesObservableCache.get(ID);
+    const {
+      hasMore = true,
+    } = this.roomActivities.get(ID);
+
+    if (!hasMore) {
+      pastActivities$Cache.complete();
+    } else {
+      this.fetchPastActivities(ID);
+    }
+
+    return hasMore;
+  }
+
+  /**
+   * Fetches past activities and returns array of (id, published) objects. Performs side effects
+   *
+   * @param {string} ID The id of the room
+   * @returns null
+   */
+  fetchPastActivities(ID) {
+    const roomActivity = this.roomActivities.get(ID);
+    const {earliestActivityDate} = roomActivity;
+    const room$ = this.activitiesObservableCache.get(ID);
+
+    logger.debug('ROOM', ID, 'fetchPastActivities()', ['called with', {
+      earliestActivityDate,
+    }]);
+
+    if (!ID) {
+      logger.error('ROOM', ID, 'fetchPastActivities()', ['Must provide room ID']);
+      room$.error(new Error('fetchPastActivities - Must provide room ID'));
+    }
+
+    from(this.fetchActivities(ID, earliestActivityDate))
+      .subscribe((data) => {
+        if (!data) {
+          return room$.complete();
+        }
+        roomActivity.hasMore = data.length >= this.activityLimit + 1;
+        const {published} = data.shift();
+        const activityIds = sortByPublished(data).map((activity) => {
+          const {id} = activity;
+
+          roomActivity.activities.set(id, activity);
+
+          return [id, activity.published];
+        });
+
+        roomActivity.earliestActivityDate = published;
+        roomActivity.activityIds.set(published, activityIds.length);
+
+        this.roomActivities.set(ID, roomActivity);
+
+        return room$.next(activityIds);
+      });
+  }
+
+  /**
+   * Returns an observable that emits an array of the next chunk of previous
+   * activity data of the given roomID. If `hasMoreActivities` returns false,
+   * the observable will complete.
+   * **Previous activity data must be sorted newest-to-oldest.**
+   *
+   * @param {string} ID  ID of the room for which to get activities.
+   * @param {number} activityLimit The maximum number of activities to return
+   * @returns {external:Observable.<Room>} Observable stream that emits activity data
+   */
+  getPreviousActivities(ID, activityLimit = 50) {
+    this.activityLimit = activityLimit;
+    const pastActivities$Cache = this.activitiesObservableCache.get(ID) || new Subject();
+
+    if (!ID) {
+      logger.error('ROOM', ID, 'getPreviousActivities()', ['Must provide room ID']);
+
+      return throwError(new Error('getPreviousActivities - Must provide room ID'));
+    }
+
+    if (!this.roomActivities.has(ID)) {
+      this.roomActivities.set(ID, {
+        earliestActivityDate: null,
+        activities: new Map(),
+        activityIds: new Map(),
+      });
+    }
+
+    this.activitiesObservableCache.set(ID, pastActivities$Cache);
+
+    return pastActivities$Cache;
   }
 
   /**
