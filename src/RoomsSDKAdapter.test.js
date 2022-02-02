@@ -1,7 +1,7 @@
 import {isObservable} from 'rxjs';
 
 import RoomsSDKAdapter from './RoomsSDKAdapter';
-import createMockSDK, {mockSDKRoom} from './mockSdk';
+import createMockSDK, {mockSDKActivity, mockSDKRoom} from './mockSdk';
 
 describe('Rooms SDK Adapter', () => {
   let mockSDK;
@@ -56,6 +56,29 @@ describe('Rooms SDK Adapter', () => {
           done();
         },
       );
+    });
+  });
+
+  describe('getRoomActivities()', () => {
+    test('returns an observable', () => {
+      expect(isObservable(roomsSDKAdapter.getRoomActivities())).toBeTruthy();
+    });
+
+    test('returns a activity in a proper shape', (done) => {
+      mockSDK.internal.mercury.on = jest.fn((event, callback) => callback(mockSDKActivity));
+
+      roomsSDKAdapter.getRoomActivities(mockSDKActivity.target.id).subscribe((activity) => {
+        expect(activity).toEqual({
+          ID: mockSDKActivity.id,
+          roomID: mockSDKActivity.target.id,
+          content: mockSDKActivity.object,
+          contentType: mockSDKActivity.object.objectType,
+          personID: mockSDKActivity.actor.id,
+          displayAuthor: false,
+          created: mockSDKActivity.published,
+        });
+        done();
+      });
     });
   });
 

@@ -16,6 +16,22 @@ export const mockSDKPerson = {
   orgId: 'orgID',
 };
 
+export const mockSDKActivity = {
+  id: '123-456-789',
+  target: {
+    id: '123',
+  },
+  object: {
+    objectType: 'comment',
+    displayName: 'Webex Components',
+  },
+  actor: {
+    id: '789',
+  },
+  verb: 'post',
+  published: '2020-01-01T00:00:00.000Z',
+};
+
 export const createMockSDKMediaStreams = () => {
   const localAudio = new MediaStream([{kind: 'audio'}]);
   const localVideo = new MediaStream([{kind: 'video'}]);

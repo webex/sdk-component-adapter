@@ -2,6 +2,8 @@ import {
   concat,
   from,
   fromEvent,
+  BehaviorSubject,
+  Observable,
 } from 'rxjs';
 import {
   filter,
@@ -12,6 +14,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import {RoomsAdapter} from '@webex/component-adapter-interfaces';
+import {deconstructHydraId} from '@webex/common';
 import logger from './logger';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
@@ -23,6 +26,7 @@ import logger from './logger';
  */
 
 export const ROOM_UPDATED_EVENT = 'updated';
+export const CONVERSATION_ACTIVITY_EVENT = 'event:conversation.activity';
 
 /**
  * The `RoomsSDKAdapter` is an implementation of the `RoomsAdapter` interface.
@@ -35,6 +39,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     super(datasource);
 
     this.getRoomObservables = {};
+    this.getRoomActivitiesCache = {};
     this.listenerCount = 0;
   }
 
@@ -133,5 +138,44 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     }
 
     return this.getRoomObservables[ID];
+  }
+
+  /**
+   * Returns an observable that emits current and future activities from the specified room.
+   *
+   * @param {string} ID ID of room to get
+   * @returns {Observable.<Activity>} Observable stream that emits current and future activities from the specified room
+   */
+  getRoomActivities(ID) {
+    logger.debug('ROOM', ID, 'getRoomActivities()', ['called with', {ID}]);
+    if (!(ID in this.getRoomActivitiesCache)) {
+      const getRoomActivities$ = new BehaviorSubject({});
+
+      this.datasource.internal.mercury.on('event:conversation.activity', (sdkActivity) => {
+        const {id: UUID} = deconstructHydraId(ID);
+
+        if (sdkActivity.target && sdkActivity.target.id === UUID) {
+          logger.debug('ROOM', ID, 'getRoomActivities()', ['received "event:conversation.activity" event', {sdkActivity}]);
+
+          const activity = {
+            ID: sdkActivity.id,
+            roomID: sdkActivity.target.id,
+            content: sdkActivity.object,
+            contentType: sdkActivity.object.objectType,
+            personID: sdkActivity.actor.id,
+            displayAuthor: false,
+            created: sdkActivity.published,
+          };
+
+          getRoomActivities$.next(activity);
+
+          logger.info('ROOM', ID, 'getRoomActivities()', ['emitting activity object', {activity}]);
+        }
+      });
+
+      this.getRoomActivitiesCache[ID] = getRoomActivities$;
+    }
+
+    return this.getRoomActivitiesCache[ID];
   }
 }
