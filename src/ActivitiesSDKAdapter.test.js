@@ -81,7 +81,7 @@ describe('Activities SDK Adapter', () => {
                 },
               ],
             },
-            created: '2015-10-18T14:26:16+00:00',
+            created: '2022-02-02T14:38:16+00:00',
           });
           done();
         },
@@ -119,7 +119,9 @@ describe('Activities SDK Adapter', () => {
             lastName: 'My last name',
           },
           roomID: 'roomID',
+          personID: 'personID',
           type: 'submit',
+          created: '2022-02-03T14:26:16+00:00',
         });
         done();
       });

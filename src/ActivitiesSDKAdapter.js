@@ -114,7 +114,9 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
         activityID: action.messageId,
         inputs: action.inputs,
         roomID: action.roomId,
+        personID: action.personId,
         type: action.type,
+        created: action.created,
       })),
       tap((action) => {
         logger.debug('ATTACHMENT-ACTION', action.actionID, 'postAction()', ['emitting posted attachment action', action]);

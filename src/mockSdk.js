@@ -153,7 +153,7 @@ export const mockSDKActivity = {
   roomId: 'roomID',
   text: 'text',
   personId: 'personID',
-  created: '2015-10-18T14:26:16+00:00',
+  created: '2022-02-02T14:38:16+00:00',
   attachments: [
     {
       contentType: 'application/vnd.microsoft.card.adaptive',
@@ -184,10 +184,12 @@ export const mockSDKAttachmentAction = {
   type: 'submit',
   messageId: 'activityID',
   roomId: 'roomID',
+  personId: 'personID',
   inputs: {
     firstName: 'My first name',
     lastName: 'My last name',
   },
+  created: '2022-02-03T14:26:16+00:00',
 };
 
 /**
