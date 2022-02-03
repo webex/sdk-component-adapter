@@ -201,10 +201,12 @@ export const mockSDKAttachmentAction = {
   type: 'submit',
   messageId: 'activityID',
   roomId: 'roomID',
+  personId: 'personID',
   inputs: {
     firstName: 'My first name',
     lastName: 'My last name',
   },
+  created: '2022-02-03T14:26:16+00:00',
 };
 
 /**
