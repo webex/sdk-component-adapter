@@ -164,7 +164,7 @@ export const mockSDKOrganization = {
   displayName: 'Cisco Systems, Inc.',
 };
 
-export const mockSDKActivity = {
+export const mockSDKCardActivity = {
   id: 'activityID',
   roomId: 'roomID',
   text: 'text',
@@ -194,25 +194,6 @@ export const mockSDKActivity = {
       },
     },
   ],
-  card: {
-    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-    type: 'AdaptiveCard',
-    version: '1.2',
-    body: [
-      {
-        type: 'TextBlock',
-        text: 'Adaptive Cards',
-        size: 'large',
-      },
-    ],
-    actions: [
-      {
-        type: 'Action.OpenUrl',
-        url: 'http://adaptivecards.io',
-        title: 'Learn More',
-      },
-    ],
-  },
 };
 
 export const mockSDKAttachmentAction = {
@@ -297,7 +278,7 @@ export default function createMockSDK() {
       create: jest.fn(() => Promise.resolve(mockSDKAttachmentAction)),
     },
     messages: {
-      create: jest.fn(() => Promise.resolve(mockSDKActivity)),
+      create: jest.fn(() => Promise.resolve(mockSDKCardActivity)),
     },
   };
 }

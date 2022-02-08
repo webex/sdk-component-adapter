@@ -2,7 +2,7 @@ import {isObservable} from 'rxjs';
 import {last} from 'rxjs/operators';
 
 import ActivitiesSDKAdapter from './ActivitiesSDKAdapter';
-import createMockSDK, {mockSDKActivity} from './mockSdk';
+import createMockSDK, {mockSDKCardActivity} from './mockSdk';
 
 describe('Activities SDK Adapter', () => {
   let mockSDK;
@@ -24,7 +24,7 @@ describe('Activities SDK Adapter', () => {
   describe('getActivity()', () => {
     beforeEach(() => {
       activitiesSDKAdapter.fetchActivity = jest.fn(
-        () => Promise.resolve(mockSDKActivity),
+        () => Promise.resolve(mockSDKCardActivity),
       );
     });
 
