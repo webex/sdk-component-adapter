@@ -21,6 +21,24 @@ import logger from './logger';
  */
 
 /**
+ * Maps SDK activity to adapter activity
+ *
+ * @private
+ * @param {object} sdkActivity  SDK activity object
+ * @returns {Activity} Adapter activity object
+ */
+function fromSDKActivity(sdkActivity) {
+  return {
+    ID: sdkActivity.id,
+    roomID: sdkActivity.roomId,
+    text: sdkActivity.text,
+    personID: sdkActivity.personId,
+    attachments: sdkActivity.attachments || [],
+    created: sdkActivity.created,
+  };
+}
+
+/**
  * The `ActivitiesSDKAdapter` is an implementation of the `ActivitiesAdapter` interface.
  * This implementation utilizes the Webex JS SDK as its source of activity data.
  *
@@ -63,22 +81,7 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
       this.activityObservables[ID] = new ReplaySubject(1);
 
       defer(() => this.fetchActivity(ID)).pipe(
-        map(({
-          id,
-          roomId,
-          text,
-          personId,
-          attachments,
-          created,
-        }) => ({
-          ID: id,
-          roomID: roomId,
-          text,
-          personID: personId,
-          attachments,
-          card: attachments && attachments[0] && attachments[0].contentType === 'application/vnd.microsoft.card.adaptive' ? attachments[0].content : undefined,
-          created,
-        })),
+        map(fromSDKActivity),
       ).subscribe(
         (activity) => {
           logger.debug('ACTIVITY', ID, 'getActivity()', ['emitting activity object', activity]);
@@ -140,26 +143,9 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     const activity$ = from(this.datasource.messages.create({
       roomId: activity.roomID,
       text: activity.text,
-      attachments: activity.card ? [{
-        contentType: 'application/vnd.microsoft.card.adaptive',
-        content: activity.card,
-      }] : activity.attachments,
+      attachments: activity.attachments,
     })).pipe(
-      map(({
-        id,
-        roomId,
-        text,
-        personId,
-        attachments,
-        created,
-      }) => ({
-        ID: id,
-        roomID: roomId,
-        text,
-        personID: personId,
-        attachments,
-        created,
-      })),
+      map(fromSDKActivity),
       catchError((err) => {
         logger.error('ACTIVITY', undefined, 'postActivity()', ['Unable to post activity', activity], err);
         throw err;
@@ -167,5 +153,45 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     );
 
     return activity$;
+  }
+
+  /**
+   * A function that checks whether or not an Activity object contains a card attachment.
+   *
+   * @param {Activity} activity  Activity object
+   * @returns {boolean} True if received Activity object contains a card attachment
+   */
+  // eslint-disable-next-line class-methods-use-this
+  hasAdaptiveCard(activity) {
+    return !!(activity.attachments && activity.attachments[0] && activity.attachments[0].contentType === 'application/vnd.microsoft.card.adaptive');
+  }
+
+  /**
+   * A function that returns adaptive card data of an Activity object.
+   *
+   * @param {Activity} activity  Activity object
+   * @returns {object|undefined} Adaptive card data object
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getAdaptiveCard(activity) {
+    const hasCard = this.hasAdaptiveCard(activity);
+
+    return hasCard ? activity.attachments[0].content : undefined;
+  }
+
+  /**
+   * A function that attaches an adaptive card to an Activity object.
+   *
+   * @param {Activity} activity  The activity to post
+   * @param {object} card  The card attachment
+   */
+  // eslint-disable-next-line class-methods-use-this
+  attachAdaptiveCard(activity, card) {
+    const mutableActivity = activity;
+
+    mutableActivity.attachments = [{
+      contenType: 'application/vnd.microsoft.card.adaptive',
+      content: card,
+    }];
   }
 }
