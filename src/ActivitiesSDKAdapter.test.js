@@ -8,6 +8,13 @@ describe('Activities SDK Adapter', () => {
   let mockSDK;
   let activitiesSDKAdapter;
   let activityID;
+  const activityWithoutCard = {
+    ID: 'activityID1',
+    roomID: 'roomID1',
+    text: 'text1',
+    personID: 'personID1',
+    created: '2021-02-02T14:38:16+00:00',
+  };
 
   beforeEach(() => {
     mockSDK = createMockSDK();
@@ -64,25 +71,6 @@ describe('Activities SDK Adapter', () => {
                 },
               },
             ],
-            card: {
-              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-              type: 'AdaptiveCard',
-              version: '1.2',
-              body: [
-                {
-                  type: 'TextBlock',
-                  text: 'Adaptive Cards',
-                  size: 'large',
-                },
-              ],
-              actions: [
-                {
-                  type: 'Action.OpenUrl',
-                  url: 'http://adaptivecards.io',
-                  title: 'Learn More',
-                },
-              ],
-            },
             created: '2022-02-02T14:38:16+00:00',
           });
           done();
@@ -224,6 +212,109 @@ describe('Activities SDK Adapter', () => {
           done();
         },
       );
+    });
+  });
+
+  describe('hasAdaptiveCard()', () => {
+    test('returns true if activity object has a card attachment', () => {
+      const hasCard = activitiesSDKAdapter.hasAdaptiveCard(mockSDKCardActivity);
+
+      expect(hasCard).toBeTruthy();
+    });
+
+    test('returns false if activity object does not have a card attachment', () => {
+      const hasCard = activitiesSDKAdapter.hasAdaptiveCard(activityWithoutCard);
+
+      expect(hasCard).toBeFalsy();
+    });
+  });
+
+  describe('getAdaptiveCard()', () => {
+    test('returns the card object if the activity object has a card attachment', () => {
+      const cardAttachment = activitiesSDKAdapter.getAdaptiveCard(mockSDKCardActivity);
+
+      expect(cardAttachment).toMatchObject({
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+        type: 'AdaptiveCard',
+        version: '1.2',
+        body: [
+          {
+            type: 'TextBlock',
+            text: 'Adaptive Cards',
+            size: 'large',
+          },
+        ],
+        actions: [
+          {
+            type: 'Action.OpenUrl',
+            url: 'http://adaptivecards.io',
+            title: 'Learn More',
+          },
+        ],
+      });
+    });
+
+    test('returns undefined if Activity object has a card attachment', () => {
+      const cardAttachment = activitiesSDKAdapter.getAdaptiveCard(activityWithoutCard);
+
+      expect(cardAttachment).toBeUndefined();
+    });
+  });
+
+  describe('attachAdaptiveCard()', () => {
+    test('add an adaptive card attachment to the activity', () => {
+      const activity = {
+        roomID: 'roomID3',
+        text: 'text3',
+      };
+      const cardToAttach = {
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+        type: 'AdaptiveCard',
+        version: '1.2',
+        body: [
+          {
+            type: 'TextBlock',
+            text: 'Adaptive Cards',
+            size: 'large',
+          },
+        ],
+        actions: [
+          {
+            type: 'Action.OpenUrl',
+            url: 'http://adaptivecards.io',
+            title: 'Learn More',
+          },
+        ],
+      };
+
+      activitiesSDKAdapter.attachAdaptiveCard(activity, cardToAttach);
+
+      expect(activity).toMatchObject({
+        roomID: 'roomID3',
+        text: 'text3',
+        attachments: [{
+          contenType: 'application/vnd.microsoft.card.adaptive',
+          content: {
+            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+            type: 'AdaptiveCard',
+            version: '1.2',
+            body: [
+              {
+                type: 'TextBlock',
+                text: 'Adaptive Cards',
+                size: 'large',
+              },
+            ],
+            actions: [
+              {
+                type: 'Action.OpenUrl',
+                url: 'http://adaptivecards.io',
+                title: 'Learn More',
+              },
+            ],
+          },
+        }],
+      });
     });
   });
 });
