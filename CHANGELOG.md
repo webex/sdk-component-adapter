@@ -1,3 +1,16 @@
+# [1.100.0](https://github.com/webex/sdk-component-adapter/compare/v1.99.0...v1.100.0) (2022-02-08)
+
+
+### Bug Fixes
+
+* **ActivitiesSdkAdapter:** rename mock sdk activity that contains adaptive card definition ([79b7370](https://github.com/webex/sdk-component-adapter/commit/79b737031500017590d32ea8181e595cd40420d4))
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** implement a method to post an activity ([b971b02](https://github.com/webex/sdk-component-adapter/commit/b971b02fb7c40bb1209866b7b4565d486bdaff43))
+* **rooms:** add getRoomActivities method ([f84eb0e](https://github.com/webex/sdk-component-adapter/commit/f84eb0ef28b489ef2f0340adc1b5f7a908cabadc))
+
 # [1.99.0](https://github.com/webex/sdk-component-adapter/compare/v1.98.0...v1.99.0) (2022-01-31)
 
 
