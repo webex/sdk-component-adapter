@@ -1,3 +1,10 @@
+# [1.101.0](https://github.com/webex/sdk-component-adapter/compare/v1.100.0...v1.101.0) (2022-02-09)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** add 'personID' and 'created' properties to newly created action object ([b4ea9f3](https://github.com/webex/sdk-component-adapter/commit/b4ea9f325cb82617aa97f37dcee4eea74ebf5cf3))
+
 # [1.100.0](https://github.com/webex/sdk-component-adapter/compare/v1.99.0...v1.100.0) (2022-02-08)
 
 
