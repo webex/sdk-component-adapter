@@ -1,3 +1,10 @@
+# [1.102.0](https://github.com/webex/sdk-component-adapter/compare/v1.101.0...v1.102.0) (2022-02-09)
+
+
+### Features
+
+* **rooms-adapter:** add getPreviousActivities method logic ([306aff1](https://github.com/webex/sdk-component-adapter/commit/306aff113f2dbf0bae8509f459d3f95d8165f3f8))
+
 # [1.101.0](https://github.com/webex/sdk-component-adapter/compare/v1.100.0...v1.101.0) (2022-02-09)
 
 
