@@ -30,10 +30,6 @@ export default [
       json(),
       resolve({preferBuiltins: false}),
       commonJS({
-        context: 'window',
-        namedExports: {
-          '@webex/common': ['deconstructHydraId', 'constructHydraId', 'SDK_EVENT'],
-        },
         transformMixedEsModules: true,
       }),
       babel({
