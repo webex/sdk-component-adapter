@@ -2,36 +2,36 @@ import {isObservable} from 'rxjs';
 import {last} from 'rxjs/operators';
 
 import ActivitiesSDKAdapter from './ActivitiesSDKAdapter';
-import createMockSDK, {mockSDKCardActivity} from './mockSdk';
+import createMockSDK, {
+  mockSDKCardActivity, created, serverActivity, activityID, roomID, personID, ID, actorID, targetID,
+} from './mockSdk';
 
 describe('Activities SDK Adapter', () => {
   let mockSDK;
   let activitiesSDKAdapter;
-  let activityID;
+
   const activityWithoutCard = {
-    ID: 'activityID1',
-    roomID: 'roomID1',
+    ID,
+    roomID,
     text: 'text1',
-    personID: 'personID1',
-    created: '2021-02-02T14:38:16+00:00',
+    personID,
+    created,
   };
 
   beforeEach(() => {
     mockSDK = createMockSDK();
     activitiesSDKAdapter = new ActivitiesSDKAdapter(mockSDK);
-    activityID = 'activityID';
   });
 
   afterEach(() => {
     mockSDK = null;
     activitiesSDKAdapter = null;
-    activityID = null;
   });
 
   describe('getActivity()', () => {
     beforeEach(() => {
       activitiesSDKAdapter.fetchActivity = jest.fn(
-        () => Promise.resolve(mockSDKCardActivity),
+        () => Promise.resolve(serverActivity),
       );
     });
 
@@ -43,10 +43,10 @@ describe('Activities SDK Adapter', () => {
       activitiesSDKAdapter.getActivity(activityID).subscribe(
         (activity) => {
           expect(activity).toMatchObject({
-            ID: 'activityID',
-            roomID: 'roomID',
+            ID,
+            roomID,
             text: 'text',
-            personID: 'personID',
+            personID,
             attachments: [
               {
                 contentType: 'application/vnd.microsoft.card.adaptive',
@@ -71,7 +71,7 @@ describe('Activities SDK Adapter', () => {
                 },
               },
             ],
-            created: '2022-02-02T14:38:16+00:00',
+            created,
           });
           done();
         },
@@ -96,60 +96,34 @@ describe('Activities SDK Adapter', () => {
   describe('postActivity()', () => {
     test('emits the posted Activity object', (done) => {
       const activityData = {
-        roomID: 'roomID',
+        roomID,
+        personID,
         text: 'text',
-        card: {
-          $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-          type: 'AdaptiveCard',
-          version: '1.2',
-          body: [
-            {
-              type: 'TextBlock',
-              text: 'Adaptive Cards',
-              size: 'large',
-            },
-          ],
-          actions: [
-            {
-              type: 'Action.OpenUrl',
-              url: 'http://adaptivecards.io',
-              title: 'Learn More',
-            },
-          ],
-        },
       };
+
+      activitiesSDKAdapter.datasource.internal.conversation.post = jest.fn(
+        () => Promise.resolve({
+          ID,
+          actor: {
+            id: actorID,
+          },
+          object: {
+            displayName: 'text',
+          },
+          target: {
+            id: targetID,
+          },
+          published: created,
+        }),
+      );
 
       activitiesSDKAdapter.postActivity(activityData).pipe(last()).subscribe((activity) => {
         expect(activity).toMatchObject({
-          ID: 'activityID',
-          roomID: 'roomID',
+          ID,
           text: 'text',
-          personID: 'personID',
-          created: '2022-02-02T14:38:16+00:00',
-          attachments: [
-            {
-              contentType: 'application/vnd.microsoft.card.adaptive',
-              content: {
-                $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-                type: 'AdaptiveCard',
-                version: '1.2',
-                body: [
-                  {
-                    type: 'TextBlock',
-                    text: 'Adaptive Cards',
-                    size: 'large',
-                  },
-                ],
-                actions: [
-                  {
-                    type: 'Action.OpenUrl',
-                    url: 'http://adaptivecards.io',
-                    title: 'Learn More',
-                  },
-                ],
-              },
-            },
-          ],
+          roomID,
+          personID,
+          created,
         });
         done();
       });
@@ -158,7 +132,9 @@ describe('Activities SDK Adapter', () => {
     test('emits the sdk error when messages.create returns a rejected promise', (done) => {
       const sdkError = new Error('sdk-error');
 
-      activitiesSDKAdapter.datasource.messages.create = jest.fn(() => Promise.reject(sdkError));
+      activitiesSDKAdapter.datasource.internal.conversation.post = jest.fn(
+        () => Promise.reject(sdkError),
+      );
 
       activitiesSDKAdapter.postActivity({}).subscribe(
         () => {
@@ -190,7 +166,7 @@ describe('Activities SDK Adapter', () => {
           roomID: 'roomID',
           personID: 'personID',
           type: 'submit',
-          created: '2022-02-03T14:26:16+00:00',
+          created,
         });
         done();
       });

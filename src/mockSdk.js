@@ -1,8 +1,23 @@
+import {constructHydraId} from '@webex/common';
 import mockDevices from './mockDevices';
 import mockActivities from './mockActivities';
 
+export const created = '2022-02-15T21:38:25.806Z';
+
+// This is actor.id === personID
+export const actorID = '1234';
+export const personID = constructHydraId('person', actorID);
+
+// This is target.id === roomID
+export const targetID = '5678';
+export const roomID = constructHydraId('room', targetID);
+
+// This is activity.id === ID
+export const activityID = '91011';
+export const ID = constructHydraId('message', activityID);
+
 export const mockSDKRoom = {
-  id: 'Y2lzY29zcGFyazovL3VzL1JPT00vYmMyMjY2YjAtZDZjMy0xMWViLWFlZjUtNmQ3NzkwOGJmY2Ji',
+  id: roomID,
   type: 'group',
   title: 'mock room',
 };
@@ -30,7 +45,7 @@ export const mockSDKActivity = {
     id: '789',
   },
   verb: 'post',
-  published: '2020-01-01T00:00:00.000Z',
+  published: created,
 };
 
 export const createMockSDKMediaStreams = () => {
@@ -157,7 +172,7 @@ export const mockSDKMembership = {
   personDisplayName: 'Simon Damiano',
   isModerator: false,
   isMonitor: false,
-  created: '',
+  created,
 };
 
 export const mockSDKOrganization = {
@@ -170,11 +185,11 @@ const mockInternalConversationAPI = {
 };
 
 export const mockSDKCardActivity = {
-  id: 'activityID',
-  roomId: 'roomID',
+  id: ID,
+  roomId: roomID,
   text: 'text',
-  personId: 'personID',
-  created: '2022-02-02T14:38:16+00:00',
+  personId: personID,
+  created,
   attachments: [
     {
       contentType: 'application/vnd.microsoft.card.adaptive',
@@ -211,7 +226,34 @@ export const mockSDKAttachmentAction = {
     firstName: 'My first name',
     lastName: 'My last name',
   },
-  created: '2022-02-03T14:26:16+00:00',
+  created,
+};
+
+export const activityWithCard = {
+  object: {
+    cards: [
+      '{"contentType":"application/vnd.microsoft.card.adaptive","content":{"$schema":"http://adaptivecards.io/schemas/adaptive-card.json","type":"AdaptiveCard","version":"1.2","body":[{"type":"TextBlock","text":"Adaptive Cards","size":"large"}],"actions":[{"type":"Action.OpenUrl","url":"http://adaptivecards.io","title":"Learn More"}]}}',
+    ],
+  },
+};
+
+export const serverActivity = {
+  id: activityID,
+  objectType: 'activity',
+  published: created,
+  actor: {
+    id: actorID,
+  },
+  object: {
+    objectType: 'comment',
+    content: 'text',
+    displayName: 'text',
+    cards: activityWithCard.object.cards,
+  },
+  target: {
+    id: targetID,
+    objectType: 'conversation',
+  },
 };
 
 /**
@@ -249,7 +291,7 @@ export default function createMockSDK(api = {}) {
     },
     meetings: {
       create: jest.fn(() => Promise.resolve(mockSDKMeeting)),
-      getMeetingByType: jest.fn((_, ID) => (ID === 'meetingID' ? mockSDKMeeting : undefined)),
+      getMeetingByType: jest.fn((_, id) => (id === 'meetingID' ? mockSDKMeeting : undefined)),
       members: {
         on: jest.fn(),
       },

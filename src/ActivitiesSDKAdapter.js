@@ -1,3 +1,4 @@
+import {constructHydraId, deconstructHydraId} from '@webex/common';
 import {ActivitiesAdapter} from '@webex/component-adapter-interfaces';
 import {
   from,
@@ -21,6 +22,31 @@ import logger from './logger';
  */
 
 /**
+ * Extracts JSON card and files from server activity.
+ *
+ * @private
+ * @param {object} sdkActivity  SDK activity object
+ * @returns {Array} Array of attachments.
+ */
+function parseSDKAttachments(sdkActivity) {
+  const {attachments = []} = sdkActivity;
+
+  try {
+    if (sdkActivity.object && sdkActivity.object.cards) {
+      sdkActivity.object.cards.forEach((c) => {
+        const card = JSON.parse(c);
+
+        attachments.push(card);
+      });
+    }
+  } catch (err) {
+    logger.warn('ACTIVITY', undefined, 'parseSDKAttachments()', `Unable parse attachments for activity with id "${sdkActivity.id}"`, err);
+  }
+
+  return attachments;
+}
+
+/**
  * Maps SDK activity to adapter activity
  *
  * @private
@@ -29,12 +55,13 @@ import logger from './logger';
  */
 function fromSDKActivity(sdkActivity) {
   return {
-    ID: sdkActivity.id,
-    roomID: sdkActivity.roomId,
-    text: sdkActivity.text,
-    personID: sdkActivity.personId,
-    attachments: sdkActivity.attachments || [],
-    created: sdkActivity.created,
+    ID: sdkActivity.id ? constructHydraId('message', sdkActivity.id) : sdkActivity.ID,
+    roomID: sdkActivity.target ? constructHydraId('room', sdkActivity.target.id) : sdkActivity.roomID,
+    personID: sdkActivity.actor ? constructHydraId('person', sdkActivity.actor.id) : sdkActivity.personID,
+    text: sdkActivity.object ?
+      (sdkActivity.object.content || sdkActivity.object.displayName) : sdkActivity.text,
+    attachments: parseSDKAttachments(sdkActivity),
+    created: sdkActivity.published ? sdkActivity.published : sdkActivity.created,
   };
 }
 
@@ -61,10 +88,15 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    *
    * @private
    */
-  fetchActivity(activityID) {
+  async fetchActivity(activityID) {
     logger.debug('ACTIVITY', activityID, 'fetchActivity()', ['called with', {activityID}]);
 
-    return this.datasource.messages.get(activityID);
+    const {id} = deconstructHydraId(activityID);
+    const service = 'conversation';
+    const resource = `activities/${id}`;
+    const {body} = await this.datasource.request({service, resource});
+
+    return body;
   }
 
   /**
@@ -140,11 +172,12 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    * @returns {Observable.<Activity>} Observable that emits the posted activity (including id)
    */
   postActivity(activity) {
-    const activity$ = from(this.datasource.messages.create({
-      roomId: activity.roomID,
-      text: activity.text,
-      attachments: activity.attachments,
-    })).pipe(
+    const activity$ = from(this.datasource.internal.conversation.post(
+      {
+        id: deconstructHydraId('room', activity.roomID).id,
+      },
+      activity.text,
+    )).pipe(
       map(fromSDKActivity),
       catchError((err) => {
         logger.error('ACTIVITY', undefined, 'postActivity()', ['Unable to post activity', activity], err);
