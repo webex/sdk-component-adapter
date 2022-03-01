@@ -117,6 +117,9 @@ const SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE = {
   NOT_IN_MEETING: MeetingState.LEFT,
 };
 
+const ON_IOS_15_1 = typeof navigator !== 'undefined'
+  && navigator.userAgent.includes('iPhone OS 15_1');
+
 /**
  * The `MeetingsSDKAdapter` is an implementation of the `MeetingsAdapter` interface.
  * This adapter utilizes the Webex JS SDK to create and join Webex meetings.
@@ -188,21 +191,28 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         },
         microphoneID: deviceId,
       })),
-      chainWith((audio) => this.getStreamWithPermission(sendVideo, ID, {sendVideo: true}).pipe(
-        map(({
-          permission,
-          stream,
-          ignore,
-          deviceId,
-        }) => ({
-          ...audio,
-          localVideo: {
-            stream,
+      chainWith((audio) => (ON_IOS_15_1
+        ? of({
+          stream: null,
+          permission: 'ERROR',
+          error: 'Video not supported on iOS 15.1',
+        })
+        : this.getStreamWithPermission(sendVideo, ID, {sendVideo: true}).pipe(
+          map(({
             permission,
-            ignoreMediaAccessPrompt: ignore,
-          },
-          cameraID: deviceId,
-        })),
+            stream,
+            ignore,
+            deviceId,
+          }) => ({
+            ...audio,
+            localVideo: {
+              stream,
+              permission,
+              ignoreMediaAccessPrompt: ignore,
+            },
+            cameraID: deviceId,
+          })),
+        )
       )),
     );
   }

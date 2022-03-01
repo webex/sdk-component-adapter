@@ -36,6 +36,7 @@ global.navigator = {
   mediaDevices: {
     enumerateDevices: () => Promise.resolve(mockDevices),
   },
+  userAgent: ''
 };
 
 expect.extend({
