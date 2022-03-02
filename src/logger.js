@@ -1,9 +1,16 @@
-import {createLogger, format, transports} from 'winston';
 import {safeJsonStringify} from './utils';
 
-const logFormat = format.printf(({
-  timestamp, level, resourceType, resourceID, action, message, error,
-}) => {
+const LEVELS = {
+  error: 1,
+  warn: 2,
+  info: 3,
+  debug: 4,
+};
+
+let currentLevel = 'error';
+
+const format = (level, resourceType, resourceID, action, message, error) => {
+  const timestamp = new Date().toISOString();
   let msgString = message;
 
   if (Array.isArray(message)) {
@@ -17,40 +24,21 @@ const logFormat = format.printf(({
   }
 
   return `${timestamp} ${level} ${resourceType} ${resourceID} ${action} ${msgString} ${error ? ` ${error.stack || error}` : ''}`;
-});
-
-const activeTransports = [];
-
-if (process.env.NODE_ENV !== 'production') {
-  activeTransports.push(new transports.Console({
-    format: format.combine(
-      format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
-      format.colorize(),
-      format.simple(),
-      logFormat,
-    ),
-  }));
-}
-
-const winstonLogger = createLogger({
-  level: 'error',
-  transports: activeTransports,
-});
-
-// create a custom logger and export it
-const logger = {
-  setLevel: (level) => {
-    winstonLogger.level = level;
-  },
 };
 
-for (const level of ['info', 'warn', 'error', 'debug']) {
-  logger[level] = (resourceType, resourceID, action, message, error) => (
-    winstonLogger[level]({
-      resourceType, resourceID, action, message, error,
-    })
-  );
-}
+const log = (level, args) => {
+  if (LEVELS[level] <= LEVELS[currentLevel]) {
+    console.log(format(level, ...args));
+  }
+};
+
+const logger = {
+  setLevel: (level) => { currentLevel = level; },
+  info: (...args) => log('info', args),
+  warn: (...args) => log('warn', args),
+  error: (...args) => log('error', args),
+  debug: (...args) => log('debug', args),
+};
 
 if (typeof window !== 'undefined') {
   window.webexSDKAdapterSetLogLevel = (level) => logger.setLevel(level);
