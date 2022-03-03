@@ -71,7 +71,7 @@ describe('Rooms SDK Adapter', () => {
     test('emist success response on room create', (done) => {
       roomsSDKAdapter.createRoom({title: 'mock-room'}).subscribe((roomData) => {
         expect(roomData).toEqual({
-          id: 'abc',
+          id: 'Y2lzY29zcGFyazovL3VzL1JPT00vYmMyMjY2YjAtZDZjMy0xMWViLWFlZjUtNmQ3NzkwOGJmY2Ji',
           type: 'group',
           title: 'mock room',
         });
