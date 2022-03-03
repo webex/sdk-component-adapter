@@ -16,6 +16,18 @@ export const mockSDKPerson = {
   orgId: 'orgID',
 };
 
+export const mockSDKPersonList = {
+  items: [{
+    id: 'personIDCurrentUser',
+    emails: ['email@cisco.com'],
+    displayName: 'sipUri',
+    firstName: 'Webex',
+    lastName: 'Components',
+    avatar: 'avatar',
+    orgId: 'orgID',
+  }],
+};
+
 export const createMockSDKMediaStreams = () => {
   const localAudio = new MediaStream([{kind: 'audio'}]);
   const localVideo = new MediaStream([{kind: 'video'}]);
@@ -164,6 +176,7 @@ export default function createMockSDK() {
       on: jest.fn(),
       stopListening: jest.fn(() => Promise.resolve()),
       trigger: jest.fn(),
+      create: jest.fn(() => Promise.resolve(mockSDKRoom)),
     },
     internal: {
       mercury: {
@@ -178,6 +191,7 @@ export default function createMockSDK() {
     },
     people: {
       get: jest.fn(() => Promise.resolve(mockSDKPerson)),
+      list: jest.fn(() => Promise.resolve(mockSDKPersonList)),
     },
     meetings: {
       create: jest.fn(() => Promise.resolve(mockSDKMeeting)),
