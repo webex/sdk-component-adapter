@@ -1,7 +1,8 @@
 import mockDevices from './mockDevices';
+import mockActivities from './mockActivities';
 
 export const mockSDKRoom = {
-  id: 'abc',
+  id: 'Y2lzY29zcGFyazovL3VzL1JPT00vYmMyMjY2YjAtZDZjMy0xMWViLWFlZjUtNmQ3NzkwOGJmY2Ji',
   type: 'group',
   title: 'mock room',
 };
@@ -14,6 +15,22 @@ export const mockSDKPerson = {
   lastName: 'Components',
   avatar: 'avatar',
   orgId: 'orgID',
+};
+
+export const mockSDKActivity = {
+  id: '123-456-789',
+  target: {
+    id: '123',
+  },
+  object: {
+    objectType: 'comment',
+    displayName: 'Webex Components',
+  },
+  actor: {
+    id: '789',
+  },
+  verb: 'post',
+  published: '2020-01-01T00:00:00.000Z',
 };
 
 export const createMockSDKMediaStreams = () => {
@@ -148,12 +165,62 @@ export const mockSDKOrganization = {
   displayName: 'Cisco Systems, Inc.',
 };
 
+const mockInternalConversationAPI = {
+  listActivities: jest.fn(() => Promise.resolve(mockActivities)),
+};
+
+export const mockSDKCardActivity = {
+  id: 'activityID',
+  roomId: 'roomID',
+  text: 'text',
+  personId: 'personID',
+  created: '2022-02-02T14:38:16+00:00',
+  attachments: [
+    {
+      contentType: 'application/vnd.microsoft.card.adaptive',
+      content: {
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+        type: 'AdaptiveCard',
+        version: '1.2',
+        body: [
+          {
+            type: 'TextBlock',
+            text: 'Adaptive Cards',
+            size: 'large',
+          },
+        ],
+        actions: [
+          {
+            type: 'Action.OpenUrl',
+            url: 'http://adaptivecards.io',
+            title: 'Learn More',
+          },
+        ],
+      },
+    },
+  ],
+};
+
+export const mockSDKAttachmentAction = {
+  id: 'actionID',
+  type: 'submit',
+  messageId: 'activityID',
+  roomId: 'roomID',
+  personId: 'personID',
+  inputs: {
+    firstName: 'My first name',
+    lastName: 'My last name',
+  },
+  created: '2022-02-03T14:26:16+00:00',
+};
+
 /**
  * Creates a mock instance of the Webex SDK used in unit testing
  *
+ * @param api
  * @returns {object} mockSDK Instance
  */
-export default function createMockSDK() {
+export default function createMockSDK(api = {}) {
   const mockSDKMeeting = createMockSDKMeeting();
 
   return {
@@ -175,6 +242,7 @@ export default function createMockSDK() {
         subscribe: jest.fn(() => Promise.resolve({responses: [{status: {status: 'active'}}]})),
         unsubscribe: jest.fn(() => Promise.resolve()),
       },
+      conversation: mockInternalConversationAPI,
     },
     people: {
       get: jest.fn(() => Promise.resolve(mockSDKPerson)),
@@ -215,5 +283,12 @@ export default function createMockSDK() {
       on: jest.fn(),
       off: jest.fn(),
     },
+    attachmentActions: {
+      create: jest.fn(() => Promise.resolve(mockSDKAttachmentAction)),
+    },
+    messages: {
+      create: jest.fn(() => Promise.resolve(mockSDKCardActivity)),
+    },
+    ...api,
   };
 }

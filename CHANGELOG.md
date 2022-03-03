@@ -1,3 +1,45 @@
+# [1.102.0](https://github.com/webex/sdk-component-adapter/compare/v1.101.0...v1.102.0) (2022-02-09)
+
+
+### Features
+
+* **rooms-adapter:** add getPreviousActivities method logic ([306aff1](https://github.com/webex/sdk-component-adapter/commit/306aff113f2dbf0bae8509f459d3f95d8165f3f8))
+
+# [1.101.0](https://github.com/webex/sdk-component-adapter/compare/v1.100.0...v1.101.0) (2022-02-09)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** add 'personID' and 'created' properties to newly created action object ([b4ea9f3](https://github.com/webex/sdk-component-adapter/commit/b4ea9f325cb82617aa97f37dcee4eea74ebf5cf3))
+
+# [1.100.0](https://github.com/webex/sdk-component-adapter/compare/v1.99.0...v1.100.0) (2022-02-08)
+
+
+### Bug Fixes
+
+* **ActivitiesSdkAdapter:** rename mock sdk activity that contains adaptive card definition ([79b7370](https://github.com/webex/sdk-component-adapter/commit/79b737031500017590d32ea8181e595cd40420d4))
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** implement a method to post an activity ([b971b02](https://github.com/webex/sdk-component-adapter/commit/b971b02fb7c40bb1209866b7b4565d486bdaff43))
+* **rooms:** add getRoomActivities method ([f84eb0e](https://github.com/webex/sdk-component-adapter/commit/f84eb0ef28b489ef2f0340adc1b5f7a908cabadc))
+
+# [1.99.0](https://github.com/webex/sdk-component-adapter/compare/v1.98.0...v1.99.0) (2022-01-31)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** implement a method to post an attachment action ([a269558](https://github.com/webex/sdk-component-adapter/commit/a2695582a3671f8f095221dc19a1ca95e9582949))
+
+# [1.98.0](https://github.com/webex/sdk-component-adapter/compare/v1.97.2...v1.98.0) (2022-01-26)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** create a method to fetch an activity by id ([bf83567](https://github.com/webex/sdk-component-adapter/commit/bf83567f558e32eb36603d6b8723850f76f349c5))
+* **ActivitiesSdkAdapter:** implement empty ActivitiesSDKAdapter ([e4495b2](https://github.com/webex/sdk-component-adapter/commit/e4495b255c2220182474af57a1232109862f662c))
+
 ## [1.97.2](https://github.com/webex/sdk-component-adapter/compare/v1.97.1...v1.97.2) (2021-12-09)
 
 
