@@ -1,14 +1,17 @@
 import {isObservable} from 'rxjs';
 
 import RoomsSDKAdapter from './RoomsSDKAdapter';
-import createMockSDK, {mockSDKRoom} from './mockSdk';
+import mockActivities from './mockActivities';
+import createMockSDK, {mockSDKActivity, mockSDKRoom} from './mockSdk';
 
 describe('Rooms SDK Adapter', () => {
   let mockSDK;
   let roomsSDKAdapter;
+  const roomId = mockSDKRoom.id;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
+    mockSDK.internal.conversation.list = jest.fn(() => Promise.resolve([]));
     roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
   });
 
@@ -87,6 +90,87 @@ describe('Rooms SDK Adapter', () => {
           done();
         },
       );
+    });
+  });
+
+  describe('getRoomActivities()', () => {
+    test('returns an observable', () => {
+      expect(isObservable(roomsSDKAdapter.getRoomActivities())).toBeTruthy();
+    });
+
+    test('returns a activity in a proper shape', (done) => {
+      mockSDK.internal.mercury.on = jest.fn((event, callback) => callback(mockSDKActivity));
+
+      roomsSDKAdapter.getRoomActivities(mockSDKActivity.target.id).subscribe((activity) => {
+        expect(activity).toEqual({
+          ID: mockSDKActivity.id,
+          roomID: mockSDKActivity.target.id,
+          content: mockSDKActivity.object,
+          contentType: mockSDKActivity.object.objectType,
+          personID: mockSDKActivity.actor.id,
+          displayAuthor: false,
+          created: mockSDKActivity.published,
+        });
+        done();
+      });
+    });
+  });
+
+  describe('getPreviousActivities() functionality', () => {
+    const getPreviousMock = jest.fn();
+
+    beforeAll(() => {
+      getPreviousMock
+        .mockReturnValueOnce(mockActivities.slice(2))
+        .mockReturnValueOnce(mockActivities.slice(4))
+        .mockReturnValueOnce(null);
+    });
+
+    test('returns an observable', () => {
+      expect(isObservable(roomsSDKAdapter.getPreviousActivities(roomId)))
+        .toBeTruthy();
+    });
+
+    test('completes when all activities have been emitted', (done) => {
+      let itemsCount = 0;
+
+      mockSDK.internal.conversation.listActivities = getPreviousMock;
+      roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
+
+      roomsSDKAdapter.getPreviousActivities(roomId, 5).subscribe({
+        next(activities) {
+          itemsCount += activities.length;
+        },
+        complete() {
+          expect(itemsCount).toBe(8);
+          done();
+        },
+      });
+
+      roomsSDKAdapter.hasMoreActivities(roomId); // 5
+      roomsSDKAdapter.hasMoreActivities(roomId); // 3
+      roomsSDKAdapter.hasMoreActivities(roomId); // no more
+    });
+
+    test('throws error if no room id is present', (done) => {
+      roomsSDKAdapter.getPreviousActivities().subscribe({
+        next() {},
+        error(e) {
+          expect(e).toEqual(new Error('getPreviousActivities - Must provide room ID'));
+          done();
+        },
+      });
+    });
+
+    test('sets empty roomActivities if no room exists', () => {
+      expect(roomsSDKAdapter.roomActivities.has('room-1')).toBe(false);
+      roomsSDKAdapter.getPreviousActivities('room-1');
+      expect(roomsSDKAdapter.roomActivities.has('room-1')).toBe(true);
+      expect(roomsSDKAdapter.roomActivities.get('room-1')).toStrictEqual({
+        activities: new Map(),
+        earliestActivityDate: null,
+        activityIds: new Map(),
+      });
     });
   });
 

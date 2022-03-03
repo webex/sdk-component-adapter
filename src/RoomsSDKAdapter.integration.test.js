@@ -8,6 +8,7 @@ import WebexSDKAdapter from '.';
 describe('Rooms SDK Adapter', () => {
   let createdRoom;
   let getRoom$;
+  let getRoomActivities$;
   let subscription;
   let user;
   let webexSDKAdapter;
@@ -20,6 +21,7 @@ describe('Rooms SDK Adapter', () => {
     user = await createIntegrationTestUser();
     webexSDKAdapter = new WebexSDKAdapter(user.sdk);
     await webexSDKAdapter.connect();
+    createdRoom = await user.sdk.rooms.create({title: 'Webex Test Room'});
   });
 
   afterAll(async () => {
@@ -34,7 +36,6 @@ describe('Rooms SDK Adapter', () => {
 
   describe('getRoom() returns', () => {
     beforeEach(async () => {
-      createdRoom = await user.sdk.rooms.create({title: 'Webex Test Room'});
       getRoom$ = webexSDKAdapter.roomsAdapter.getRoom(createdRoom.id);
     });
 
@@ -86,6 +87,34 @@ describe('Rooms SDK Adapter', () => {
       });
 
       subscription.add(secondSubscription);
+    });
+  });
+
+  describe('getRoomActivities() returns', () => {
+    beforeEach(async () => {
+      getRoomActivities$ = webexSDKAdapter.roomsAdapter.getRoomActitivites$(createdRoom.id);
+    });
+
+    test('an activity when a message is posted to the space', async (done) => {
+      await user.sdk.messages.create({
+        text: 'Hello World!',
+        roomId: createdRoom.id,
+      });
+
+      subscription = getRoomActivities$.subscribe((activity) => {
+        expect(activity).toMatchObject({
+          ID: activity.id,
+          roomID: createdRoom.title,
+          content: {
+            objectType: 'comment',
+            displayName: 'Webex Components',
+          },
+          contentType: 'comment',
+          personID: user.id,
+          displayAuthor: false,
+        });
+        done();
+      });
     });
   });
 });
