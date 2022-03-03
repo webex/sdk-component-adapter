@@ -1,3 +1,10 @@
+## [1.102.1](https://github.com/webex/sdk-component-adapter/compare/v1.102.0...v1.102.1) (2022-03-03)
+
+
+### Bug Fixes
+
+* **logger:** replace winston logger with a custom logger ([bbdecc5](https://github.com/webex/sdk-component-adapter/commit/bbdecc5031c35bf1ec82a8a62d92451a008539b6))
+
 # [1.102.0](https://github.com/webex/sdk-component-adapter/compare/v1.101.0...v1.102.0) (2022-02-09)
 
 
