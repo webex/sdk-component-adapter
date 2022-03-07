@@ -1,3 +1,10 @@
+## [1.102.2](https://github.com/webex/sdk-component-adapter/compare/v1.102.1...v1.102.2) (2022-03-07)
+
+
+### Bug Fixes
+
+* **logger:** use different types of console methods corresponding to custom logger levels ([c888f50](https://github.com/webex/sdk-component-adapter/commit/c888f50cd1df97f5d539ac461bef2b3009930068))
+
 ## [1.102.1](https://github.com/webex/sdk-component-adapter/compare/v1.102.0...v1.102.1) (2022-03-03)
 
 
