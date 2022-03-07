@@ -2,6 +2,7 @@ import {
   concat,
   defer,
   fromEvent,
+  Observable,
   of,
 } from 'rxjs';
 import {
@@ -183,5 +184,24 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
     }
 
     return this.getPersonObservables[ID];
+  }
+
+  /**
+   * Returns an observable that emits people list
+   *
+   * @param {string} query search query
+   * @returns {external:Observable.<Person>} Observable that emits person list based on search query
+   */
+  getPeopleList(query) {
+    return new Observable(async (observer) => {
+      try {
+        const peopleList = await this.datasource.people.list({displayName: query});
+
+        observer.next(peopleList.items);
+        observer.complete();
+      } catch (err) {
+        observer.error(new Error('error in fetching data'));
+      }
+    });
   }
 }

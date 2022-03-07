@@ -158,6 +158,25 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
   }
 
   /**
+   * Creates a room and returns room id
+   *
+   * @param {string} title title of the room to be created
+   * @returns {Observable.<Room>} Observable that emits created room data
+   */
+  createRoom(title) {
+    return new Observable(async (observer) => {
+      try {
+        const roomsData = await this.datasource.rooms.create({title});
+
+        observer.next(roomsData);
+        observer.complete();
+      } catch (err) {
+        observer.error(new Error('error in creating room'));
+      }
+    });
+  }
+
+  /*
    * Returns an array of IDs of the most recent activities in a conversation up to the specified limit.
    *
    * @param {string} ID ID for the room
