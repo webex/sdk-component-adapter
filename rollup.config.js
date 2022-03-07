@@ -14,8 +14,6 @@ const output = (name, format) => ({
     rxjs: 'rxjs',
     'rxjs/operators': 'rxjs.operators',
     webex: 'webex',
-    winston: 'winston',
-    'winston-transport': 'winston-transport',
     '@webex/common': '@webex/common',
   },
 });
@@ -37,6 +35,6 @@ export default [
         plugins: ['@babel/plugin-transform-runtime'],
       }),
     ],
-    external: ['rxjs', 'rxjs/operators', 'webex', '@webex/common', 'winston'],
+    external: ['rxjs', 'rxjs/operators', 'webex', '@webex/common'],
   },
 ];
