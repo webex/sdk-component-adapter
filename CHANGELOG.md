@@ -1,3 +1,10 @@
+## [1.102.3](https://github.com/webex/sdk-component-adapter/compare/v1.102.2...v1.102.3) (2022-03-07)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** prevent camera usage on iOS 15.1 due to iOS bug ([1938a75](https://github.com/webex/sdk-component-adapter/commit/1938a7541af5b9ed3a056619cbc112e7a6354731))
+
 ## [1.102.2](https://github.com/webex/sdk-component-adapter/compare/v1.102.1...v1.102.2) (2022-03-07)
 
 
