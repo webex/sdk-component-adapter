@@ -46,7 +46,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     super(datasource);
 
     this.getRoomObservables = {};
-    this.getRoomActivitiesCache = {};
+    this.getActivitiesInRealTimeCache = {};
     this.listenerCount = 0;
 
     this.activityLimit = 50;
@@ -254,23 +254,23 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
   }
 
   /**
-   * Returns an observable that emits an array of the next chunk of previous
+   * Returns an observable that emits an array of the next chunk of past
    * activity data of the given roomID. If `hasMoreActivities` returns false,
    * the observable will complete.
-   * **Previous activity data must be sorted newest-to-oldest.**
+   * **Past activity data must be sorted newest-to-oldest.**
    *
    * @param {string} ID  ID of the room for which to get activities.
    * @param {number} activityLimit The maximum number of activities to return
    * @returns {external:Observable.<Room>} Observable stream that emits activity data
    */
-  getPreviousActivities(ID, activityLimit = 50) {
+  getPastActivities(ID, activityLimit = 50) {
     this.activityLimit = activityLimit;
     const pastActivities$Cache = this.activitiesObservableCache.get(ID) || new Subject();
 
     if (!ID) {
-      logger.error('ROOM', ID, 'getPreviousActivities()', ['Must provide room ID']);
+      logger.error('ROOM', ID, 'getPastActivities()', ['Must provide room ID']);
 
-      return throwError(new Error('getPreviousActivities - Must provide room ID'));
+      return throwError(new Error('getPastActivities - Must provide room ID'));
     }
 
     if (!this.roomActivities.has(ID)) {
@@ -292,16 +292,16 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    * @param {string} ID ID of room to get
    * @returns {Observable.<Activity>} Observable stream that emits current and future activities from the specified room
    */
-  getRoomActivities(ID) {
-    logger.debug('ROOM', ID, 'getRoomActivities()', ['called with', {ID}]);
-    if (!(ID in this.getRoomActivitiesCache)) {
-      const getRoomActivities$ = new BehaviorSubject({});
+  getActivitiesInRealTime(ID) {
+    logger.debug('ROOM', ID, 'getActivitiesInRealTime()', ['called with', {ID}]);
+    if (!(ID in this.getActivitiesInRealTimeCache)) {
+      const getActivitiesInRealTime$ = new BehaviorSubject({});
 
       this.datasource.internal.mercury.on('event:conversation.activity', (sdkActivity) => {
         const {id: UUID} = deconstructHydraId(ID);
 
         if (sdkActivity.target && sdkActivity.target.id === UUID) {
-          logger.debug('ROOM', ID, 'getRoomActivities()', ['received "event:conversation.activity" event', {sdkActivity}]);
+          logger.debug('ROOM', ID, 'getActivitiesInRealTime()', ['received "event:conversation.activity" event', {sdkActivity}]);
 
           const activity = {
             ID: sdkActivity.id,
@@ -313,15 +313,15 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
             created: sdkActivity.published,
           };
 
-          getRoomActivities$.next(activity);
+          getActivitiesInRealTime$.next(activity);
 
-          logger.info('ROOM', ID, 'getRoomActivities()', ['emitting activity object', {activity}]);
+          logger.info('ROOM', ID, 'getActivitiesInRealTime()', ['emitting activity object', {activity}]);
         }
       });
 
-      this.getRoomActivitiesCache[ID] = getRoomActivities$;
+      this.getActivitiesInRealTimeCache[ID] = getActivitiesInRealTime$;
     }
 
-    return this.getRoomActivitiesCache[ID];
+    return this.getActivitiesInRealTimeCache[ID];
   }
 }

@@ -62,15 +62,15 @@ describe('Rooms SDK Adapter', () => {
     });
   });
 
-  describe('getRoomActivities()', () => {
+  describe('getActivitiesInRealTime()', () => {
     test('returns an observable', () => {
-      expect(isObservable(roomsSDKAdapter.getRoomActivities())).toBeTruthy();
+      expect(isObservable(roomsSDKAdapter.getActivitiesInRealTime())).toBeTruthy();
     });
 
     test('returns a activity in a proper shape', (done) => {
       mockSDK.internal.mercury.on = jest.fn((event, callback) => callback(mockSDKActivity));
 
-      roomsSDKAdapter.getRoomActivities(mockSDKActivity.target.id).subscribe((activity) => {
+      roomsSDKAdapter.getActivitiesInRealTime(mockSDKActivity.target.id).subscribe((activity) => {
         expect(activity).toEqual({
           ID: mockSDKActivity.id,
           roomID: mockSDKActivity.target.id,
@@ -85,7 +85,7 @@ describe('Rooms SDK Adapter', () => {
     });
   });
 
-  describe('getPreviousActivities() functionality', () => {
+  describe('getPastActivities() functionality', () => {
     const getPreviousMock = jest.fn();
 
     beforeAll(() => {
@@ -96,7 +96,7 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('returns an observable', () => {
-      expect(isObservable(roomsSDKAdapter.getPreviousActivities(roomId)))
+      expect(isObservable(roomsSDKAdapter.getPastActivities(roomId)))
         .toBeTruthy();
     });
 
@@ -106,7 +106,7 @@ describe('Rooms SDK Adapter', () => {
       mockSDK.internal.conversation.listActivities = getPreviousMock;
       roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
 
-      roomsSDKAdapter.getPreviousActivities(roomId, 5).subscribe({
+      roomsSDKAdapter.getPastActivities(roomId, 5).subscribe({
         next(activities) {
           itemsCount += activities.length;
         },
@@ -122,10 +122,10 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('throws error if no room id is present', (done) => {
-      roomsSDKAdapter.getPreviousActivities().subscribe({
+      roomsSDKAdapter.getPastActivities().subscribe({
         next() {},
         error(e) {
-          expect(e).toEqual(new Error('getPreviousActivities - Must provide room ID'));
+          expect(e).toEqual(new Error('getPastActivities - Must provide room ID'));
           done();
         },
       });
@@ -133,7 +133,7 @@ describe('Rooms SDK Adapter', () => {
 
     test('sets empty roomActivities if no room exists', () => {
       expect(roomsSDKAdapter.roomActivities.has('room-1')).toBe(false);
-      roomsSDKAdapter.getPreviousActivities('room-1');
+      roomsSDKAdapter.getPastActivities('room-1');
       expect(roomsSDKAdapter.roomActivities.has('room-1')).toBe(true);
       expect(roomsSDKAdapter.roomActivities.get('room-1')).toStrictEqual({
         activities: new Map(),

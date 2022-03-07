@@ -8,7 +8,7 @@ import WebexSDKAdapter from '.';
 describe('Rooms SDK Adapter', () => {
   let createdRoom;
   let getRoom$;
-  let getRoomActivities$;
+  let getActivitiesInRealTime$;
   let subscription;
   let user;
   let webexSDKAdapter;
@@ -90,9 +90,11 @@ describe('Rooms SDK Adapter', () => {
     });
   });
 
-  describe('getRoomActivities() returns', () => {
+  describe('getActivitiesInRealTime() returns', () => {
     beforeEach(async () => {
-      getRoomActivities$ = webexSDKAdapter.roomsAdapter.getRoomActitivites$(createdRoom.id);
+      getActivitiesInRealTime$ = webexSDKAdapter
+        .roomsAdapter
+        .getActivitiesInRealTime$(createdRoom.id);
     });
 
     test('an activity when a message is posted to the space', async (done) => {
@@ -101,7 +103,7 @@ describe('Rooms SDK Adapter', () => {
         roomId: createdRoom.id,
       });
 
-      subscription = getRoomActivities$.subscribe((activity) => {
+      subscription = getActivitiesInRealTime$.subscribe((activity) => {
         expect(activity).toMatchObject({
           ID: activity.id,
           roomID: createdRoom.title,
