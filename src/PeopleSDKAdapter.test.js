@@ -7,13 +7,11 @@ describe('People SDK Adapter', () => {
   let mockSDK;
   let peopleSDKAdapter;
   let personID;
-  let query;
 
   beforeEach(() => {
     mockSDK = createMockSDK();
     peopleSDKAdapter = new PeopleSDKAdapter(mockSDK);
     personID = 'personID';
-    query = 'query';
   });
 
   describe('getMe()', () => {
@@ -121,44 +119,9 @@ describe('People SDK Adapter', () => {
     });
   });
 
-  describe('getPersonList', () => {
-    test('returns an observable', () => {
-      expect(isObservable(peopleSDKAdapter.getPeopleList(query))).toBeTruthy();
-    });
-
-    test('emits persons list on subscription', (done) => {
-      peopleSDKAdapter.getPeopleList(query).subscribe((peopleList) => {
-        expect(peopleList).toEqual([{
-          id: 'personIDCurrentUser',
-          emails: ['email@cisco.com'],
-          displayName: 'sipUri',
-          firstName: 'Webex',
-          lastName: 'Components',
-          avatar: 'avatar',
-          orgId: 'orgID',
-        }]);
-      });
-      done();
-    });
-
-    test('throws error on fetching data', (done) => {
-      const errorMsg = 'error in fetching data';
-
-      mockSDK.people.list = jest.fn(() => Promise.reject(new Error(errorMsg)));
-      peopleSDKAdapter.getPeopleList(query).subscribe(
-        () => {},
-        (error) => {
-          expect(error.message).toBe(errorMsg);
-          done();
-        },
-      );
-    });
-  });
-
   afterEach(() => {
     mockSDK = null;
     peopleSDKAdapter = null;
     personID = null;
-    query = null;
   });
 });
