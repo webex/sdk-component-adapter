@@ -157,7 +157,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     return this.getRoomObservables[ID];
   }
 
-  /*
+  /**
    * Returns an array of IDs of the most recent activities in a conversation up to the specified limit.
    *
    * @param {string} ID ID for the room
