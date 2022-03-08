@@ -71,11 +71,12 @@ export default class VideoControl extends MeetingControl {
     };
 
     return this.adapter.getMeeting(meetingID).pipe(
-      map(({localVideo: {stream, muting}, disabledLocalVideo}) => (
+      map(({localVideo: {stream, muting, error}, disabledLocalVideo}) => (
         (muting === true && STATES.muting)
         || (muting === false && STATES.unmuting)
         || (stream && STATES.unmuted)
         || (disabledLocalVideo && STATES.muted)
+        || (error && {...STATES.noCamera, tooltip: error})
         || STATES.noCamera
       )),
       distinctUntilChanged(),

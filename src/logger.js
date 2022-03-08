@@ -26,18 +26,14 @@ const format = (level, resourceType, resourceID, action, message, error) => {
   return `${timestamp} ${level} ${resourceType} ${resourceID} ${action} ${msgString} ${error ? ` ${error.stack || error}` : ''}`;
 };
 
-const log = (level, args) => {
-  if (LEVELS[level] <= LEVELS[currentLevel]) {
-    console.log(format(level, ...args));
-  }
-};
+const show = (level) => (LEVELS[level] <= LEVELS[currentLevel]);
 
 const logger = {
   setLevel: (level) => { currentLevel = level; },
-  info: (...args) => log('info', args),
-  warn: (...args) => log('warn', args),
-  error: (...args) => log('error', args),
-  debug: (...args) => log('debug', args),
+  info: (...args) => show('info') && console.info(format('info', ...args)),
+  warn: (...args) => show('warn') && console.warn(format('warn', ...args)),
+  error: (...args) => show('error') && console.error(format('error', ...args)),
+  debug: (...args) => show('debug') && console.debug(format('debug', ...args)),
 };
 
 if (typeof window !== 'undefined') {
