@@ -1,3 +1,10 @@
+# [1.103.0](https://github.com/webex/sdk-component-adapter/compare/v1.102.3...v1.103.0) (2022-03-08)
+
+
+### Features
+
+* **logger:** split logger implementation into separate files and create console transport ([21a39ad](https://github.com/webex/sdk-component-adapter/commit/21a39adf3c16ac09ffab15c199fbce0962dcc95e))
+
 ## [1.102.3](https://github.com/webex/sdk-component-adapter/compare/v1.102.2...v1.102.3) (2022-03-07)
 
 
