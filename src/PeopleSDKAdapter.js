@@ -2,6 +2,7 @@ import {
   concat,
   defer,
   fromEvent,
+  Observable,
   of,
 } from 'rxjs';
 import {
@@ -183,5 +184,28 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
     }
 
     return this.getPersonObservables[ID];
+  }
+
+  /**
+   * Returns an observable that emits people list
+   *
+   * @param {string} query search query
+   * @returns {external:Observable.<Person>} Observable that emits person list based on search query
+   */
+  getPeopleList(query) {
+    logger.debug('PEOPLE', query, 'getPeopleList()', ['called with', {query}]);
+
+    return new Observable(async (observer) => {
+      try {
+        const peopleList = await this.datasource.people.list({displayName: query});
+
+        observer.next(peopleList.items);
+        logger.debug('PEOPLE', query, 'getPeopleList()', ['emit persons list', peopleList.items]);
+        observer.complete();
+      } catch (error) {
+        logger.error('PEOPLE', query, 'getPeopleList()', ['emits an error when SDK fails to fetch persons list'], error);
+        observer.error(new Error('emits an error when SDK fails to fetch persons list'));
+      }
+    });
   }
 }

@@ -273,3 +273,23 @@ document.getElementById('members').addEventListener('click', (event) => {
       });
   }
 });
+
+document.getElementById('query-legend').addEventListener('click', (event) => {
+  event.preventDefault();
+  const query = document.getElementById('query').value;
+
+  try {
+    if (event.target.id === 'query-submit') {
+      webexSDKAdapter.peopleAdapter
+        .getPeopleList(query)
+        .subscribe((items) => {
+          console.log('items', items);
+          document.getElementById('people-list').value = JSON.stringify(items, '', 2);
+        }, (error) => {
+          console.log('error --', error);
+        });
+    }
+  } catch (err) {
+    console.log('error', err);
+  }
+});
