@@ -243,7 +243,6 @@ export default function createMockSDK(api = {}) {
       on: jest.fn(),
       stopListening: jest.fn(() => Promise.resolve()),
       trigger: jest.fn(),
-      create: jest.fn(() => Promise.resolve(mockSDKRoom)),
     },
     internal: {
       mercury: {

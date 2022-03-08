@@ -293,23 +293,3 @@ document.getElementById('query-legend').addEventListener('click', (event) => {
     console.log('error', err);
   }
 });
-
-document.getElementById('rooms-legend').addEventListener('click', (event) => {
-  event.preventDefault();
-  const roomTitle = document.getElementById('rooms').value;
-
-  try {
-    if (event.target.id === 'rooms-submit') {
-      webexSDKAdapter.roomsAdapter
-        .createRoom(roomTitle)
-        .subscribe((rooms) => {
-          console.log('rooms', rooms);
-          document.getElementById('rooms-created').value = JSON.stringify(rooms, '', 2);
-        }, (error) => {
-          console.log('error --', error);
-        });
-    }
-  } catch (err) {
-    console.log('error', err);
-  }
-});

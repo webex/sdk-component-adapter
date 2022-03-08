@@ -142,7 +142,7 @@ describe('People SDK Adapter', () => {
     });
 
     test('throws error on fetching data', (done) => {
-      const errorMsg = 'error in fetching data';
+      const errorMsg = 'emits an error when SDK fails to fetch persons list';
 
       mockSDK.people.list = jest.fn(() => Promise.reject(new Error(errorMsg)));
       peopleSDKAdapter.getPeopleList(query).subscribe(
