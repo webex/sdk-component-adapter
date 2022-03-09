@@ -232,7 +232,7 @@ export const mockSDKAttachmentAction = {
 export const activityWithCard = {
   object: {
     cards: [
-      '{"contentType":"application/vnd.microsoft.card.adaptive","content":{"$schema":"http://adaptivecards.io/schemas/adaptive-card.json","type":"AdaptiveCard","version":"1.2","body":[{"type":"TextBlock","text":"Adaptive Cards","size":"large"}],"actions":[{"type":"Action.OpenUrl","url":"http://adaptivecards.io","title":"Learn More"}]}}',
+      '{"$schema":"http://adaptivecards.io/schemas/adaptive-card.json","type":"AdaptiveCard","version":"1.2","body":[{"type":"TextBlock","text":"Adaptive Cards","size":"large"}],"actions":[{"type":"Action.OpenUrl","url":"http://adaptivecards.io","title":"Learn More"}]}',
     ],
   },
 };

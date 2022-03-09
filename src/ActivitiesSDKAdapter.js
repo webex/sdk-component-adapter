@@ -36,7 +36,7 @@ function parseSDKAttachments(sdkActivity) {
       sdkActivity.object.cards.forEach((c) => {
         const card = JSON.parse(c);
 
-        attachments.push(card);
+        attachments.push({contentType: 'application/vnd.microsoft.card.adaptive', content: card});
       });
     }
   } catch (err) {
