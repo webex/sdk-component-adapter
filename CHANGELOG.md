@@ -1,3 +1,10 @@
+# [1.104.0](https://github.com/webex/sdk-component-adapter/compare/v1.103.0...v1.104.0) (2022-03-09)
+
+
+### Features
+
+* **activity:** change to use conversations API ([dd31bfb](https://github.com/webex/sdk-component-adapter/commit/dd31bfbc82422bcc9d357f044648e4a12880136a))
+
 # [1.103.0](https://github.com/webex/sdk-component-adapter/compare/v1.102.3...v1.103.0) (2022-03-08)
 
 
