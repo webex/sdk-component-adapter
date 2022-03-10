@@ -1,3 +1,10 @@
+## [1.104.1](https://github.com/webex/sdk-component-adapter/compare/v1.104.0...v1.104.1) (2022-03-10)
+
+
+### Bug Fixes
+
+* **ActivitiesSdkAdapter:** properly transform an activity card into an activity attachment ([424c4c2](https://github.com/webex/sdk-component-adapter/commit/424c4c267676eaca29d4f6275bf8da42552ea1d4))
+
 # [1.104.0](https://github.com/webex/sdk-component-adapter/compare/v1.103.0...v1.104.0) (2022-03-09)
 
 
