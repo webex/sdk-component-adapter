@@ -35,6 +35,7 @@ global.MediaStream = jest.fn(function MockMediaStream(tracksOrStream = []) {
 global.navigator = {
   mediaDevices: {
     enumerateDevices: () => Promise.resolve(mockDevices),
+    getDisplayMedia: () => Promise.resolve(new MediaStream()),
   },
   userAgent: ''
 };
