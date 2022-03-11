@@ -136,7 +136,7 @@ describe('Activities SDK Adapter', () => {
         () => Promise.reject(sdkError),
       );
 
-      activitiesSDKAdapter.postActivity({}).subscribe(
+      activitiesSDKAdapter.postActivity({roomID: ''}).subscribe(
         () => {
           done.fail('Posted an activity instead of returning error');
         },
@@ -269,7 +269,7 @@ describe('Activities SDK Adapter', () => {
         roomID: 'roomID3',
         text: 'text3',
         attachments: [{
-          contenType: 'application/vnd.microsoft.card.adaptive',
+          contentType: 'application/vnd.microsoft.card.adaptive',
           content: {
             $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
             type: 'AdaptiveCard',

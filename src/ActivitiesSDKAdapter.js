@@ -172,11 +172,22 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    * @returns {Observable.<Activity>} Observable that emits the posted activity (including id)
    */
   postActivity(activity) {
+    logger.debug('ACTIVITY', undefined, 'postActivity()', ['called with', {activity}]);
+    const card = this.getAdaptiveCard(activity);
+
+    const object = card && {
+      cards: [JSON.stringify(card)],
+      displayName: activity.text,
+    };
+
+    const {id, cluster = 'us'} = deconstructHydraId(activity.roomID);
+
     const activity$ = from(this.datasource.internal.conversation.post(
       {
-        id: deconstructHydraId('room', activity.roomID).id,
+        id,
+        cluster,
       },
-      activity.text,
+      object || activity.text,
     )).pipe(
       map(fromSDKActivity),
       catchError((err) => {
@@ -223,7 +234,7 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     const mutableActivity = activity;
 
     mutableActivity.attachments = [{
-      contenType: 'application/vnd.microsoft.card.adaptive',
+      contentType: 'application/vnd.microsoft.card.adaptive',
       content: card,
     }];
   }
