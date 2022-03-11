@@ -6,6 +6,7 @@ import MeetingsSDKAdapter from './MeetingsSDKAdapter';
 import MembershipsSDKAdapter from './MembershipsSDKAdapter';
 import OrganizationsSDKAdapter from './OrganizationsSDKAdapter';
 import logger from './logger';
+import cache from './cache';
 import {name, version} from '../package.json';
 
 const LOG_ARGS = ['SDK', `${name}-${version}`];
@@ -30,6 +31,7 @@ export default class WebexSDKAdapter extends WebexAdapter {
     this.membershipsAdapter = new MembershipsSDKAdapter(sdk);
     this.organizationsAdapter = new OrganizationsSDKAdapter(sdk);
     this.sdk = sdk;
+    this.cache = cache;
   }
 
   /**
