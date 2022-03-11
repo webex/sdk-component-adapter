@@ -19,6 +19,7 @@ import {RoomsAdapter} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
 import {fromSDKActivity} from './ActivitiesSDKAdapter';
 import logger from './logger';
+import cache from './cache';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -170,14 +171,13 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     const {activityLimit} = this;
     const conversationId = deconstructHydraId(ID).id;
 
-    logger.debug('ROOM', ID, 'fetchActivities()', ['called with', {
-      earliestActivityDate,
-      activityLimit,
-    }]);
+    logger.debug('ROOM', ID, 'fetchActivities()', ['called with', earliestActivityDate, activityLimit]);
 
     if (!FETCHED_CONVERSATIONS) {
-      await this.datasource.internal.conversation.list();
+      const convos = await this.datasource.internal.conversation.list();
+
       FETCHED_CONVERSATIONS = true;
+      cache.cacheConversations(convos);
     }
 
     return this.datasource.internal.conversation.listActivities({
@@ -213,6 +213,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
   /**
    * Fetches past activities and returns array of (id, published) objects. Performs side effects
    *
+   * @private
    * @param {string} ID The id of the room
    * @returns null
    */
@@ -221,9 +222,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     const {earliestActivityDate} = roomActivity;
     const room$ = this.activitiesObservableCache.get(ID);
 
-    logger.debug('ROOM', ID, 'fetchPastActivities()', ['called with', {
-      earliestActivityDate,
-    }]);
+    logger.debug('ROOM', ID, 'fetchPastActivities()', ['called with', earliestActivityDate]);
 
     if (!ID) {
       logger.error('ROOM', ID, 'fetchPastActivities()', ['Must provide room ID']);
@@ -235,6 +234,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
         if (!data) {
           return room$.complete();
         }
+        cache.cachActivities(data);
         roomActivity.hasMore = data.length >= this.activityLimit + 1;
         const {published} = data.shift();
         const activityIds = sortByPublished(data).map((sdkActivity) => {

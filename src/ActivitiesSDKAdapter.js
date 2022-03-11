@@ -14,6 +14,7 @@ import {
 } from 'rxjs/operators';
 
 import logger from './logger';
+import cache from './cache';
 
 /**
  * An activity a person performs in Webex.
@@ -56,6 +57,7 @@ function parseSDKAttachments(sdkActivity) {
  */
 export function fromSDKActivity(sdkActivity) {
   return {
+    displayHeader: true,
     ID: sdkActivity.id ? constructHydraId('message', sdkActivity.id) : sdkActivity.ID,
     roomID: sdkActivity.target ? constructHydraId('room', sdkActivity.target.id) : sdkActivity.roomID,
     personID: sdkActivity.actor ? constructHydraId('person', sdkActivity.actor.id) : sdkActivity.personID,
@@ -90,12 +92,19 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    * @private
    */
   async fetchActivity(activityID) {
-    logger.debug('ACTIVITY', activityID, 'fetchActivity()', ['called with', {activityID}]);
+    logger.debug('ACTIVITY', 'fetchActivity()', activityID);
 
     const {id} = deconstructHydraId(activityID);
     const service = 'conversation';
     const resource = `activities/${id}`;
+
+    if (cache.has(id)) {
+      return cache.get(id);
+    }
+
     const {body} = await this.datasource.request({service, resource});
+
+    cache.set(id, body);
 
     return body;
   }
@@ -107,11 +116,11 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    * @returns {external:Observable.<Activity>} Observable stream that emits activity data
    */
   getActivity(ID) {
-    logger.debug('ACTIVITY', ID, 'getActivity()', ['called with', {ID}]);
+    logger.debug('ACTIVITY', 'getActivity()', ID, []);
 
     if (!(ID in this.activityObservables)) {
       // use ReplaySubject cause we don't need to set an initial value
-      this.activityObservables[ID] = new ReplaySubject(1);
+      this.activityObservables[ID] = new ReplaySubject();
 
       defer(() => this.fetchActivity(ID)).pipe(
         map(fromSDKActivity),
