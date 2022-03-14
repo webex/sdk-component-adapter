@@ -237,12 +237,12 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
         }
         roomActivity.hasMore = data.length >= this.activityLimit + 1;
         const {published} = data.shift();
-        const activityIds = sortByPublished(data).map((activity) => {
-          const {id} = activity;
+        const activityIds = sortByPublished(data).map((sdkActivity) => {
+          const activity = fromSDKActivity(sdkActivity);
 
-          roomActivity.activities.set(id, activity);
+          roomActivity.activities.set(activity.ID, activity);
 
-          return [id, activity.published];
+          return activity.ID;
         });
 
         roomActivity.earliestActivityDate = published;
