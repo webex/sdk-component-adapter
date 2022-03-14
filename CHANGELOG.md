@@ -1,3 +1,10 @@
+## [1.104.2](https://github.com/webex/sdk-component-adapter/compare/v1.104.1...v1.104.2) (2022-03-14)
+
+
+### Bug Fixes
+
+* **ActivitiesSdkAdapter:** fix some problems related to post an activity using coversation API ([f3c32ff](https://github.com/webex/sdk-component-adapter/commit/f3c32fffb2ecc98c1b6599aac89b3bf3674ec54d))
+
 ## [1.104.1](https://github.com/webex/sdk-component-adapter/compare/v1.104.0...v1.104.1) (2022-03-10)
 
 
