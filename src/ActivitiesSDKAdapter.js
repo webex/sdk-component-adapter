@@ -54,7 +54,7 @@ function parseSDKAttachments(sdkActivity) {
  * @param {object} sdkActivity  SDK activity object
  * @returns {Activity} Adapter activity object
  */
-function fromSDKActivity(sdkActivity) {
+export function fromSDKActivity(sdkActivity) {
   return {
     ID: sdkActivity.id ? constructHydraId('message', sdkActivity.id) : sdkActivity.ID,
     roomID: sdkActivity.target ? constructHydraId('room', sdkActivity.target.id) : sdkActivity.roomID,

@@ -3,6 +3,7 @@ import {isObservable} from 'rxjs';
 import RoomsSDKAdapter from './RoomsSDKAdapter';
 import mockActivities from './mockActivities';
 import createMockSDK, {mockSDKActivity, mockSDKRoom} from './mockSdk';
+import {fromSDKActivity} from './ActivitiesSDKAdapter';
 
 describe('Rooms SDK Adapter', () => {
   let mockSDK;
@@ -12,6 +13,9 @@ describe('Rooms SDK Adapter', () => {
   beforeEach(() => {
     mockSDK = createMockSDK();
     mockSDK.internal.conversation.list = jest.fn(() => Promise.resolve([]));
+    mockSDK.internal.mercury.on = jest.fn((event, callback) => callback({
+      data: {activity: mockSDKActivity},
+    }));
     roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
   });
 
@@ -68,18 +72,8 @@ describe('Rooms SDK Adapter', () => {
     });
 
     test('returns a activity in a proper shape', (done) => {
-      mockSDK.internal.mercury.on = jest.fn((event, callback) => callback(mockSDKActivity));
-
       roomsSDKAdapter.getActivitiesInRealTime(mockSDKActivity.target.id).subscribe((activity) => {
-        expect(activity).toEqual({
-          ID: mockSDKActivity.id,
-          roomID: mockSDKActivity.target.id,
-          content: mockSDKActivity.object,
-          contentType: mockSDKActivity.object.objectType,
-          personID: mockSDKActivity.actor.id,
-          displayAuthor: false,
-          created: mockSDKActivity.published,
-        });
+        expect(activity).toEqual(fromSDKActivity(mockSDKActivity).ID);
         done();
       });
     });
