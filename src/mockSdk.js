@@ -237,7 +237,7 @@ export const activityWithCard = {
   },
 };
 
-export const serverActivity = {
+export const sdkActivity = {
   id: activityID,
   objectType: 'activity',
   published: created,
@@ -254,6 +254,25 @@ export const serverActivity = {
     id: targetID,
     objectType: 'conversation',
   },
+};
+
+export const sdkConversation = {
+  id: roomID,
+  objectType: 'conversation',
+  url: `https://conv-a.wbx2.com/conversation/api/v1/conversations/${roomID}`,
+  participants: {
+    items: [],
+  },
+  activities: {
+    items: [],
+  },
+  deletedActivityIds: [],
+  tags: [
+    'OPEN',
+  ],
+  defaultActivityEncryptionKeyUrl: `kms://kms-cisco.wbx2.com/keys/${roomID}`,
+  encryptionKeyUrl: `kms://kms-cisco.wbx2.com/keys/${roomID}`,
+  kmsResourceObjectUrl: `kms://kms-cisco.wbx2.com/resources/${roomID}`,
 };
 
 /**

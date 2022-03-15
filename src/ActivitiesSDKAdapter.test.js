@@ -3,7 +3,15 @@ import {last} from 'rxjs/operators';
 
 import ActivitiesSDKAdapter from './ActivitiesSDKAdapter';
 import createMockSDK, {
-  created, serverActivity, activityID, roomID, personID, ID, actorID, targetID,
+  created,
+  sdkActivity,
+  sdkConversation,
+  activityID,
+  roomID,
+  personID,
+  ID,
+  actorID,
+  targetID,
 } from './mockSdk';
 
 describe('Activities SDK Adapter', () => {
@@ -25,7 +33,7 @@ describe('Activities SDK Adapter', () => {
     roomID,
     text: 'text1',
     personID,
-    cards: [JSON.parse(serverActivity.object.cards[0])],
+    cards: [JSON.parse(sdkActivity.object.cards[0])],
     attachments: [],
     created,
   };
@@ -43,7 +51,7 @@ describe('Activities SDK Adapter', () => {
   describe('getActivity()', () => {
     beforeEach(() => {
       activitiesSDKAdapter.fetchActivity = jest.fn(
-        () => Promise.resolve(serverActivity),
+        () => Promise.resolve(sdkActivity),
       );
     });
 
@@ -102,6 +110,12 @@ describe('Activities SDK Adapter', () => {
   });
 
   describe('postActivity()', () => {
+    beforeEach(() => {
+      activitiesSDKAdapter.fetchConversation = jest.fn(
+        () => Promise.resolve(sdkConversation),
+      );
+    });
+
     test('emits the posted Activity object', (done) => {
       const activityData = {
         roomID,
@@ -136,8 +150,8 @@ describe('Activities SDK Adapter', () => {
             id: actorID,
           },
           object: {
-            cards: [JSON.stringify(activityData.cards[0])],
             displayName: 'text',
+            cards: [JSON.stringify(activityData.cards[0])],
           },
           target: {
             id: targetID,
@@ -200,7 +214,7 @@ describe('Activities SDK Adapter', () => {
   describe('postAction()', () => {
     beforeEach(() => {
       activitiesSDKAdapter.fetchActivity = jest.fn(
-        () => Promise.resolve(serverActivity),
+        () => Promise.resolve(sdkActivity),
       );
     });
     test('emits the posted action object', (done) => {

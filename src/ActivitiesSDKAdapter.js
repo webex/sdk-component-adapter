@@ -2,9 +2,9 @@ import {constructHydraId, deconstructHydraId} from '@webex/common';
 import {ActivitiesAdapter} from '@webex/component-adapter-interfaces';
 import {
   from,
+  defer,
   Observable,
   ReplaySubject,
-  defer,
 } from 'rxjs';
 import {
   catchError,
@@ -108,7 +108,7 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
 
     const {id} = deconstructHydraId(activityID);
     const service = 'conversation';
-    const resource = `activities/${id}`;
+    const resource = `activities/${encodeURIComponent(id)}`;
 
     if (cache.has(id)) {
       return cache.get(id);
@@ -117,6 +117,24 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     const {body} = await this.datasource.request({service, resource});
 
     cache.set(id, body);
+
+    return body;
+  }
+
+  /**
+   * Fetches a conversation from the API
+   *
+   * @param {string} conversationID  Id of the conversation for which to fetch data
+   * @returns {Promise} Information about the conversation of the given ID
+   *
+   * @private
+   */
+  async fetchConversation(conversationID) {
+    const {id} = deconstructHydraId(conversationID);
+    const method = 'GET';
+    const api = 'conversation';
+    const resource = `conversations/${encodeURIComponent(id)}`;
+    const {body} = await this.datasource.request({method, api, resource});
 
     return body;
   }
@@ -184,29 +202,48 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
   }
 
   /**
+   * Encrypts the cards of an activity and returns a promise to the array of encrypted cards
+   *
+   * @private
+   * @param {Activity} activity  The activity that contains an array of adaptive cards
+   * @returns {Promise.<Array.<string>>} Promise that resolves to the array of encrypted cards or rejects if cards cannot be encrypted
+   */
+  async encryptCards(activity) {
+    logger.debug('ACTIVITY', activity.ID, 'encryptCards()', ['called with', {activity}]);
+
+    const conversation = await this.fetchConversation(activity.roomID);
+
+    return Promise.all(activity.cards.map((card) => (
+      this.datasource.internal.encryption.encryptText(
+        conversation.encryptionKeyUrl,
+        JSON.stringify(card),
+      )
+    ))).catch((err) => {
+      logger.error('ACTIVITY', activity.ID, 'encryptCards()', 'Unable to encrypt card', err);
+      throw err;
+    });
+  }
+
+  /**
    * Posts an activity and returns an observable to the new activity data
    *
-   * @param {object} activity  The activity to post
+   * @param {Activity} activity  The activity to post
    * @returns {Observable.<Activity>} Observable that emits the posted activity (including id)
    */
   postActivity(activity) {
     logger.debug('ACTIVITY', undefined, 'postActivity()', ['called with', {activity}]);
-    const hasCards = this.hasAdaptiveCards(activity);
 
-    const object = !hasCards ? activity.text : {
-      cards: activity.cards.map((card) => JSON.stringify(card)),
-      displayName: activity.text,
+    const doPost = async () => {
+      const {id, cluster = 'us'} = deconstructHydraId(activity.roomID);
+      const hasCards = this.hasAdaptiveCards(activity);
+      const object = hasCards
+        ? ({cards: await this.encryptCards(activity), displayName: activity.text})
+        : activity.text;
+
+      return this.datasource.internal.conversation.post({id, cluster}, object);
     };
 
-    const {id, cluster = 'us'} = deconstructHydraId(activity.roomID);
-
-    return from(this.datasource.internal.conversation.post(
-      {
-        id,
-        cluster,
-      },
-      object,
-    )).pipe(
+    return defer(doPost).pipe(
       map(fromSDKActivity),
       catchError((err) => {
         logger.error('ACTIVITY', undefined, 'postActivity()', ['Unable to post activity', activity], err);
