@@ -285,6 +285,9 @@ export default function createMockSDK(api = {}) {
         unsubscribe: jest.fn(() => Promise.resolve()),
       },
       conversation: mockInternalConversationAPI,
+      encryption: {
+        encryptText: jest.fn(() => Promise.resolve('encrypted text')),
+      },
     },
     people: {
       get: jest.fn(() => Promise.resolve(mockSDKPerson)),
