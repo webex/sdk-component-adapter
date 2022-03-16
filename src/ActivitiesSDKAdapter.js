@@ -8,6 +8,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  concatMap,
   map,
   tap,
 } from 'rxjs/operators';
@@ -137,32 +138,28 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    * @returns {Observable.<object>} Observable stream that emits data of the newly created action
    */
   postAction(activityID, inputs) {
-    logger.debug('ATTACHMENT-ACTION', undefined, 'postAction()', ['called with', {activityID, inputs}]);
+    logger.debug('ACTION', undefined, 'postAction()', ['called with', {activityID, inputs}]);
 
-    const action$ = from(this.datasource.attachmentActions.create({
-      type: 'submit',
-      messageId: activityID,
-      inputs,
-    })).pipe(
-      map((action) => ({
-        actionID: action.id,
-        activityID: action.messageId,
-        inputs: action.inputs,
-        roomID: action.roomId,
-        personID: action.personId,
-        type: action.type,
-        created: action.created,
-      })),
-      tap((action) => {
-        logger.debug('ATTACHMENT-ACTION', action.actionID, 'postAction()', ['emitting posted attachment action', action]);
+    return from(this.fetchActivity(activityID)).pipe(
+      concatMap(async (parentActivity) => {
+        const encryptedInputs = await this.datasource.internal.encryption
+          .encryptText(parentActivity.encryptionKeyUrl, JSON.stringify(inputs));
+
+        return this.datasource.internal.conversation.cardAction(
+          parentActivity.target,
+          {inputs: encryptedInputs},
+          parentActivity,
+        );
       }),
+      tap((action) => {
+        logger.debug('ACTION', action.id, 'postAction()', ['emitting posted action', action]);
+      }),
+      map(fromSDKActivity),
       catchError((err) => {
-        logger.error('ATTACHMENT-ACTION', undefined, 'postAction()', `Unable to create an attachment for activity with id "${activityID}"`, err);
+        logger.error('ACTION', undefined, 'postAction()', `Unable to create an action for activity with id "${activityID}"`, err);
         throw err;
       }),
     );
-
-    return action$;
   }
 
   /**

@@ -149,39 +149,55 @@ describe('Activities SDK Adapter', () => {
   });
 
   describe('postAction()', () => {
+    beforeEach(() => {
+      activitiesSDKAdapter.fetchActivity = jest.fn(
+        () => Promise.resolve(serverActivity),
+      );
+    });
     test('emits the posted action object', (done) => {
       const inputs = {
         firstName: 'My first name',
         lastname: 'My last name',
       };
 
-      activitiesSDKAdapter.postAction(activityID, inputs).pipe(last()).subscribe((action) => {
-        expect(action).toMatchObject({
-          actionID: 'actionID',
-          activityID: 'activityID',
-          inputs: {
-            firstName: 'My first name',
-            lastName: 'My last name',
+      activitiesSDKAdapter.datasource.internal.conversation.cardAction = jest.fn(
+        () => Promise.resolve({
+          ID,
+          actor: {
+            id: actorID,
           },
-          roomID: 'roomID',
-          personID: 'personID',
-          type: 'submit',
+          object: {
+            displayName: 'text',
+          },
+          target: {
+            id: targetID,
+          },
+          published: created,
+        }),
+      );
+
+      activitiesSDKAdapter.postAction(activityID, inputs).subscribe((action) => {
+        expect(action).toMatchObject({
+          ID,
+          text: 'text',
+          roomID,
+          personID,
           created,
         });
         done();
       });
     });
 
-    test('emits the sdk error when attachmentActions.create returns a rejected promise', (done) => {
+    test('emits the sdk error when internal.conversation.cardAction returns a rejected promise', (done) => {
       const sdkError = new Error('sdk-error');
 
-      activitiesSDKAdapter.datasource.attachmentActions.create = jest.fn(
+      activitiesSDKAdapter.datasource.internal.conversation.cardAction = jest.fn(
         () => Promise.reject(sdkError),
       );
 
-      activitiesSDKAdapter.postAction({}).subscribe(
+      activitiesSDKAdapter.postAction(activityID, {x: 1, y: 2}).subscribe(
         () => {
-          done.fail('Created attachment action instead of returning error');
+          done.fail('Created card action instead of returning error');
         },
         (error) => {
           expect(error).toBe(sdkError);
