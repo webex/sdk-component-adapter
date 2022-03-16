@@ -1,3 +1,10 @@
+## [1.104.5](https://github.com/webex/sdk-component-adapter/compare/v1.104.4...v1.104.5) (2022-03-16)
+
+
+### Bug Fixes
+
+* **RoomsAdapter:** fix return value of fetchPastActivities ([b631b58](https://github.com/webex/sdk-component-adapter/commit/b631b58c8bdfe4df2da7798967997c31b705ba2f))
+
 ## [1.104.4](https://github.com/webex/sdk-component-adapter/compare/v1.104.3...v1.104.4) (2022-03-16)
 
 
