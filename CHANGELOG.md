@@ -1,3 +1,10 @@
+## [1.104.4](https://github.com/webex/sdk-component-adapter/compare/v1.104.3...v1.104.4) (2022-03-16)
+
+
+### Bug Fixes
+
+* **RoomsAdapter:** fix return of getActivitiesInRealTime ([fb7ba4a](https://github.com/webex/sdk-component-adapter/commit/fb7ba4a78b3a1ae33253d4de41c6afc54cf56195))
+
 ## [1.104.3](https://github.com/webex/sdk-component-adapter/compare/v1.104.2...v1.104.3) (2022-03-16)
 
 

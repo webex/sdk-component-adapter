@@ -1,6 +1,6 @@
 {
   "name": "@webex/sdk-component-adapter",
-  "version": "1.104.3",
+  "version": "1.104.4",
   "main": "dist/webexSDKComponentAdapter.esm.js",
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
