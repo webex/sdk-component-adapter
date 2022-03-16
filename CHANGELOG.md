@@ -1,3 +1,10 @@
+## [1.104.3](https://github.com/webex/sdk-component-adapter/compare/v1.104.2...v1.104.3) (2022-03-16)
+
+
+### Bug Fixes
+
+* **ActivitiesSdkAdapter:** update postAction to use conversation API ([75498ed](https://github.com/webex/sdk-component-adapter/commit/75498ed9cf4de14ff88f296ebd94e1277fa72977))
+
 ## [1.104.2](https://github.com/webex/sdk-component-adapter/compare/v1.104.1...v1.104.2) (2022-03-14)
 
 
