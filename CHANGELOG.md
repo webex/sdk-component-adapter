@@ -1,3 +1,10 @@
+# [1.105.0](https://github.com/webex/sdk-component-adapter/compare/v1.104.5...v1.105.0) (2022-03-17)
+
+
+### Features
+
+* **cache:** add cache module ([064afaf](https://github.com/webex/sdk-component-adapter/commit/064afaffa080145986d103edc9a36a6c1997630c))
+
 ## [1.104.5](https://github.com/webex/sdk-component-adapter/compare/v1.104.4...v1.104.5) (2022-03-16)
 
 
