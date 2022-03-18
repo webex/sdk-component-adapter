@@ -1,3 +1,10 @@
+## [1.105.1](https://github.com/webex/sdk-component-adapter/compare/v1.105.0...v1.105.1) (2022-03-18)
+
+
+### Bug Fixes
+
+* **ActivitiesAdapter:** fix personID from sdk activity ([171cf4f](https://github.com/webex/sdk-component-adapter/commit/171cf4f192d92a5f488fad704eb8b4978df87396))
+
 # [1.105.0](https://github.com/webex/sdk-component-adapter/compare/v1.104.5...v1.105.0) (2022-03-17)
 
 
