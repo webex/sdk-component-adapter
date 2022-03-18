@@ -58,9 +58,9 @@ function parseSDKAttachments(sdkActivity) {
 export function fromSDKActivity(sdkActivity) {
   return {
     displayHeader: true,
-    ID: sdkActivity.id ? constructHydraId('message', sdkActivity.id) : sdkActivity.ID,
-    roomID: sdkActivity.target ? constructHydraId('room', sdkActivity.target.id) : sdkActivity.roomID,
-    personID: sdkActivity.actor ? constructHydraId('person', sdkActivity.actor.id) : sdkActivity.personID,
+    ID: sdkActivity.id ? constructHydraId('MESSAGE', sdkActivity.id) : sdkActivity.ID,
+    roomID: sdkActivity.target ? constructHydraId('ROOM', sdkActivity.target.id) : sdkActivity.roomID,
+    personID: sdkActivity.actor ? constructHydraId('PEOPLE', sdkActivity.actor.id) : sdkActivity.personID,
     text: sdkActivity.object ?
       (sdkActivity.object.content || sdkActivity.object.displayName) : sdkActivity.text,
     attachments: parseSDKAttachments(sdkActivity),
