@@ -287,6 +287,7 @@ export default function createMockSDK(api = {}) {
   return {
     rooms: {
       get: jest.fn(() => Promise.resolve(mockSDKRoom)),
+      create: jest.fn(() => Promise.resolve(mockSDKRoom)),
       listen: jest.fn(() => Promise.resolve()),
       off: jest.fn(),
       on: jest.fn(),

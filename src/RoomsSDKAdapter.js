@@ -1,6 +1,7 @@
 import {
   Subject,
   concat,
+  defer,
   from,
   fromEvent,
   Observable,
@@ -8,8 +9,10 @@ import {
   ReplaySubject,
 } from 'rxjs';
 import {
+  catchError,
   filter,
   finalize,
+  map,
   flatMap,
   publishReplay,
   refCount,
@@ -36,6 +39,21 @@ const sortByPublished = (arr) => arr.sort((a, b) => new Date(b.published) - new 
 
 // TODO: Need to remove this once we figure out why we need to pre-cache conversations
 let FETCHED_CONVERSATIONS = false;
+
+/**
+ * Maps SDK room to adapter room
+ *
+ * @private
+ * @param {object} sdkRoom  SDK room object
+ * @returns {Room} Room room object
+ */
+function fromSDKroom(sdkRoom) {
+  return {
+    ID: sdkRoom.id,
+    title: sdkRoom.title,
+    type: sdkRoom.type,
+  };
+}
 
 /**
  * The `RoomsSDKAdapter` is an implementation of the `RoomsAdapter` interface.
@@ -157,6 +175,26 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     }
 
     return this.getRoomObservables[ID];
+  }
+
+  /**
+   * Returns an observable that emits room data of the recently created room
+   * Observable will complete after one emission.
+   *
+   * @param {Room} room  Information about the room to create.
+   * @returns {external:Observable.<Room>} Observable stream that emits room data.
+   * @memberof RoomsAdapter
+   */
+  createRoom(room) {
+    logger.debug('ROOM', undefined, 'createRoom()', ['called with', {room}]);
+
+    return defer(() => this.datasource.rooms.create(room)).pipe(
+      map(fromSDKroom),
+      catchError((err) => {
+        logger.error('ROOM', undefined, 'createRoom()', ['Unable to create room', {room}], err);
+        throw err;
+      }),
+    );
   }
 
   /**

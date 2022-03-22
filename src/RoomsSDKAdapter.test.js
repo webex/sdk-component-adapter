@@ -66,6 +66,35 @@ describe('Rooms SDK Adapter', () => {
     });
   });
 
+  describe('createRoom()', () => {
+    test('returns an observable', () => {
+      expect(isObservable(roomsSDKAdapter.createRoom())).toBeTruthy();
+    });
+    test('returns a room in a proper shape', (done) => {
+      roomsSDKAdapter.createRoom(mockSDKRoom).subscribe((room) => {
+        expect(room).toEqual({
+          ID: mockSDKRoom.id,
+          type: mockSDKRoom.type,
+          title: mockSDKRoom.title,
+        });
+        done();
+      });
+    });
+    test('throws a proper error message', (done) => {
+      const errorMessage = 'a proper error message';
+
+      mockSDK.rooms.create = jest.fn(() => Promise.reject(new Error(errorMessage)));
+
+      roomsSDKAdapter.createRoom(mockSDKRoom).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe(errorMessage);
+          done();
+        },
+      );
+    });
+  });
+
   describe('getActivitiesInRealTime()', () => {
     test('returns an observable', () => {
       expect(isObservable(roomsSDKAdapter.getActivitiesInRealTime())).toBeTruthy();
