@@ -1,3 +1,10 @@
+# [1.106.0](https://github.com/webex/sdk-component-adapter/compare/v1.105.1...v1.106.0) (2022-03-23)
+
+
+### Features
+
+* **ShareControl:** disable share screen on mobile browsers and Internet Explorer browser ([454db60](https://github.com/webex/sdk-component-adapter/commit/454db60a183663a4aeae07763153596a015f52b1))
+
 ## [1.105.1](https://github.com/webex/sdk-component-adapter/compare/v1.105.0...v1.105.1) (2022-03-18)
 
 
