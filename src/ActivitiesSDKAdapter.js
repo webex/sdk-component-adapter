@@ -24,28 +24,39 @@ import cache from './cache';
  */
 
 /**
- * Extracts JSON card and files from server activity.
+ * Extracts JSON cards from server activity.
  *
  * @private
  * @param {object} sdkActivity  SDK activity object
- * @returns {Array} Array of attachments.
+ * @returns {Array} Array of cards.
  */
-function parseSDKAttachments(sdkActivity) {
-  const {attachments = []} = sdkActivity;
+function parseSDKCards(sdkActivity) {
+  let cards = [];
 
-  try {
-    if (sdkActivity.object && sdkActivity.object.cards) {
-      sdkActivity.object.cards.forEach((c) => {
-        const card = JSON.parse(c);
+  if (sdkActivity.object && sdkActivity.object.cards) {
+    cards = sdkActivity.object.cards.map((c) => {
+      let card;
 
-        attachments.push({contentType: 'application/vnd.microsoft.card.adaptive', content: card});
-      });
-    }
-  } catch (err) {
-    logger.warn('ACTIVITY', undefined, 'parseSDKAttachments()', `Unable parse attachments for activity with id "${sdkActivity.id}"`, err);
+      try {
+        card = JSON.parse(c);
+      } catch (err) {
+        logger.warn('ACTIVITY', sdkActivity.id, 'parseSDKCards()', ['Unable parse card', c], err);
+
+        card = {
+          type: 'AdaptiveCard',
+          version: '1.0',
+          body: [{
+            type: 'TextBlock',
+            text: 'This card could not be parsed.',
+          }],
+        };
+      }
+
+      return card;
+    });
   }
 
-  return attachments;
+  return cards;
 }
 
 /**
@@ -63,7 +74,8 @@ export function fromSDKActivity(sdkActivity) {
     personID: sdkActivity.actor ? constructHydraId('PEOPLE', sdkActivity.actor.id) : sdkActivity.personID,
     text: sdkActivity.object ?
       (sdkActivity.object.content || sdkActivity.object.displayName) : sdkActivity.text,
-    attachments: parseSDKAttachments(sdkActivity),
+    cards: parseSDKCards(sdkActivity),
+    attachments: sdkActivity.attachments || [],
     created: sdkActivity.published ? sdkActivity.published : sdkActivity.created,
   };
 }
@@ -179,21 +191,21 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
    */
   postActivity(activity) {
     logger.debug('ACTIVITY', undefined, 'postActivity()', ['called with', {activity}]);
-    const card = this.getAdaptiveCard(activity);
+    const hasCards = this.hasAdaptiveCards(activity);
 
-    const object = card && {
-      cards: [JSON.stringify(card)],
+    const object = !hasCards ? activity.text : {
+      cards: activity.cards.map((card) => JSON.stringify(card)),
       displayName: activity.text,
     };
 
     const {id, cluster = 'us'} = deconstructHydraId(activity.roomID);
 
-    const activity$ = from(this.datasource.internal.conversation.post(
+    return from(this.datasource.internal.conversation.post(
       {
         id,
         cluster,
       },
-      object || activity.text,
+      object,
     )).pipe(
       map(fromSDKActivity),
       catchError((err) => {
@@ -201,47 +213,28 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
         throw err;
       }),
     );
-
-    return activity$;
   }
 
   /**
-   * A function that checks whether or not an Activity object contains a card attachment.
+   * A function that checks whether or not an Activity object contains at least one adaptive card.
    *
    * @param {Activity} activity  Activity object
-   * @returns {boolean} True if received Activity object contains a card attachment
+   * @returns {boolean} True if received Activity object contains at least one adaptive card
    */
   // eslint-disable-next-line class-methods-use-this
-  hasAdaptiveCard(activity) {
-    return !!(activity.attachments && activity.attachments[0] && activity.attachments[0].contentType === 'application/vnd.microsoft.card.adaptive');
+  hasAdaptiveCards(activity) {
+    return activity.cards.length > 0;
   }
 
   /**
    * A function that returns adaptive card data of an Activity object.
    *
    * @param {Activity} activity  Activity object
+   * @param {number} cardIndex  Index of the card to get
    * @returns {object|undefined} Adaptive card data object
    */
   // eslint-disable-next-line class-methods-use-this
-  getAdaptiveCard(activity) {
-    const hasCard = this.hasAdaptiveCard(activity);
-
-    return hasCard ? activity.attachments[0].content : undefined;
-  }
-
-  /**
-   * A function that attaches an adaptive card to an Activity object.
-   *
-   * @param {Activity} activity  The activity to post
-   * @param {object} card  The card attachment
-   */
-  // eslint-disable-next-line class-methods-use-this
-  attachAdaptiveCard(activity, card) {
-    const mutableActivity = activity;
-
-    mutableActivity.attachments = [{
-      contentType: 'application/vnd.microsoft.card.adaptive',
-      content: card,
-    }];
+  getAdaptiveCard(activity, cardIndex) {
+    return activity.cards[cardIndex];
   }
 }
