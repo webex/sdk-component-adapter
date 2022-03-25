@@ -3,18 +3,30 @@ import {last} from 'rxjs/operators';
 
 import ActivitiesSDKAdapter from './ActivitiesSDKAdapter';
 import createMockSDK, {
-  mockSDKCardActivity, created, serverActivity, activityID, roomID, personID, ID, actorID, targetID,
+  created, serverActivity, activityID, roomID, personID, ID, actorID, targetID,
 } from './mockSdk';
 
 describe('Activities SDK Adapter', () => {
   let mockSDK;
   let activitiesSDKAdapter;
 
-  const activityWithoutCard = {
+  const activityWithoutCards = {
     ID,
     roomID,
     text: 'text1',
     personID,
+    cards: [],
+    attachments: [],
+    created,
+  };
+
+  const activityWithCards = {
+    ID,
+    roomID,
+    text: 'text1',
+    personID,
+    cards: [JSON.parse(serverActivity.object.cards[0])],
+    attachments: [],
     created,
   };
 
@@ -47,30 +59,26 @@ describe('Activities SDK Adapter', () => {
             roomID,
             text: 'text',
             personID,
-            attachments: [
-              {
-                contentType: 'application/vnd.microsoft.card.adaptive',
-                content: {
-                  $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-                  type: 'AdaptiveCard',
-                  version: '1.2',
-                  body: [
-                    {
-                      type: 'TextBlock',
-                      text: 'Adaptive Cards',
-                      size: 'large',
-                    },
-                  ],
-                  actions: [
-                    {
-                      type: 'Action.OpenUrl',
-                      url: 'http://adaptivecards.io',
-                      title: 'Learn More',
-                    },
-                  ],
+            cards: [{
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              type: 'AdaptiveCard',
+              version: '1.2',
+              body: [
+                {
+                  type: 'TextBlock',
+                  text: 'Adaptive Cards',
+                  size: 'large',
                 },
-              },
-            ],
+              ],
+              actions: [
+                {
+                  type: 'Action.OpenUrl',
+                  url: 'http://adaptivecards.io',
+                  title: 'Learn More',
+                },
+              ],
+            }],
+            attachments: [],
             created,
           });
           done();
@@ -99,6 +107,26 @@ describe('Activities SDK Adapter', () => {
         roomID,
         personID,
         text: 'text',
+        cards: [{
+          $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+          type: 'AdaptiveCard',
+          version: '1.2',
+          body: [
+            {
+              type: 'TextBlock',
+              text: 'Adaptive Cards',
+              size: 'large',
+            },
+          ],
+          actions: [
+            {
+              type: 'Action.OpenUrl',
+              url: 'http://adaptivecards.io',
+              title: 'Learn More',
+            },
+          ],
+        }],
+        attachments: [],
       };
 
       activitiesSDKAdapter.datasource.internal.conversation.post = jest.fn(
@@ -108,6 +136,7 @@ describe('Activities SDK Adapter', () => {
             id: actorID,
           },
           object: {
+            cards: [JSON.stringify(activityData.cards[0])],
             displayName: 'text',
           },
           target: {
@@ -124,6 +153,26 @@ describe('Activities SDK Adapter', () => {
           roomID,
           personID,
           created,
+          cards: [{
+            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+            type: 'AdaptiveCard',
+            version: '1.2',
+            body: [
+              {
+                type: 'TextBlock',
+                text: 'Adaptive Cards',
+                size: 'large',
+              },
+            ],
+            actions: [
+              {
+                type: 'Action.OpenUrl',
+                url: 'http://adaptivecards.io',
+                title: 'Learn More',
+              },
+            ],
+          }],
+          attachments: [],
         });
         done();
       });
@@ -136,7 +185,7 @@ describe('Activities SDK Adapter', () => {
         () => Promise.reject(sdkError),
       );
 
-      activitiesSDKAdapter.postActivity({roomID: ''}).subscribe(
+      activitiesSDKAdapter.postActivity({roomID: '', cards: [], attachments: []}).subscribe(
         () => {
           done.fail('Posted an activity instead of returning error');
         },
@@ -207,25 +256,25 @@ describe('Activities SDK Adapter', () => {
     });
   });
 
-  describe('hasAdaptiveCard()', () => {
-    test('returns true if activity object has a card attachment', () => {
-      const hasCard = activitiesSDKAdapter.hasAdaptiveCard(mockSDKCardActivity);
+  describe('hasAdaptiveCards()', () => {
+    test('returns true if activity object has at least one adaptive card', () => {
+      const hasCards = activitiesSDKAdapter.hasAdaptiveCards(activityWithCards);
 
-      expect(hasCard).toBeTruthy();
+      expect(hasCards).toBeTruthy();
     });
 
-    test('returns false if activity object does not have a card attachment', () => {
-      const hasCard = activitiesSDKAdapter.hasAdaptiveCard(activityWithoutCard);
+    test('returns false if activity object does not have at least one adaptive card', () => {
+      const hasCard = activitiesSDKAdapter.hasAdaptiveCards(activityWithoutCards);
 
       expect(hasCard).toBeFalsy();
     });
   });
 
   describe('getAdaptiveCard()', () => {
-    test('returns the card object if the activity object has a card attachment', () => {
-      const cardAttachment = activitiesSDKAdapter.getAdaptiveCard(mockSDKCardActivity);
+    test('returns the first card object if the activity object has at least one adaptive card', () => {
+      const card = activitiesSDKAdapter.getAdaptiveCard(activityWithCards, 0);
 
-      expect(cardAttachment).toMatchObject({
+      expect(card).toMatchObject({
         $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
         type: 'AdaptiveCard',
         version: '1.2',
@@ -246,67 +295,10 @@ describe('Activities SDK Adapter', () => {
       });
     });
 
-    test('returns undefined if Activity object has a card attachment', () => {
-      const cardAttachment = activitiesSDKAdapter.getAdaptiveCard(activityWithoutCard);
+    test('returns undefined if Activity object does not have at least one card', () => {
+      const card = activitiesSDKAdapter.getAdaptiveCard(activityWithoutCards, 0);
 
-      expect(cardAttachment).toBeUndefined();
-    });
-  });
-
-  describe('attachAdaptiveCard()', () => {
-    test('add an adaptive card attachment to the activity', () => {
-      const activity = {
-        roomID: 'roomID3',
-        text: 'text3',
-      };
-      const cardToAttach = {
-        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-        type: 'AdaptiveCard',
-        version: '1.2',
-        body: [
-          {
-            type: 'TextBlock',
-            text: 'Adaptive Cards',
-            size: 'large',
-          },
-        ],
-        actions: [
-          {
-            type: 'Action.OpenUrl',
-            url: 'http://adaptivecards.io',
-            title: 'Learn More',
-          },
-        ],
-      };
-
-      activitiesSDKAdapter.attachAdaptiveCard(activity, cardToAttach);
-
-      expect(activity).toMatchObject({
-        roomID: 'roomID3',
-        text: 'text3',
-        attachments: [{
-          contentType: 'application/vnd.microsoft.card.adaptive',
-          content: {
-            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-            type: 'AdaptiveCard',
-            version: '1.2',
-            body: [
-              {
-                type: 'TextBlock',
-                text: 'Adaptive Cards',
-                size: 'large',
-              },
-            ],
-            actions: [
-              {
-                type: 'Action.OpenUrl',
-                url: 'http://adaptivecards.io',
-                title: 'Learn More',
-              },
-            ],
-          },
-        }],
-      });
+      expect(card).toBeUndefined();
     });
   });
 });
