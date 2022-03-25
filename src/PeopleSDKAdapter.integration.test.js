@@ -5,6 +5,9 @@ import {createIntegrationTestUser, removeIntegrationTestUser, getPersonHydraID} 
 
 import WebexSDKAdapter from '.';
 
+// Jest auto-mocks by default, avoid `@webex/common` being mocked
+jest.unmock('@webex/common');
+
 describe('People SDK Adapter', () => {
   let getPerson$;
   let subscription;

@@ -32,13 +32,11 @@ global.MediaStream = jest.fn(function MockMediaStream(tracksOrStream = []) {
   });
 });
 
-global.navigator = {
-  mediaDevices: {
-    enumerateDevices: () => Promise.resolve(mockDevices),
-    getDisplayMedia: () => Promise.resolve(new MediaStream()),
-  },
-  userAgent: ''
-};
+
+global.navigator.mediaDevices = {
+  enumerateDevices: () => Promise.resolve(mockDevices),
+  getDisplayMedia: () => Promise.resolve(new MediaStream()),
+},
 
 expect.extend({
   /**
@@ -69,14 +67,12 @@ Received: ${this.utils.printReceived(received && received.getTracks())}`;
   },
 });
 
-global.document = {
-  createElement: (type) => {
-    const elem = {};
+global.document.createElement = (type) => {
+  const elem = {};
 
-    if (type === 'audio' || type === 'video') {
-      elem.setSinkId = () => {};
-    }
+  if (type === 'audio' || type === 'video') {
+    elem.setSinkId = () => {};
+  }
 
-    return elem;
-  },
+  return elem;
 };
