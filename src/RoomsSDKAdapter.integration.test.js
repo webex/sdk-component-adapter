@@ -5,6 +5,9 @@ import {createIntegrationTestUser, removeIntegrationTestUser} from './testHelper
 
 import WebexSDKAdapter from '.';
 
+// Jest auto-mocks by default, avoid `@webex/common` being mocked
+jest.unmock('@webex/common');
+
 describe('Rooms SDK Adapter', () => {
   let createdRoom;
   let getRoom$;
@@ -21,7 +24,6 @@ describe('Rooms SDK Adapter', () => {
     user = await createIntegrationTestUser();
     webexSDKAdapter = new WebexSDKAdapter(user.sdk);
     await webexSDKAdapter.connect();
-    createdRoom = await user.sdk.rooms.create({title: 'Webex Test Room'});
   });
 
   afterAll(async () => {
@@ -36,6 +38,7 @@ describe('Rooms SDK Adapter', () => {
 
   describe('getRoom() returns', () => {
     beforeEach(async () => {
+      createdRoom = await user.sdk.rooms.create({title: 'Webex Test Room'});
       getRoom$ = webexSDKAdapter.roomsAdapter.getRoom(createdRoom.id);
     });
 
@@ -66,7 +69,12 @@ describe('Rooms SDK Adapter', () => {
 
       subscription = getRoom$
         .pipe(
-          delayWhen(() => from(user.sdk.rooms.update({id: createdRoom.id, title: updatedTitle}))),
+          delayWhen(() => from(
+            user.sdk.rooms.update({
+              id: createdRoom.id,
+              title: updatedTitle,
+            }),
+          )),
           skip(1),
         )
         .subscribe((room) => {
@@ -92,9 +100,10 @@ describe('Rooms SDK Adapter', () => {
 
   describe('getActivitiesInRealTime() returns', () => {
     beforeEach(async () => {
+      createdRoom = await user.sdk.rooms.create({title: 'Webex Test Room'});
       getActivitiesInRealTime$ = webexSDKAdapter
         .roomsAdapter
-        .getActivitiesInRealTime$(createdRoom.id);
+        .getActivitiesInRealTime(createdRoom.id);
     });
 
     test('an activity when a message is posted to the space', async (done) => {
@@ -104,17 +113,7 @@ describe('Rooms SDK Adapter', () => {
       });
 
       subscription = getActivitiesInRealTime$.subscribe((activity) => {
-        expect(activity).toMatchObject({
-          ID: activity.id,
-          roomID: createdRoom.title,
-          content: {
-            objectType: 'comment',
-            displayName: 'Webex Components',
-          },
-          contentType: 'comment',
-          personID: user.id,
-          displayAuthor: false,
-        });
+        expect(typeof activity).toBe('string');
         done();
       });
     });
