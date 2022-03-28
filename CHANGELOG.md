@@ -1,3 +1,10 @@
+# [1.107.0](https://github.com/webex/sdk-component-adapter/compare/v1.106.0...v1.107.0) (2022-03-28)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** add 'cards' property to activity and move card from attachments ([c42b637](https://github.com/webex/sdk-component-adapter/commit/c42b6376b26bb54de3963814904f932f75e34733))
+
 # [1.106.0](https://github.com/webex/sdk-component-adapter/compare/v1.105.1...v1.106.0) (2022-03-23)
 
 
