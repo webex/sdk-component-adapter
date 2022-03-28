@@ -43,6 +43,29 @@ function getStatus(status) {
 }
 
 /**
+ * Maps SDK People to adapter people
+ *
+ * @private
+ * @param {object} sdkPeople  SDK people object
+ * @returns {Person} Adapter person object
+ */
+function fromSDKPeople(sdkPeople) {
+  const {items} = sdkPeople;
+
+  return items.map((item) => ({
+    ID: item.id,
+    emails: item.emails,
+    displayName: item.displayName,
+    firstName: item.firstName,
+    lastName: item.lastName,
+    nickName: item.nickName,
+    avatar: item.avatar,
+    orgID: item.orgId,
+    status: item.status,
+  }));
+}
+
+/**
  * The `PeopleSDKAdapter` is an implementation of the `PeopleAdapter` interface.
  * This adapter utilizes the Webex JS SDK to fetch data about a person.
  *
@@ -183,5 +206,26 @@ export default class PeopleSDKAdapter extends PeopleAdapter {
     }
 
     return this.getPersonObservables[ID];
+  }
+
+  /**
+   * Returns an observable that emits a list of people that match the given query.
+   * An empty array is returned when there are no matches.
+   *
+   * @param {string} query Search query
+   * @returns {external:Observable.<Person[]>} Observable that emits person list based on search query
+   */
+  searchPeople(query) {
+    logger.debug('PEOPLE', undefined, 'searchPeople()', ['called with', {query}]);
+
+    return defer(() => this.datasource.people.list({displayName: query}))
+      .pipe(
+        map(fromSDKPeople),
+        tap((peopleList) => logger.debug('PEOPLE', undefined, 'searchPeople()', ['emit persons list', peopleList])),
+        catchError((error) => {
+          logger.error('PEOPLE', undefined, 'searchPeople()', 'error fetching person list', error);
+          throw error;
+        }),
+      );
   }
 }
