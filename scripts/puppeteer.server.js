@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, no-param-reassign, jsdoc/require-jsdoc */
 import {DestinationType} from '@webex/component-adapter-interfaces';
 import Webex from 'webex';
 
