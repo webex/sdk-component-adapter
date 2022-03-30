@@ -16,11 +16,29 @@
 require('dotenv').config();
 
 const codeCoverageTask = require('@cypress/code-coverage/task');
+const webpackPreprocessor = require('@cypress/webpack-preprocessor');
 
 /**
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on, config) => {
+  const options = webpackPreprocessor.defaultOptions;
+
+  // set fs to empty to avoid errors
+  options.webpackOptions.node = {
+    ...options.webpackOptions.node,
+    fs: 'empty',
+  };
+
+  // Add coverage support
+  // rules[0] - /\.jsx?$/
+  // use[0] - babel-loader
+  options.webpackOptions.module.rules[0].use[0].options.plugins = [
+    // keep existing plugins if cypress modifies the config in the future
+    ...(options.webpackOptions.module.rules[0].use[0].options.plugins || []),
+    'istanbul',
+  ];
+
   // `config` is the resolved Cypress config
 
   // Webpack is the default preprocessor for Cypress
