@@ -16,7 +16,7 @@ describe('Switch Microphone Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display data of a meeting control in a proper shape', (done) => {
+    it('returns the display data of a meeting control in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['switch-microphone'].display(meetingID)
         .pipe(elementAt(1)).subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
@@ -58,7 +58,7 @@ describe('Switch Microphone Control', () => {
   });
 
   describe('action()', () => {
-    test('calls switchMicrophone() SDK adapter method', async () => {
+    it('calls switchMicrophone() SDK adapter method', async () => {
       meetingsSDKAdapter.switchMicrophone = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-microphone'].action(meetingID, 'microphoneID');
       expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledTimes(1);

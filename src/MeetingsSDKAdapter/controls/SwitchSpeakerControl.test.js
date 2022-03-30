@@ -16,7 +16,7 @@ describe('Switch Speaker Control', () => {
   });
 
   describe('display()', () => {
-    test('return the display data in a proper shape', (done) => {
+    it('return the display data in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['switch-speaker'].display(meetingID)
         .pipe(elementAt(1)).subscribe((display) => {
           expect(display).toMatchObject({
@@ -62,7 +62,7 @@ describe('Switch Speaker Control', () => {
   });
 
   describe('action()', () => {
-    test('calls switchSpeaker() SDK adapter method', async () => {
+    it('calls switchSpeaker() SDK adapter method', async () => {
       meetingsSDKAdapter.switchSpeaker = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-speaker'].action(meetingID, 'speakerID');
       expect(meetingsSDKAdapter.switchSpeaker).toHaveBeenCalledWith(meetingID, 'speakerID');

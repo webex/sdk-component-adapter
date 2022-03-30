@@ -13,7 +13,7 @@ describe('Share Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display data in a proper shape', (done) => {
+    it('returns the display data in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['share-screen'].display(meetingID).pipe(first())
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
@@ -28,7 +28,7 @@ describe('Share Control', () => {
         });
     });
 
-    test('emits an error if the meeting does not exist', (done) => {
+    it('emits an error if the meeting does not exist', (done) => {
       meetingsSDKAdapter.meetingControls['share-screen'].display('inexistent').subscribe(
         () => {},
         (error) => {
@@ -40,7 +40,7 @@ describe('Share Control', () => {
   });
 
   describe('action()', () => {
-    test('calls handleLocalShare() SDK adapter method', async () => {
+    it('calls handleLocalShare() SDK adapter method', async () => {
       meetingsSDKAdapter.handleLocalShare = jest.fn();
       await meetingsSDKAdapter.meetingControls['share-screen'].action(meetingID);
       expect(meetingsSDKAdapter.handleLocalShare).toHaveBeenCalledTimes(1);

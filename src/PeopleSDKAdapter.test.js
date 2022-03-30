@@ -15,11 +15,11 @@ describe('People SDK Adapter', () => {
   });
 
   describe('getMe()', () => {
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(peopleSDKAdapter.getMe())).toBeTruthy();
     });
 
-    test('emits a Person object on subscription', (done) => {
+    it('emits a Person object on subscription', (done) => {
       peopleSDKAdapter.getMe().subscribe((person) => {
         expect(person).toMatchObject({
           ID: 'personIDCurrentUser',
@@ -35,7 +35,7 @@ describe('People SDK Adapter', () => {
       });
     });
 
-    test('emits a Person object with null status on presence plug-in error', (done) => {
+    it('emits a Person object with null status on presence plug-in error', (done) => {
       const errorMessage = 'Presence not enabled for user';
 
       // SDK presence plug-in fails to return a status
@@ -49,7 +49,7 @@ describe('People SDK Adapter', () => {
       });
     });
 
-    test('completes after one emission', (done) => {
+    it('completes after one emission', (done) => {
       peopleSDKAdapter.getMe().subscribe(
         () => {},
         () => {},
@@ -62,11 +62,11 @@ describe('People SDK Adapter', () => {
   });
 
   describe('getPerson()', () => {
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(peopleSDKAdapter.getPerson(personID))).toBeTruthy();
     });
 
-    test('emits a Person object on subscription', (done) => {
+    it('emits a Person object on subscription', (done) => {
       peopleSDKAdapter.getPerson(personID).subscribe((person) => {
         expect(person).toEqual({
           ID: 'personIDCurrentUser',
@@ -82,7 +82,7 @@ describe('People SDK Adapter', () => {
       });
     });
 
-    test('emits a Person object with null status on presence plug-in error', (done) => {
+    it('emits a Person object with null status on presence plug-in error', (done) => {
       const errorMessage = 'error while subscribing to presence updates';
 
       // SDK presence plug-in fails to subscribe to person status updates
@@ -96,7 +96,7 @@ describe('People SDK Adapter', () => {
       });
     });
 
-    test('throws error on people plug-in error', (done) => {
+    it('throws error on people plug-in error', (done) => {
       const errorMessage = 'Could not find person with given ID';
 
       // SDK people plug-in fails to find person
@@ -111,7 +111,7 @@ describe('People SDK Adapter', () => {
       );
     });
 
-    test('stops listening to presence updates when unsubscribing', () => {
+    it('stops listening to presence updates when unsubscribing', () => {
       const subscription = peopleSDKAdapter.getPerson(personID).subscribe();
 
       subscription.unsubscribe();

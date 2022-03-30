@@ -16,7 +16,7 @@ describe('Switch Camera Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display data in a proper shape', (done) => {
+    it('returns the display data in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['switch-camera'].display(meetingID)
         .pipe(elementAt(1)).subscribe((display) => {
           expect(display).toMatchObject({
@@ -43,7 +43,7 @@ describe('Switch Camera Control', () => {
   });
 
   describe('action()', () => {
-    test('calls switchCamera() SDK adapter method', async () => {
+    it('calls switchCamera() SDK adapter method', async () => {
       meetingsSDKAdapter.switchCamera = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-camera'].action(meetingID, 'cameraID');
       expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledTimes(1);

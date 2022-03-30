@@ -13,7 +13,7 @@ describe('Join Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display data in a proper shape', (done) => {
+    it('returns the display data in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['join-meeting'].display(meetingID).pipe(first()).subscribe((display) => {
         expect(display).toMatchObject({
           ID: 'join-meeting',
@@ -28,7 +28,7 @@ describe('Join Control', () => {
   });
 
   describe('action()', () => {
-    test('calls joinMeeting() SDK adapter method', async () => {
+    it('calls joinMeeting() SDK adapter method', async () => {
       meetingsSDKAdapter.joinMeeting = jest.fn();
       await meetingsSDKAdapter.meetingControls['join-meeting'].action(meetingID);
       expect(meetingsSDKAdapter.joinMeeting).toHaveBeenCalledWith(meetingID);

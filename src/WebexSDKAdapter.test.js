@@ -17,15 +17,15 @@ describe('Webex SDK Adapter', () => {
     webexSDKAdapter = null;
   });
 
-  test('has a rooms adapter instance', () => {
+  it('has a rooms adapter instance', () => {
     expect(webexSDKAdapter.roomsAdapter).toBeInstanceOf(RoomsSDKAdapter);
   });
 
-  test('has a people adapter instance', () => {
+  it('has a people adapter instance', () => {
     expect(webexSDKAdapter.peopleAdapter).toBeInstanceOf(PeopleSDKAdapter);
   });
 
-  test('has a meetings adapter instance', () => {
+  it('has a meetings adapter instance', () => {
     expect(webexSDKAdapter.meetingsAdapter).toBeInstanceOf(MeetingsSDKAdapter);
   });
 });

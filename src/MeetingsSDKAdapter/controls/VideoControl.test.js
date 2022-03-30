@@ -13,7 +13,7 @@ describe('Video Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display data in a proper shape', (done) => {
+    it('returns the display data in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['mute-video'].display(meetingID).pipe(first())
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
@@ -27,7 +27,7 @@ describe('Video Control', () => {
         });
     });
 
-    test('emits an error if the meeting does not exist', (done) => {
+    it('emits an error if the meeting does not exist', (done) => {
       meetingsSDKAdapter.meetingControls['mute-video'].display('inexistent').subscribe(
         () => {},
         (error) => {
@@ -39,7 +39,7 @@ describe('Video Control', () => {
   });
 
   describe('action()', () => {
-    test('calls handleLocalVideo() SDK adapter method', async () => {
+    it('calls handleLocalVideo() SDK adapter method', async () => {
       meetingsSDKAdapter.handleLocalVideo = jest.fn();
       await meetingsSDKAdapter.meetingControls['mute-video'].action(meetingID);
       expect(meetingsSDKAdapter.handleLocalVideo).toHaveBeenCalledTimes(1);
