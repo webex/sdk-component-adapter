@@ -1,3 +1,10 @@
+# [1.108.0](https://github.com/webex/sdk-component-adapter/compare/v1.107.2...v1.108.0) (2022-03-30)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** encrypt cards before posting an activity ([df1f340](https://github.com/webex/sdk-component-adapter/commit/df1f340b11924e45e7db73b1bedf7628625a9375))
+
 ## [1.107.2](https://github.com/webex/sdk-component-adapter/compare/v1.107.1...v1.107.2) (2022-03-30)
 
 
