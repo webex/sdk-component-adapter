@@ -1,7 +1,7 @@
+/* eslint-disable no-unused-expressions */
 import mockDevices from './src/mockDevices';
 
 // Mock Web Media APIs
-
 global.MediaStream = jest.fn(function MockMediaStream(tracksOrStream = []) {
   let tracks;
 
@@ -32,11 +32,10 @@ global.MediaStream = jest.fn(function MockMediaStream(tracksOrStream = []) {
   });
 });
 
-
 global.navigator.mediaDevices = {
   enumerateDevices: () => Promise.resolve(mockDevices),
   getDisplayMedia: () => Promise.resolve(new MediaStream()),
-},
+};
 
 expect.extend({
   /**
