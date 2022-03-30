@@ -79,7 +79,7 @@ export function deepMerge(dest, src) {
  * - catches any JSON.stringify error and returns [error-stringifying:<ERROR-MESSAGE>]
  *
  * @param {any} data  Data to be stringified
- * @param {function} [replacer]  JSON.stringify() replacer parameter
+ * @param {Function} [replacer]  JSON.stringify() replacer parameter
  * @param {string|number} [space]  JSON.stringify() space parameter
  * @returns {string} The string result
  */

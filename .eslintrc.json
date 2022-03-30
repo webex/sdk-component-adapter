@@ -2,20 +2,16 @@
   "env": {
     "es2020": true,
     "browser": true,
-    "jest": true,
     "node": true
   },
   "parserOptions": {
     "sourceType": "module"
   },
   "plugins": [
-    "jest",
     "jsdoc"
   ],
   "extends": [
     "airbnb-base",
-    "plugin:jest/recommended",
-    "plugin:jest/style",
     "plugin:jsdoc/recommended"
   ],
   "globals": {
@@ -80,11 +76,35 @@
   "overrides": [
     {
       "files": [
-        "*.test.js"
+        "src/**/!(*.integration).test.js",
+        "mock*.js",
+        "jest.setup.js"
+      ],
+      "env": {
+        "jest": true
+      },
+      "extends": [
+        "plugin:jest/recommended",
+        "plugin:jest/style"
+      ],
+      "plugins": [
+        "jest"
       ],
       "rules": {
         "jest/no-done-callback": "off"
       }
+    },
+    {
+      "files": [
+        "cypress/**/*.js",
+        "*.integration.test.js"
+      ],
+      "env": {
+        "jest": false
+      },
+      "extends": [
+        "plugin:cypress/recommended"
+      ]
     },
     {
       "files": [

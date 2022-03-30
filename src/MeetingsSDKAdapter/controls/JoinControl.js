@@ -26,6 +26,7 @@ export default class JoinControl extends MeetingControl {
   /**
    * Returns an observable that emits the display data of the control.
    *
+   * @param meetingID
    * @returns {Observable.<MeetingControlDisplay>} Observable that emits display of the join control
    */
   // eslint-disable-next-line class-methods-use-this
