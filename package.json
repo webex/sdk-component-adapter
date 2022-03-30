@@ -11,9 +11,11 @@
     "release:dry-run": "semantic-release --dry-run",
     "start": "nodemon -r dotenv/config scripts/start.js",
     "serve": "parcel scripts/index.html",
+    "jest": "jest",
     "cypress": "cypress open",
     "test:integration": "cypress run --browser chrome",
     "test:integration:ci": "npm run test:integration -- --reporter junit --reporter-options \"mochaFile=test_results/cypress/results-[hash].xml,toConsole=true\"",
+    "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
@@ -64,10 +66,8 @@
     "husky": "^4.3.0",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
-    "jest-puppeteer": "^4.3.0",
     "nodemon": "^2.0.6",
     "parcel-bundler": "^1.12.5",
-    "puppeteer": "^2.0.0",
     "rollup": "^2.59.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
@@ -86,13 +86,15 @@
     ]
   },
   "jest": {
+    "testMatch": [
+      "**/!(*.integration).test.js"
+    ],
     "setupFiles": [
       "dotenv/config"
     ],
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
     ],
-    "preset": "jest-puppeteer",
     "testEnvironment": "jsdom",
     "reporters": [
       "default",
@@ -131,7 +133,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run linter",
-      "pre-push": "npm run build && npm run test:unit",
+      "pre-push": "npm run build && npm run test:unit -- --silent",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },

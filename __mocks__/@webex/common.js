@@ -8,9 +8,8 @@ export const deconstructHydraId = (ID) => {
   return {};
 };
 
-export const constructHydraId = (type, id, cluster = 'us') => {
-  return id;
-};
+// eslint-disable-next-line no-unused-vars
+export const constructHydraId = (type, id, cluster = 'us') => id;
 
 export const SDK_EVENT = {
   EXTERNAL: {
