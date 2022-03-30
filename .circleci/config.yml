@@ -5,18 +5,16 @@ executors:
   node-fermium-executor:
     working_directory: ~/sdk-component-adapter
     docker:
-      - image: circleci/node:fermium-browsers
-  node-erbium-executor:
-    working_directory: ~/sdk-component-adapter
-    docker:
-      - image: circleci/node:erbium-browsers
-        environment:
-          NODE_ENV: development # Only needed if puppeteer is in `devDependencies`
+      - image: cimg/node:14.19-browsers
+
+# orbs
+orbs:
+  browser-tools: circleci/browser-tools@1.2.4
 
 # reusable command for all jobs
 commands:
   checkout_from_workspace:
-    description: 'To checkout and attach the workspace'
+    description: "To checkout and attach the workspace"
     steps:
       - checkout
       - attach_workspace:
@@ -36,10 +34,12 @@ jobs:
           command: npx npm-install-peers
       - save_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
-          paths: node_modules
+          paths:
+            - node_modules
       - persist_to_workspace:
           root: .
-          paths: node_modules
+          paths:
+            - node_modules
 
   unit-test:
     executor: node-fermium-executor
@@ -53,16 +53,30 @@ jobs:
           command: npm run test:unit -- --coverage --maxWorkers=2
       - store_test_results:
           path: test_results
+      - store_artifacts:
+          path: coverage
 
   integration-test:
     executor: node-fermium-executor
     steps:
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
       - checkout_from_workspace
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Cypress Dependencies
+          command: $(npm bin)/cypress install
       - run:
           name: Integration Test Coverage
-          command: npm run test:integration -- --coverage
+          command: npm run test:integration:ci
       - store_test_results:
           path: test_results
+      - store_artifacts:
+          path: cypress/screenshots
+      - store_artifacts:
+          path: coverage
 
   build:
     executor: node-fermium-executor
@@ -73,7 +87,8 @@ jobs:
           command: npm run build
       - persist_to_workspace:
           root: .
-          paths: dist
+          paths:
+            - dist
 
   release:
     executor: node-fermium-executor
@@ -89,6 +104,9 @@ workflows:
     jobs:
       - install
       - unit-test:
+          requires:
+            - install
+      - integration-test:
           requires:
             - install
       - build:
