@@ -39,9 +39,8 @@ reports/
 ._*
 
 #Local stuff
-*.json
 .env*
-!.env.default
-!package.json
-!package-lock.json
 node_modules/
+
+# Cypress
+cypress/screenshots/
