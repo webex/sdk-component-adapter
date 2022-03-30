@@ -26,11 +26,11 @@ describe('Organizations SDK Adapter', () => {
       );
     });
 
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(organizationsSDKAdapter.getOrg(organizationID))).toBeTruthy();
     });
 
-    test('emits organization details on subscription', (done) => {
+    it('emits organization details on subscription', (done) => {
       organizationsSDKAdapter.getOrg(organizationID).subscribe(
         (organization) => {
           expect(organization).toMatchObject({
@@ -43,7 +43,7 @@ describe('Organizations SDK Adapter', () => {
     });
   });
 
-  test('throws an error on invalid organization ID', (done) => {
+  it('throws an error on invalid organization ID', (done) => {
     const sdkError = new Error('Could\'t find organization with ID "badOrgID"');
 
     organizationsSDKAdapter.fetchOrganization = jest.fn(() => Promise.reject(sdkError));

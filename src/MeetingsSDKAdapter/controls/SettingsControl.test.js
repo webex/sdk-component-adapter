@@ -13,7 +13,7 @@ describe('Settings Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display data of a meeting control in a proper shape', () => {
+    it('returns the display data of a meeting control in a proper shape', () => {
       meetingsSDKAdapter.meetingControls.settings.display(meetingID).pipe(first())
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
@@ -29,7 +29,7 @@ describe('Settings Control', () => {
   });
 
   describe('action()', () => {
-    test('calls toggleSettings() SDK adapter method', async () => {
+    it('calls toggleSettings() SDK adapter method', async () => {
       meetingsSDKAdapter.toggleSettings = jest.fn();
       await meetingsSDKAdapter.meetingControls.settings.action(meetingID);
       expect(meetingsSDKAdapter.toggleSettings).toHaveBeenCalledTimes(1);

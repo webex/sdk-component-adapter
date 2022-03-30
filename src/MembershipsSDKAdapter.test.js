@@ -19,7 +19,7 @@ describe('Memberships SDK Adapter', () => {
   });
 
   describe('getMembersFromDestination()', () => {
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(membershipSDKAdapter.getMembersFromDestination())).toBeTruthy();
     });
 
@@ -32,7 +32,7 @@ describe('Memberships SDK Adapter', () => {
       afterEach(() => {
         meetingID = null;
       });
-      test('emits a sorted member list on subscription', (done) => {
+      it('emits a sorted member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(meetingID, DestinationType.MEETING)
           .subscribe((members) => {
             expect(members).toMatchObject([
@@ -77,7 +77,7 @@ describe('Memberships SDK Adapter', () => {
           });
       });
 
-      test('throws an error on invalid meeting ID', (done) => {
+      it('throws an error on invalid meeting ID', (done) => {
         membershipSDKAdapter.getMembersFromDestination('badID', DestinationType.MEETING).subscribe(
           () => {},
           (error) => {
@@ -98,7 +98,7 @@ describe('Memberships SDK Adapter', () => {
         roomID = null;
       });
 
-      test('emits a sorted member list on subscription', (done) => {
+      it('emits a sorted member list on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination(roomID, DestinationType.ROOM)
           .subscribe((members) => {
             expect(members).toMatchObject([
@@ -140,7 +140,7 @@ describe('Memberships SDK Adapter', () => {
     });
 
     describe('when destination type is not MEETING or ROOM', () => {
-      test('throws an error on subscription', (done) => {
+      it('throws an error on subscription', (done) => {
         membershipSDKAdapter.getMembersFromDestination('roomID', 'team').subscribe(
           () => {},
           (error) => {

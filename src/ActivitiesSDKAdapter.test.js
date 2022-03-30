@@ -55,11 +55,11 @@ describe('Activities SDK Adapter', () => {
       );
     });
 
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(activitiesSDKAdapter.getActivity(activityID))).toBeTruthy();
     });
 
-    test('emits activity details on subscription', (done) => {
+    it('emits activity details on subscription', (done) => {
       activitiesSDKAdapter.getActivity(activityID).subscribe(
         (activity) => {
           expect(activity).toMatchObject({
@@ -94,7 +94,7 @@ describe('Activities SDK Adapter', () => {
       );
     });
 
-    test('throws an error on invalid activity ID', (done) => {
+    it('throws an error on invalid activity ID', (done) => {
       const sdkError = new Error('Could not find activity with ID "badActivityID"');
 
       activitiesSDKAdapter.fetchActivity = jest.fn(() => Promise.reject(sdkError));
@@ -116,7 +116,7 @@ describe('Activities SDK Adapter', () => {
       );
     });
 
-    test('emits the posted Activity object', (done) => {
+    it('emits the posted Activity object', (done) => {
       const activityData = {
         roomID,
         personID,
@@ -192,7 +192,7 @@ describe('Activities SDK Adapter', () => {
       });
     });
 
-    test('emits the sdk error when messages.create returns a rejected promise', (done) => {
+    it('emits the sdk error when messages.create returns a rejected promise', (done) => {
       const sdkError = new Error('sdk-error');
 
       activitiesSDKAdapter.datasource.internal.conversation.post = jest.fn(
@@ -217,7 +217,7 @@ describe('Activities SDK Adapter', () => {
         () => Promise.resolve(sdkActivity),
       );
     });
-    test('emits the posted action object', (done) => {
+    it('emits the posted action object', (done) => {
       const inputs = {
         firstName: 'My first name',
         lastname: 'My last name',
@@ -251,7 +251,7 @@ describe('Activities SDK Adapter', () => {
       });
     });
 
-    test('emits the sdk error when internal.conversation.cardAction returns a rejected promise', (done) => {
+    it('emits the sdk error when internal.conversation.cardAction returns a rejected promise', (done) => {
       const sdkError = new Error('sdk-error');
 
       activitiesSDKAdapter.datasource.internal.conversation.cardAction = jest.fn(
@@ -271,13 +271,13 @@ describe('Activities SDK Adapter', () => {
   });
 
   describe('hasAdaptiveCards()', () => {
-    test('returns true if activity object has at least one adaptive card', () => {
+    it('returns true if activity object has at least one adaptive card', () => {
       const hasCards = activitiesSDKAdapter.hasAdaptiveCards(activityWithCards);
 
       expect(hasCards).toBeTruthy();
     });
 
-    test('returns false if activity object does not have at least one adaptive card', () => {
+    it('returns false if activity object does not have at least one adaptive card', () => {
       const hasCard = activitiesSDKAdapter.hasAdaptiveCards(activityWithoutCards);
 
       expect(hasCard).toBeFalsy();
@@ -285,7 +285,7 @@ describe('Activities SDK Adapter', () => {
   });
 
   describe('getAdaptiveCard()', () => {
-    test('returns the first card object if the activity object has at least one adaptive card', () => {
+    it('returns the first card object if the activity object has at least one adaptive card', () => {
       const card = activitiesSDKAdapter.getAdaptiveCard(activityWithCards, 0);
 
       expect(card).toMatchObject({
@@ -309,7 +309,7 @@ describe('Activities SDK Adapter', () => {
       });
     });
 
-    test('returns undefined if Activity object does not have at least one card', () => {
+    it('returns undefined if Activity object does not have at least one card', () => {
       const card = activitiesSDKAdapter.getAdaptiveCard(activityWithoutCards, 0);
 
       expect(card).toBeUndefined();

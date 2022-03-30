@@ -13,7 +13,7 @@ describe('Roster Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display of a meeting control in a proper shape', () => {
+    it('returns the display of a meeting control in a proper shape', () => {
       meetingsSDKAdapter.meetingControls['member-roster'].display(meetingID).pipe(first())
         .subscribe((dataDisplay) => {
           expect(dataDisplay).toMatchObject({
@@ -29,7 +29,7 @@ describe('Roster Control', () => {
   });
 
   describe('action()', () => {
-    test('calls toggleRoster() SDK adapter method', async () => {
+    it('calls toggleRoster() SDK adapter method', async () => {
       meetingsSDKAdapter.toggleRoster = jest.fn();
       await meetingsSDKAdapter.meetingControls['member-roster'].action(meetingID);
       expect(meetingsSDKAdapter.toggleRoster).toHaveBeenCalledTimes(1);

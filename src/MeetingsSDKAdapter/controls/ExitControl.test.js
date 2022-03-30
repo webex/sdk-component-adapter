@@ -13,7 +13,7 @@ describe('Exit Control', () => {
   });
 
   describe('display()', () => {
-    test('returns the display in a proper shape', (done) => {
+    it('returns the display in a proper shape', (done) => {
       meetingsSDKAdapter.meetingControls['leave-meeting'].display().pipe(first()).subscribe((display) => {
         expect(display).toMatchObject({
           ID: 'leave-meeting',
@@ -27,7 +27,7 @@ describe('Exit Control', () => {
   });
 
   describe('action()', () => {
-    test('calls leaveMeeting() SDK adapter method', async () => {
+    it('calls leaveMeeting() SDK adapter method', async () => {
       meetingsSDKAdapter.leaveMeeting = jest.fn();
       await meetingsSDKAdapter.meetingControls['leave-meeting'].action(meetingID);
       expect(meetingsSDKAdapter.leaveMeeting).toHaveBeenCalledWith(meetingID);
