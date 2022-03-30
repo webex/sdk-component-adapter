@@ -1,3 +1,10 @@
+## [1.107.2](https://github.com/webex/sdk-component-adapter/compare/v1.107.1...v1.107.2) (2022-03-30)
+
+
+### Bug Fixes
+
+* **WebexSdkAdapter:** correct some log messages in connect and disconnect methods ([38682b4](https://github.com/webex/sdk-component-adapter/commit/38682b4a38c4b47bf908d9627faa6f14f340f8b3))
+
 ## [1.107.1](https://github.com/webex/sdk-component-adapter/compare/v1.107.0...v1.107.1) (2022-03-30)
 
 
