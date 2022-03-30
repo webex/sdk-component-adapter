@@ -1,12 +1,13 @@
+/// <reference types="cypress" />
 import {from} from 'rxjs';
 import {delayWhen, skip} from 'rxjs/operators';
 
-import {createIntegrationTestUser, removeIntegrationTestUser, getPersonHydraID} from './testHelper';
-
 import WebexSDKAdapter from '.';
-
-// Jest auto-mocks by default, avoid `@webex/common` being mocked
-jest.unmock('@webex/common');
+import {
+  createIntegrationTestUser,
+  removeIntegrationTestUser,
+  getPersonHydraID,
+} from './testHelper';
 
 describe('People SDK Adapter', () => {
   let getPerson$;
@@ -15,17 +16,16 @@ describe('People SDK Adapter', () => {
   let userID;
   let webexSDKAdapter;
 
-  // Since these are integration tests with live data,
-  // increase the async "idle" timeout so jest doesn't error early.
-  jest.setTimeout(30000);
-  beforeAll(async () => {
+  before(async () => {
+    // work around for testHelpers+node_modules to access ENV variables
+    process.env = Cypress.env();
     user = await createIntegrationTestUser();
     userID = getPersonHydraID(user.id);
     webexSDKAdapter = new WebexSDKAdapter(user.sdk);
     await webexSDKAdapter.connect();
   });
 
-  afterAll(async () => {
+  after(async () => {
     try {
       await removeIntegrationTestUser(user);
       await webexSDKAdapter.disconnect();
@@ -36,14 +36,13 @@ describe('People SDK Adapter', () => {
   });
 
   describe('getMe()', () => {
-    test('returns person data of the access token bearer in a proper shape', (done) => {
+    it('returns person data of the access token bearer in a proper shape', () => {
       subscription = webexSDKAdapter.peopleAdapter.getMe().subscribe((person) => {
-        expect(person).toMatchObject({
+        expect(person).to.deep.include({
           ID: userID,
           emails: [user.emailAddress],
           displayName: user.displayName,
         });
-        done();
       });
     });
   });
@@ -58,39 +57,36 @@ describe('People SDK Adapter', () => {
       subscription.unsubscribe();
     });
 
-    test('a person in a proper shape', (done) => {
+    it('a person in a proper shape', () => {
       subscription = getPerson$.subscribe((person) => {
-        expect(person).toMatchObject({
+        expect(person).to.deep.include({
           ID: userID,
           emails: [user.emailAddress],
           displayName: user.displayName,
         });
-        done();
       });
     });
 
-    test('an updated person status after subscribing', (done) => {
+    it('an updated person status after subscribing', () => {
       subscription = getPerson$
         .pipe(
           delayWhen(() => from(user.sdk.internal.presence.setStatus('active', 1500))),
           skip(1),
         )
         .subscribe((person) => {
-          expect(person.status).toEqual('ACTIVE');
-          done();
+          expect(person.status).to.equal('ACTIVE');
         });
     });
 
-    test('support for multiple subscriptions', (done) => {
+    it('support for multiple subscriptions', () => {
       subscription = getPerson$.subscribe();
 
       const secondSubscription = getPerson$.subscribe((room) => {
-        expect(room).toMatchObject({
+        expect(room).to.deep.include({
           ID: userID,
           emails: [user.emailAddress],
           displayName: user.displayName,
         });
-        done();
       });
 
       subscription.add(secondSubscription);
