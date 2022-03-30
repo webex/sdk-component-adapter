@@ -13,11 +13,29 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 
+require('dotenv').config();
+
+const codeCoverageTask = require('@cypress/code-coverage/task');
 
 /**
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on, config) => {
+  // `config` is the resolved Cypress config
+
+  // Webpack is the default preprocessor for Cypress
+  on('file:preprocessor', webpackPreprocessor(options));
+
+  // Enable Code Coverage in Cypress
+  codeCoverageTask(on, config);
+
+  // config.env, which is made accessible to tests via `Cypress.env()`
+  // eslint-disable-next-line no-param-reassign
+  config.env = {
+    ...process.env,
+    // Don't overwrite existing values set by Cypress (i.e. `codeCoverageTasksRegistered`  via `@cypress/code-coverage/task`)
+    ...config.env,
+  };
 
   return config;
 };
