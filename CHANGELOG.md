@@ -1,3 +1,10 @@
+## [1.107.1](https://github.com/webex/sdk-component-adapter/compare/v1.107.0...v1.107.1) (2022-03-30)
+
+
+### Bug Fixes
+
+* **polyfills:** add getTracks() polyfill only if MediaStream exists ([a67eb8e](https://github.com/webex/sdk-component-adapter/commit/a67eb8e30b2c4d3978b0c97d58d8b708c6eeeb3c))
+
 # [1.107.0](https://github.com/webex/sdk-component-adapter/compare/v1.106.0...v1.107.0) (2022-03-28)
 
 
