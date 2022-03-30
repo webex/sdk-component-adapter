@@ -39,7 +39,7 @@ export default class WebexSDKAdapter extends WebexAdapter {
    */
   async connect() {
     logger.debug(...LOG_ARGS, 'connect()', 'called');
-    logger.debug(...LOG_ARGS, 'connect()', 'calling sdk.internal.mercury.connect()');
+    logger.debug(...LOG_ARGS, 'connect()', 'calling sdk.internal.device.register()');
     await this.sdk.internal.device.register();
     logger.debug(...LOG_ARGS, 'connect()', 'calling sdk.internal.mercury.connect()');
     await this.sdk.internal.mercury.connect();
@@ -56,7 +56,7 @@ export default class WebexSDKAdapter extends WebexAdapter {
     await this.meetingsAdapter.disconnect();
     logger.debug(...LOG_ARGS, 'disconnect()', 'calling sdk.internal.mercury.disconnect()');
     await this.sdk.internal.mercury.disconnect();
-    logger.debug(...LOG_ARGS, 'disconnect()', 'calling meetingsAdapter.unregister()');
+    logger.debug(...LOG_ARGS, 'disconnect()', 'calling sdk.internal.device.unregister()');
     await this.sdk.internal.device.unregister();
   }
 }
