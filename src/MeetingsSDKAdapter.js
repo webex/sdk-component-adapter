@@ -191,13 +191,15 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         },
         microphoneID: deviceId,
       })),
-      chainWith((audio) => (ON_IOS_15_1
-        ? of({
-          stream: null,
-          permission: 'ERROR',
-          error: 'Video not supported on iOS 15.1',
-        })
-        : this.getStreamWithPermission(sendVideo, ID, {sendVideo: true}).pipe(
+      chainWith((audio) => (
+        (ON_IOS_15_1
+          ? of({
+            stream: null,
+            permission: 'ERROR',
+            error: 'Video not supported on iOS 15.1',
+          })
+          : this.getStreamWithPermission(sendVideo, ID, {sendVideo: true})
+        ).pipe(
           map(({
             permission,
             stream,
