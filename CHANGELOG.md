@@ -1,3 +1,10 @@
+## [1.108.1](https://github.com/webex/sdk-component-adapter/compare/v1.108.0...v1.108.1) (2022-03-31)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** avoid disabling audio control if on iOS 15.1 ([bc2b1cb](https://github.com/webex/sdk-component-adapter/commit/bc2b1cbe821a14afe58c2519b4c81b7c09c1f223))
+
 # [1.108.0](https://github.com/webex/sdk-component-adapter/compare/v1.107.2...v1.108.0) (2022-03-30)
 
 
