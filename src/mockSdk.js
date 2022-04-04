@@ -32,6 +32,18 @@ export const mockSDKPerson = {
   orgId: 'orgID',
 };
 
+export const mockSDKMetric = {
+  fields: {
+    testField: 123,
+  },
+  tags: {
+    testTag: 'tag value',
+  },
+  metricName: 'testMetric',
+  type: 'behavioral',
+  eventPayload: {value: 'splunk business metric payload'},
+};
+
 export const mockSDKActivity = {
   id: '123-456-789',
   target: {
@@ -307,6 +319,9 @@ export default function createMockSDK(api = {}) {
       conversation: mockInternalConversationAPI,
       encryption: {
         encryptText: jest.fn(() => Promise.resolve('encrypted text')),
+      },
+      metrics: {
+        submitClientMetrics: jest.fn(() => Promise.resolve(mockSDKMetric)),
       },
     },
     people: {
