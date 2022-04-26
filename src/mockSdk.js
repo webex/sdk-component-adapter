@@ -346,6 +346,7 @@ export default function createMockSDK(api = {}) {
       stopListening: jest.fn(() => Promise.resolve()),
       on: jest.fn(),
       off: jest.fn(),
+      create: jest.fn(() => Promise.resolve(mockSDKMembership)),
     },
     attachmentActions: {
       create: jest.fn(() => Promise.resolve(mockSDKAttachmentAction)),

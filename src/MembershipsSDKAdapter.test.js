@@ -151,4 +151,55 @@ describe('Memberships SDK Adapter', () => {
       });
     });
   });
+
+  describe('addRoomMember()', () => {
+    let roomID;
+    let personID;
+
+    beforeEach(() => {
+      roomID = 'roomID';
+      personID = 'personID';
+    });
+    afterEach(() => {
+      roomID = null;
+      personID = null;
+    });
+
+    test('returns an observable', (done) => {
+      expect(isObservable(membershipSDKAdapter.addRoomMember(personID, roomID)))
+        .toBeTruthy();
+      done();
+    });
+
+    test('emits success when member is added to room', (done) => {
+      membershipSDKAdapter.addRoomMember(personID, roomID).subscribe((membership) => {
+        expect(membership).toEqual({
+          ID: 'id',
+          roomID: 'roomID',
+          personID: 'personID',
+          personOrgID: 'organizationID',
+          personEmail: 'email@cisco.com',
+          personDisplayName: 'Simon Damiano',
+          isModerator: false,
+          isMonitor: false,
+          created: '',
+        });
+      });
+      done();
+    });
+
+    test('emits error when sdk fails to add member to room', (done) => {
+      const errorMsg = 'Error adding member to room';
+
+      mockSDK.memberships.create = jest.fn(() => Promise.reject(new Error(errorMsg)));
+
+      membershipSDKAdapter.addRoomMember(personID, roomID).subscribe(
+        () => {},
+        (error) => {
+          expect(error.message).toBe(errorMsg);
+          done();
+        },
+      );
+    });
+  });
 });
