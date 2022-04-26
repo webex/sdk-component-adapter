@@ -16,6 +16,7 @@ import {
   publishReplay,
   refCount,
   tap,
+  catchError,
 } from 'rxjs/operators';
 import {SDK_EVENT, constructHydraId, deconstructHydraId} from '@webex/common';
 import {
@@ -115,6 +116,29 @@ function getMembers(sdkMembers, meeting) {
     host: !!meeting.meetingInfo.isWebexScheduled && member.isModerator,
     guest: member.isGuest,
   }));
+}
+
+/**
+ * Maps SDK membership to adapter membership
+ *
+ * @private
+ * @param {object} sdkMembership  SDK membership object
+ * @returns {Member} Adapter membership object
+ */
+function fromSDKMembership(sdkMembership) {
+  return {
+    ID: sdkMembership.id,
+    roomID: sdkMembership.roomId,
+    isModerator: sdkMembership.isModerator,
+    isMonitor: sdkMembership.isMonitor,
+    isRoomHidden: sdkMembership.isRoomHidden,
+    personDisplayName: sdkMembership.personDisplayName,
+    personEmail: sdkMembership.personEmail,
+    personID: sdkMembership.personId,
+    personOrgID: sdkMembership.personOrgId,
+    roomType: sdkMembership.roomType,
+    created: sdkMembership.created,
+  };
 }
 
 /**
@@ -306,5 +330,30 @@ export default class MembershipsSDKAdapter extends MembershipsAdapter {
     }
 
     return members$;
+  }
+
+  /**
+   * Returns an observable that emits the membership with a member added to the room.
+   * Observable will complete after one emission
+   *
+   * @param {string} personID ID of the person to add to a room
+   * @param {string} roomID ID of the room to add the person into
+   * @returns {Observable<Member>} Observable stream that emits the membership with the added member
+   */
+  addRoomMember(personID, roomID) {
+    logger.debug('MEMBERSHIP', undefined, 'addRoomMember()', ['called with', {personID, roomID}]);
+
+    return defer(() => this.datasource.memberships.create({
+      personId: personID,
+      roomId: roomID,
+    }))
+      .pipe(
+        map(fromSDKMembership),
+        tap((membership) => logger.debug('MEMBERSHIP', undefined, 'addRoomMember()', ['member added to room', membership])),
+        catchError((error) => {
+          logger.error('MEMBERSHIP', undefined, 'addRoomMember()', 'Error adding member to room', error);
+          throw error;
+        }),
+      );
   }
 }
