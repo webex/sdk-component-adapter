@@ -1,3 +1,15 @@
+# [1.109.0](https://github.com/webex/sdk-component-adapter/compare/v1.108.1...v1.109.0) (2022-05-02)
+
+
+### Bug Fixes
+
+* **package:** update component adapter interfaces to version 1.28.0 ([5c390a6](https://github.com/webex/sdk-component-adapter/commit/5c390a6741bc42ed8d8bc84d1486391b0c1cbb7f))
+
+
+### Features
+
+* **MembershipsAdapter:** add addRoomMember method ([0cbc537](https://github.com/webex/sdk-component-adapter/commit/0cbc537bb8d19bc365003559ef05ed2013ed6250))
+
 ## [1.108.1](https://github.com/webex/sdk-component-adapter/compare/v1.108.0...v1.108.1) (2022-03-31)
 
 
