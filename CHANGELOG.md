@@ -1,3 +1,10 @@
+# [1.110.0](https://github.com/webex/sdk-component-adapter/compare/v1.109.0...v1.110.0) (2022-05-24)
+
+
+### Features
+
+* **RoomsSdkAdapter:** add create room method ([b99b875](https://github.com/webex/sdk-component-adapter/commit/b99b8755336476d0654936494f5778d3a8c9d93b))
+
 # [1.109.0](https://github.com/webex/sdk-component-adapter/compare/v1.108.1...v1.109.0) (2022-05-02)
 
 
