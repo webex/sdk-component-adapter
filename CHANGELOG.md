@@ -1,3 +1,10 @@
+# [1.111.0](https://github.com/webex/sdk-component-adapter/compare/v1.110.0...v1.111.0) (2022-05-24)
+
+
+### Features
+
+* **PeopleSdkAdapter:** add search people method ([fec1465](https://github.com/webex/sdk-component-adapter/commit/fec1465d97cab748c55966f7b06c84a332dbbf6d))
+
 # [1.110.0](https://github.com/webex/sdk-component-adapter/compare/v1.109.0...v1.110.0) (2022-05-24)
 
 
