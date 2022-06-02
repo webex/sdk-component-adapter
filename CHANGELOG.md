@@ -1,3 +1,10 @@
+# [1.112.0](https://github.com/webex/sdk-component-adapter/compare/v1.111.0...v1.112.0) (2022-06-02)
+
+
+### Features
+
+* **MetricsSdkAdapter:** add submit metrics method ([9948339](https://github.com/webex/sdk-component-adapter/commit/99483396c33e9e07c1170973850f93ba169e52e2))
+
 # [1.111.0](https://github.com/webex/sdk-component-adapter/compare/v1.110.0...v1.111.0) (2022-05-24)
 
 
