@@ -111,12 +111,6 @@ const LAYOUT_TYPES_MAP = {
   Focus: 'Single',
 };
 
-const SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE = {
-  IN_LOBBY: MeetingState.LOBBY,
-  IN_MEETING: MeetingState.JOINED,
-  NOT_IN_MEETING: MeetingState.LEFT,
-};
-
 const ON_IOS_15_1 = typeof navigator !== 'undefined'
   && navigator.userAgent.includes('iPhone OS 15_1');
 
@@ -1276,12 +1270,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
 
       const meetingStateChange$ = fromEvent(sdkMeeting && sdkMeeting.members, EVENT_MEMBERS_UPDATE)
         .pipe(
-          map((event) => {
+          map(() => {
             logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_MEMBERS_UPDATE, 'event']);
-            const self = Object.values(event.full).find((m) => m.isSelf);
+            const self = sdkMeeting.joinedWith;
 
-            return SDK_MEMBER_STATUS_TO_ADAPTER_MEETING_STATE[self && self.status]
-              || MeetingState.NOT_JOINED;
+            return (self && self.state) || MeetingState.NOT_JOINED;
           }),
           distinctUntilChanged(),
           tap((state) => {
