@@ -1,3 +1,10 @@
+## [1.112.2](https://github.com/webex/sdk-component-adapter/compare/v1.112.1...v1.112.2) (2023-09-26)
+
+
+### Bug Fixes
+
+* **meeting:** release auto leave intermittently fix ([6e536fa](https://github.com/webex/sdk-component-adapter/commit/6e536fa5d199bdf3f4e3f3823153e1253e9b5987))
+
 ## [1.112.1](https://github.com/webex/sdk-component-adapter/compare/v1.112.0...v1.112.1) (2023-09-26)
 
 
