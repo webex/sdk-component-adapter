@@ -1,3 +1,10 @@
+## [1.112.1](https://github.com/webex/sdk-component-adapter/compare/v1.112.0...v1.112.1) (2023-09-26)
+
+
+### Bug Fixes
+
+* **meeting:** fix intermittently leaving meeting before even joining - SPARK-379330 ([ed26b66](https://github.com/webex/sdk-component-adapter/commit/ed26b666bb3171b131978055b79eaa7cfb3c5711))
+
 # [1.112.0](https://github.com/webex/sdk-component-adapter/compare/v1.111.0...v1.112.0) (2022-06-02)
 
 
