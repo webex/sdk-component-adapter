@@ -1272,7 +1272,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         .pipe(
           map(() => {
             logger.debug('MEETING', ID, 'getMeeting()', ['received', EVENT_MEMBERS_UPDATE, 'event']);
-            // Use state of specific meeting instead of collective state
             const self = sdkMeeting.joinedWith;
 
             return (self && self.state) || MeetingState.NOT_JOINED;
