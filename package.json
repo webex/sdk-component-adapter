@@ -72,7 +72,7 @@
     "rollup": "^2.59.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
-    "semantic-release": "^18.0.0",
+    "semantic-release": "^19.0.3",
     "webpack": "~4"
   },
   "browserslist": [
