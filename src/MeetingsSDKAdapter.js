@@ -544,7 +544,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
-      map(({id, meetingInfo: {meetingName}}) => ({
+      map(({id, meetingInfo: {meetingName}, passwordStatus}) => ({
         ID: id,
         title: meetingName,
         localAudio: {
@@ -558,6 +558,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         localShare: {
           stream: null,
         },
+        passwordRequired: passwordStatus === 'REQUIRED',
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
@@ -595,6 +596,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         const sdkMeeting = this.fetchMeeting(meeting.ID);
 
         this.meetings[meeting.ID] = meeting;
+        console.log('pkesari_meeting object before emit: ', meeting);
         sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
       }),
       catchError((err) => {
@@ -632,6 +634,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
+      console.log('pkesari_join meeting with options: ', options);
+      if (sdkMeeting.passwordStatus === 'REQUIRED') {
+        const result = await sdkMeeting.verifyPassword(options.password);
+
+        console.log('pkesari_result from password verification: ', result);
+      }
       sdkMeeting.meetingFiniteStateMachine.reset();
       logger.debug('MEETING', ID, 'joinMeeting()', ['calling sdkMeeting.join() with', {pin: options.password, moderator: false, name: options.name}]);
       await sdkMeeting.join({
