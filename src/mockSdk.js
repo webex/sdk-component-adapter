@@ -79,6 +79,7 @@ export const createMockSDKMediaStreams = () => {
 export const createMockSDKMeeting = () => ({
   id: 'meetingID',
   sipuri: 'my meeting',
+  passwordStatus: 'REQUIRED',
   meetingInfo: {
     isWebexScheduled: true,
   },

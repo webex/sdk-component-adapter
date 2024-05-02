@@ -379,6 +379,7 @@ describe('Meetings SDK Adapter', () => {
           localShare: {
             stream: null,
           },
+          passwordRequired: true,
           remoteAudio: null,
           remoteVideo: null,
           remoteShare: null,
