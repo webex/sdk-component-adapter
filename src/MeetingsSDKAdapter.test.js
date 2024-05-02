@@ -400,6 +400,56 @@ describe('Meetings SDK Adapter', () => {
       });
     });
 
+    it('returns a new meeting in a proper shape with no passwordStatus', (done) => {
+      meetingsSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
+      meetingsSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
+        localAudio: {
+          stream: mockSDKMediaStreams.localAudio,
+          permission: 'ALLOWED',
+        },
+        localVideo: {
+          stream: mockSDKMediaStreams.localVideo,
+          permission: 'ALLOWED',
+        },
+      }));
+
+      mockSDKMeeting.passwordStatus = 'NOT_REQUIRED';
+
+      meetingsSDKAdapter.createMeeting(target).pipe(last()).subscribe((newMeeting) => {
+        expect(newMeeting).toMatchObject({
+          title: 'my meeting',
+          localAudio: {
+            stream: mockSDKMediaStreams.localAudio,
+            permission: 'ALLOWED',
+          },
+          localVideo: {
+            stream: mockSDKMediaStreams.localVideo,
+            permission: 'ALLOWED',
+          },
+          localShare: {
+            stream: null,
+          },
+          passwordRequired: false,
+          remoteAudio: null,
+          remoteVideo: null,
+          remoteShare: null,
+          showRoster: null,
+          settings: {
+            visible: false,
+            preview: {
+              audio: null,
+              video: null,
+            },
+          },
+          state: 'NOT_JOINED',
+          cameraID: null,
+          microphoneID: null,
+          speakerID: '',
+        });
+        done();
+      });
+    });
+
     it('throws error on failed meeting push request', (done) => {
       const wrongTarget = 'wrongTarget';
       const errorMessage = `Unable to create a meeting "${wrongTarget}"`;
