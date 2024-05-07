@@ -1,3 +1,13 @@
+## [1.112.4](https://github.com/webex/sdk-component-adapter/compare/v1.112.3...v1.112.4) (2024-05-07)
+
+
+### Bug Fixes
+
+* **meetings:** addded password flow for guest joining the meeting ([889dbc7](https://github.com/webex/sdk-component-adapter/commit/889dbc710f2d3d211e9be237dcf7ad151386b693))
+* **meetings:** added ut ([849e250](https://github.com/webex/sdk-component-adapter/commit/849e25038e0c4648aa790b12b9138c0baf86d85f))
+* **meetings:** added ut ([fabcc45](https://github.com/webex/sdk-component-adapter/commit/fabcc458dfe2fd5b47ba55e0762ae72086f5439c))
+* **meetings:** cleanup ([118bb58](https://github.com/webex/sdk-component-adapter/commit/118bb5814de40e3c746aebbaa36ed430ecec4331))
+
 ## [1.112.3](https://github.com/webex/sdk-component-adapter/compare/v1.112.2...v1.112.3) (2023-09-29)
 
 
