@@ -37,6 +37,7 @@
     "@babel/plugin-transform-runtime": "^7.16.0",
     "@webex/common": "^1.157.0",
     "@webex/component-adapter-interfaces": "^1.28.0",
+    "deasync": "^0.1.29",
     "logform": "^2.2.0"
   },
   "devDependencies": {
