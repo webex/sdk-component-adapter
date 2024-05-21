@@ -61,14 +61,13 @@ jobs:
     steps:
       - checkout_from_workspace # https://discuss.circleci.com/t/cannot-checkout-anymore/46671
       - browser-tools/install-chrome
-          # chrome-version: "114.0.5735.90" # https://github.com/CircleCI-Public/browser-tools-orb/issues/75
       - browser-tools/install-chromedriver
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Install Cypress Dependencies
-          command: $(npm bin)/cypress install
+          command: npx cypress install
       - run:
           name: Integration Test Coverage
           command: npm run test:integration:ci
