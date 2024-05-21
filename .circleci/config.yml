@@ -2,10 +2,10 @@ version: 2.1
 
 # reusable environment for all jobs
 executors:
-  node-fermium-executor:
+  node-iron-executor:
     working_directory: ~/sdk-component-adapter
     docker:
-      - image: cimg/node:14.19-browsers
+      - image: cimg/node:20.13.1-browsers
 
 # orbs
 orbs:
@@ -23,7 +23,7 @@ commands:
 # define jobs
 jobs:
   install:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout
       - restore_cache:
@@ -42,7 +42,7 @@ jobs:
             - node_modules
 
   unit-test:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -57,7 +57,7 @@ jobs:
           path: coverage
 
   integration-test:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace # https://discuss.circleci.com/t/cannot-checkout-anymore/46671
       - browser-tools/install-chrome:
@@ -80,7 +80,7 @@ jobs:
           path: coverage
 
   build:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -92,7 +92,7 @@ jobs:
             - dist
 
   release:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace
       - run:
