@@ -9,7 +9,7 @@ executors:
 
 # orbs
 orbs:
-  browser-tools: circleci/browser-tools@1.2.4
+  browser-tools: circleci/browser-tools@1.4.8
 
 # reusable command for all jobs
 commands:
@@ -29,9 +29,9 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package-lock.json" }}
-      - run:
-          name: Install Dependencies & Peer Dependencies
-          command: npm install
+      # - run:
+      #     name: Install Dependencies & Peer Dependencies
+      #     command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
