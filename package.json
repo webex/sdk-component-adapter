@@ -1,6 +1,9 @@
 {
   "name": "@webex/sdk-component-adapter",
   "version": "1.112.4",
+  "engines": {
+    "node": ">=20.13.1"
+  },
   "main": "dist/webexSDKComponentAdapter.umd.js",
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
