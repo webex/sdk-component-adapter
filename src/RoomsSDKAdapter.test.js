@@ -1,6 +1,6 @@
 import {isObservable} from 'rxjs';
 
-import RoomsSDKAdapter from './RoomsSDKAdapter';
+import RoomsSDKAdapter, {sortByPublished} from './RoomsSDKAdapter';
 import mockActivities from './mockActivities';
 import createMockSDK, {mockSDKActivity, mockSDKRoom} from './mockSdk';
 import {fromSDKActivity} from './ActivitiesSDKAdapter';
@@ -17,6 +17,26 @@ describe('Rooms SDK Adapter', () => {
       data: {activity: mockSDKActivity},
     }));
     roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
+  });
+
+  describe('sortByPublished', () => {
+    it('should sort oldest to newest', () => {
+      const input = [
+        {published: '2021-06-22T00:00:00.007Z'},
+        {published: '2021-06-25T00:00:00.007Z'},
+        {published: '2021-06-24T00:00:00.007Z'},
+        {published: '2021-06-21T00:00:00.007Z'},
+      ];
+
+      const output = [
+        {published: '2021-06-21T00:00:00.007Z'},
+        {published: '2021-06-22T00:00:00.007Z'},
+        {published: '2021-06-24T00:00:00.007Z'},
+        {published: '2021-06-25T00:00:00.007Z'},
+      ];
+
+      expect(sortByPublished(input)).toStrictEqual(output);
+    });
   });
 
   describe('getRoom() functionality', () => {
