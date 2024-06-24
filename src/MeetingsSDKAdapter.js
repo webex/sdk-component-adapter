@@ -544,7 +544,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
-      map(({id, meetingInfo: {meetingName}, passwordStatus}) => ({
+      map(({id, meetingInfo: {meetingName}, passwordStatus, requiredCaptcha}) => ({
         ID: id,
         title: meetingName,
         localAudio: {
@@ -562,6 +562,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
+        requiredCaptcha,
         showRoster: null,
         settings: {
           visible: false,
