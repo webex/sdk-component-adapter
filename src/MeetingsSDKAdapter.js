@@ -544,10 +544,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
-      tap((meeting) => {
-        console.log('pkesari_meeting object: ', meeting);
-      }),
-      map(({id, meetingInfo: {meetingName}, passwordStatus}, requiredCaptcha) => ({
+      map(({id, meetingInfo: {meetingName}, passwordStatus}) => ({
         ID: id,
         title: meetingName,
         localAudio: {
@@ -562,7 +559,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           stream: null,
         },
         passwordRequired: passwordStatus === 'REQUIRED',
-        requiredCaptcha,
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
@@ -638,7 +634,26 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
-        await sdkMeeting.verifyPassword(options.hostKey || options.password);
+        sdkMeeting.verifyPassword(options.hostKey || options.password).then((res) => {
+          console.log('pkesari_response from verify password: ', res);
+          if (!res.isPasswordValid) {
+            this.updateMeeting(ID, () => (
+              {
+                failureReason: res.failureReason,
+                invalidPassword: true,
+                ...(res.requiredCaptcha && {
+                  requiredCaptcha: {
+                    captchaId: res.requiredCaptcha.captchaId,
+                    refreshURL: res.requiredCaptcha.refreshURL,
+                    verificationAudioURL: res.requiredCaptcha.verificationAudioURL,
+                    verificationImageURL: res.requiredCaptcha.verificationImageURL,
+                  },
+                }),
+              }));
+          } else {
+            logger.info('MEETING', ID, 'joinMeeting()', 'Password succesfully verified');
+          }
+        });
       }
       sdkMeeting.meetingFiniteStateMachine.reset();
       logger.debug('MEETING', ID, 'joinMeeting()', ['calling sdkMeeting.join() with', {pin: options.password, moderator: false, name: options.name}]);
