@@ -544,7 +544,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   createMeeting(destination) {
     const newMeeting$ = from(this.datasource.meetings.create(destination)).pipe(
-      map(({id, meetingInfo: {meetingName}, passwordStatus}) => ({
+      tap((meeting) => {
+        console.log('pkesari_meeting object: ', meeting);
+      }),
+      map(({id, meetingInfo: {meetingName}, passwordStatus}, requiredCaptcha) => ({
         ID: id,
         title: meetingName,
         localAudio: {
@@ -559,6 +562,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
           stream: null,
         },
         passwordRequired: passwordStatus === 'REQUIRED',
+        requiredCaptcha,
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
@@ -1405,5 +1409,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async clearInvalidHostKeyFlag(ID) {
     await this.updateMeeting(ID, async () => ({invalidHostKey: false}));
+  }
+
+  async refreshCaptcha(ID) {
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    await sdkMeeting.refreshCaptcha();
   }
 }
