@@ -562,6 +562,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
+        requiredCaptcha: {},
         showRoster: null,
         settings: {
           visible: false,
@@ -634,26 +635,25 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
-        sdkMeeting.verifyPassword(options.hostKey || options.password).then((res) => {
-          console.log('pkesari_response from verify password: ', res);
-          if (!res.isPasswordValid) {
-            this.updateMeeting(ID, () => (
-              {
-                failureReason: res.failureReason,
-                invalidPassword: true,
-                ...(res.requiredCaptcha && {
-                  requiredCaptcha: {
-                    captchaId: res.requiredCaptcha.captchaId,
-                    refreshURL: res.requiredCaptcha.refreshURL,
-                    verificationAudioURL: res.requiredCaptcha.verificationAudioURL,
-                    verificationImageURL: res.requiredCaptcha.verificationImageURL,
-                  },
-                }),
-              }));
-          } else {
-            logger.info('MEETING', ID, 'joinMeeting()', 'Password succesfully verified');
-          }
-        });
+        const res = await sdkMeeting.verifyPassword(options.hostKey || options.password);
+
+        if (!res.isPasswordValid) {
+          this.updateMeeting(ID, () => (
+            {
+              failureReason: res.failureReason,
+              invalidPassword: true,
+              ...(res.requiredCaptcha && {
+                requiredCaptcha: {
+                  captchaId: res.requiredCaptcha.captchaId,
+                  refreshURL: res.requiredCaptcha.refreshURL,
+                  verificationAudioURL: res.requiredCaptcha.verificationAudioURL,
+                  verificationImageURL: res.requiredCaptcha.verificationImageURL,
+                },
+              }),
+            }));
+        } else {
+          logger.info('MEETING', ID, 'joinMeeting()', 'Password succesfully verified');
+        }
       }
       sdkMeeting.meetingFiniteStateMachine.reset();
       logger.debug('MEETING', ID, 'joinMeeting()', ['calling sdkMeeting.join() with', {pin: options.password, moderator: false, name: options.name}]);
