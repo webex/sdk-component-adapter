@@ -635,7 +635,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
-        const res = await sdkMeeting.verifyPassword(options.hostKey || options.password);
+        const res = await sdkMeeting.verifyPassword(options.hostKey || options.password, options.captcha);
 
         if (!res.isPasswordValid) {
           this.updateMeeting(ID, () => (
