@@ -652,7 +652,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
               }),
             }));
         } else {
-          logger.info('MEETING', ID, 'joinMeeting()', 'Password succesfully verified');
+          logger.info('MEETING', ID, 'joinMeeting()', 'Password successfully verified');
         }
       }
       sdkMeeting.meetingFiniteStateMachine.reset();
@@ -1426,9 +1426,21 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     await this.updateMeeting(ID, async () => ({invalidHostKey: false}));
   }
 
+  /**
+   * Refreshes the captcha code.
+   *
+   * @async
+   * @param {string} ID  Id of the meeting
+   */
   async refreshCaptcha(ID) {
+    logger.debug('MEETING', ID, 'refreshCaptcha()', ['called with', {ID}]);
     const sdkMeeting = this.fetchMeeting(ID);
 
     await sdkMeeting.refreshCaptcha();
+    this.updateMeeting(ID, () => (
+      {
+        requiredCaptcha: sdkMeeting.requiredCaptcha,
+      }
+    ));
   }
 }
