@@ -83,6 +83,9 @@ export const createMockSDKMeeting = () => ({
   meetingInfo: {
     isWebexScheduled: true,
   },
+  meetingFiniteStateMachine: {
+    reset: jest.fn(),
+  },
   members: {
     membersCollection: {
       members: {
@@ -174,6 +177,7 @@ export const createMockSDKMeeting = () => ({
   canUpdateMedia: jest.fn(() => true),
   updateShare: jest.fn(() => Promise.resolve()),
   changeVideoLayout: jest.fn(() => Promise.resolve()),
+  refreshCaptcha: jest.fn(),
 });
 
 export const mockSDKMembership = {

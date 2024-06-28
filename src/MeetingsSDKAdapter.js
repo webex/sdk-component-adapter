@@ -635,7 +635,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
-        const res = await sdkMeeting.verifyPassword(options.hostKey || options.password, options.captcha);
+        const res = await sdkMeeting
+          .verifyPassword(options.hostKey || options.password, options.captcha);
 
         if (!res.isPasswordValid) {
           this.updateMeeting(ID, () => (
@@ -1372,6 +1373,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     deepMerge(meeting, updates);
 
     logger.debug('MEETING', ID, 'updateMeeting()', ['meeting updated with', EVENT_MEETING_UPDATED, 'event', 'meeting object', {meeting}]);
+
     sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
   }
 
@@ -1436,8 +1438,8 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     logger.debug('MEETING', ID, 'refreshCaptcha()', ['called with', {ID}]);
     const sdkMeeting = this.fetchMeeting(ID);
 
-    await sdkMeeting.refreshCaptcha();
-    this.updateMeeting(ID, () => (
+    sdkMeeting.refreshCaptcha();
+    await this.updateMeeting(ID, () => (
       {
         requiredCaptcha: sdkMeeting.requiredCaptcha,
       }

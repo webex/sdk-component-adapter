@@ -25,6 +25,7 @@ export function createTestMeetingsSDKAdapter() {
     remoteAudio: null,
     remoteVideo: null,
     remoteShare: null,
+    requiredCaptcha: {},
     showRoster: null,
     settings: {
       visible: false,

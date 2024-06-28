@@ -1087,4 +1087,114 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({invalidHostKey: false});
     });
   });
+
+  describe('refreshCaptcha()', () => {
+    const mockCaptcha = {
+      captchaId: 'Captcha_c57280d4-6baf-4a27-87e9-290757754bb6',
+      verificationImageURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_c57280d4-6baf-4a27-87e9-290757754bb6/verificationCodeImage',
+      refreshURL: 'https://cisco.webex.com/captchaservice/v1/captchas/refresh?siteurl=cisco&captchaID=Captcha_c57280d4-6baf-4a27-87e9-290757754bb6',
+      verificationAudioURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_c57280d4-6baf-4a27-87e9-290757754bb6/verificationCodeAudio',
+    };
+
+    it('refreshes the captcha', async () => {
+      meetingsSDKAdapter.meetings[meetingID].requiredCaptcha = {
+        captchaId: 'Captcha_b40798d4-6baf-4a27-bf77-2907577524d6',
+        verificationImageURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_b40798d4-6baf-4a27-bf77-2907577524d6/verificationCodeImage',
+        refreshURL: 'https://cisco.webex.com/captchaservice/v1/captchas/refresh?siteurl=cisco&captchaID=Captcha_b40798d4-6baf-4a27-bf77-2907577524d6',
+        verificationAudioURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_b40798d4-6baf-4a27-bf77-2907577524d6/verificationCodeAudio',
+      };
+
+      mockSDKMeeting.requiredCaptcha = mockCaptcha;
+
+      await meetingsSDKAdapter.refreshCaptcha(meetingID);
+
+      expect(mockSDKMeeting.refreshCaptcha).toHaveBeenCalledWith();
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({requiredCaptcha: mockCaptcha});
+    });
+  });
+
+  describe('joinMeeting()', () => {
+    const verifyPasswordRes1 = {
+      failureReason: 'WRONG_PASSWORD',
+      isPasswordValid: false,
+      requiredCaptcha: {
+        captchaId: 'Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247',
+        refreshURL: 'https://cisco.webex.com/captchaservice/v1/captchas/refresh?siteurl=cisco&captchaID=Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247',
+        verificationAudioURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247/verificationCodeAudio',
+        verificationImageURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247/verificationCodeImage',
+      },
+    };
+
+    const mockResponse1 = {
+      failureReason: 'WRONG_PASSWORD',
+      invalidPassword: true,
+      requiredCaptcha: {
+        captchaId: 'Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247',
+        refreshURL: 'https://cisco.webex.com/captchaservice/v1/captchas/refresh?siteurl=cisco&captchaID=Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247',
+        verificationAudioURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247/verificationCodeAudio',
+        verificationImageURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_c3c3009f-c844-4305-b1c4-6aed2a251247/verificationCodeImage',
+      },
+    };
+
+    const verifyPasswordRes2 = {
+      failureReason: 'WRONG_CAPTCHA',
+      isPasswordValid: false,
+      requiredCaptcha: {
+        captchaId: 'Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68',
+        refreshURL: 'https://cisco.webex.com/captchaservice/v1/captchas/refresh?siteurl=cisco&captchaID=Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68',
+        verificationAudioURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68/verificationCodeAudio',
+        verificationImageURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68/verificationCodeImage',
+      },
+    };
+
+    const mockResponse2 = {
+      failureReason: 'WRONG_CAPTCHA',
+      invalidPassword: true,
+      requiredCaptcha: {
+        captchaId: 'Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68',
+        refreshURL: 'https://cisco.webex.com/captchaservice/v1/captchas/refresh?siteurl=cisco&captchaID=Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68',
+        verificationAudioURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68/verificationCodeAudio',
+        verificationImageURL: 'https://cisco.webex.com/captchaservice/v1/captchas/Captcha_e34a56d8-c75e-4424-9a34-b1dd28badd68/verificationCodeImage',
+      },
+    };
+
+    it('joinMeeting with correct password with no captcha needed', async () => {
+      mockSDKMeeting.verifyPassword = jest.fn(() => Promise.resolve({
+        failureReason: 'NONE',
+        isPasswordValid: true,
+        requiredCaptcha: null,
+      }));
+      await meetingsSDKAdapter.joinMeeting(meetingID, {password: 'BJzbHDKd347'});
+
+      expect(mockSDKMeeting.verifyPassword).toHaveBeenCalledWith('BJzbHDKd347', undefined);
+      expect(mockSDKMeeting.emit).not.toHaveBeenCalled();
+      expect(mockSDKMeeting.join).toHaveBeenCalledTimes(1);
+    });
+
+    it('joinMeeting with incorrect password multiple times and receiving captcha code to be entered', async () => {
+      mockSDKMeeting.verifyPassword = jest.fn(() => Promise.resolve(verifyPasswordRes1));
+      mockSDKMeeting.requiredCaptcha = verifyPasswordRes1.requiredCaptcha;
+
+      await meetingsSDKAdapter.joinMeeting(meetingID, {password: 'fahdkwlr'});
+
+      expect(mockSDKMeeting.verifyPassword).toHaveBeenCalledWith('fahdkwlr', undefined);
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject(mockResponse1);
+    });
+
+    it('joinMeeting with correct password and incorrect captcha', async () => {
+      mockSDKMeeting.verifyPassword = jest.fn(() => Promise.resolve(verifyPasswordRes2));
+      mockSDKMeeting.requiredCaptcha = verifyPasswordRes2.requiredCaptcha;
+
+      await meetingsSDKAdapter.joinMeeting(meetingID, {password: 'BJzbHDKd347', captcha: 'pfucip'});
+
+      expect(mockSDKMeeting.verifyPassword).toHaveBeenCalledWith('BJzbHDKd347', 'pfucip');
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
+      expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject(mockResponse2);
+    });
+  });
 });
