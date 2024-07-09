@@ -1,3 +1,10 @@
+## [1.112.5](https://github.com/webex/sdk-component-adapter/compare/v1.112.4...v1.112.5) (2024-06-28)
+
+
+### Bug Fixes
+
+* **meeting:** fetching captcha details within meeting object ([#337](https://github.com/webex/sdk-component-adapter/issues/337)) ([34a8a18](https://github.com/webex/sdk-component-adapter/commit/34a8a187df3a249a67ac72412a9564185725fd71))
+
 ## [1.112.4](https://github.com/webex/sdk-component-adapter/compare/v1.112.3...v1.112.4) (2024-05-07)
 
 

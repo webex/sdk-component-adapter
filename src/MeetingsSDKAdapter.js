@@ -562,6 +562,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
         remoteAudio: null,
         remoteVideo: null,
         remoteShare: null,
+        requiredCaptcha: {},
         showRoster: null,
         settings: {
           visible: false,
@@ -634,7 +635,26 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const sdkMeeting = this.fetchMeeting(ID);
 
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
-        await sdkMeeting.verifyPassword(options.hostKey || options.password);
+        const res = await sdkMeeting
+          .verifyPassword(options.hostKey || options.password, options.captcha);
+
+        if (!res.isPasswordValid) {
+          this.updateMeeting(ID, () => (
+            {
+              failureReason: res.failureReason,
+              invalidPassword: true,
+              ...(res.requiredCaptcha && {
+                requiredCaptcha: {
+                  captchaId: res.requiredCaptcha.captchaId,
+                  refreshURL: res.requiredCaptcha.refreshURL,
+                  verificationAudioURL: res.requiredCaptcha.verificationAudioURL,
+                  verificationImageURL: res.requiredCaptcha.verificationImageURL,
+                },
+              }),
+            }));
+        } else {
+          logger.info('MEETING', ID, 'joinMeeting()', 'Password successfully verified');
+        }
       }
       sdkMeeting.meetingFiniteStateMachine.reset();
       logger.debug('MEETING', ID, 'joinMeeting()', ['calling sdkMeeting.join() with', {pin: options.password, moderator: false, name: options.name}]);
@@ -1353,6 +1373,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     deepMerge(meeting, updates);
 
     logger.debug('MEETING', ID, 'updateMeeting()', ['meeting updated with', EVENT_MEETING_UPDATED, 'event', 'meeting object', {meeting}]);
+
     sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
   }
 
@@ -1405,5 +1426,23 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
    */
   async clearInvalidHostKeyFlag(ID) {
     await this.updateMeeting(ID, async () => ({invalidHostKey: false}));
+  }
+
+  /**
+   * Refreshes the captcha code.
+   *
+   * @async
+   * @param {string} ID  Id of the meeting
+   */
+  async refreshCaptcha(ID) {
+    logger.debug('MEETING', ID, 'refreshCaptcha()', ['called with', {ID}]);
+    const sdkMeeting = this.fetchMeeting(ID);
+
+    sdkMeeting.refreshCaptcha();
+    await this.updateMeeting(ID, () => (
+      {
+        requiredCaptcha: sdkMeeting.requiredCaptcha,
+      }
+    ));
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@webex/sdk-component-adapter",
-  "version": "1.112.4",
+  "version": "1.112.5",
   "engines": {
     "node": ">=20.13.1"
   },
