@@ -1,3 +1,10 @@
+## [1.112.6](https://github.com/webex/sdk-component-adapter/compare/v1.112.5...v1.112.6) (2024-07-15)
+
+
+### Bug Fixes
+
+* **tooling:** upgrading node version to 20.13 ([#335](https://github.com/webex/sdk-component-adapter/issues/335)) ([a8a129b](https://github.com/webex/sdk-component-adapter/commit/a8a129b2609752494b27c7b80e025f0cb903b628))
+
 ## [1.112.5](https://github.com/webex/sdk-component-adapter/compare/v1.112.4...v1.112.5) (2024-06-28)
 
 
