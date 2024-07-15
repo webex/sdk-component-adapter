@@ -2,14 +2,14 @@ version: 2.1
 
 # reusable environment for all jobs
 executors:
-  node-fermium-executor:
+  node-iron-executor:
     working_directory: ~/sdk-component-adapter
     docker:
-      - image: cimg/node:14.19-browsers
+      - image: cimg/node:20.13.1-browsers
 
 # orbs
 orbs:
-  browser-tools: circleci/browser-tools@1.2.4
+  browser-tools: circleci/browser-tools@1.4.8
 
 # reusable command for all jobs
 commands:
@@ -23,7 +23,7 @@ commands:
 # define jobs
 jobs:
   install:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout
       - restore_cache:
@@ -31,7 +31,7 @@ jobs:
             - dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Install Dependencies & Peer Dependencies
-          command: npx npm-install-peers
+          command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
@@ -42,7 +42,7 @@ jobs:
             - node_modules
 
   unit-test:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -57,18 +57,17 @@ jobs:
           path: coverage
 
   integration-test:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace # https://discuss.circleci.com/t/cannot-checkout-anymore/46671
-      - browser-tools/install-chrome:
-          chrome-version: "114.0.5735.90" # https://github.com/CircleCI-Public/browser-tools-orb/issues/75
+      - browser-tools/install-chrome
       - browser-tools/install-chromedriver
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Install Cypress Dependencies
-          command: $(npm bin)/cypress install
+          command: npx cypress install
       - run:
           name: Integration Test Coverage
           command: npm run test:integration:ci
@@ -80,7 +79,7 @@ jobs:
           path: coverage
 
   build:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace
       - run:
@@ -92,7 +91,7 @@ jobs:
             - dist
 
   release:
-    executor: node-fermium-executor
+    executor: node-iron-executor
     steps:
       - checkout_from_workspace
       - run:

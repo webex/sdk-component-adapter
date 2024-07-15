@@ -1,6 +1,9 @@
 {
   "name": "@webex/sdk-component-adapter",
   "version": "1.112.5",
+  "engines": {
+    "node": ">=20.13.1"
+  },
   "main": "dist/webexSDKComponentAdapter.umd.js",
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
@@ -37,6 +40,7 @@
     "@babel/plugin-transform-runtime": "^7.16.0",
     "@webex/common": "^1.157.0",
     "@webex/component-adapter-interfaces": "^1.28.0",
+    "deasync": "^0.1.29",
     "logform": "^2.2.0"
   },
   "devDependencies": {
@@ -58,7 +62,7 @@
     "babel-plugin-istanbul": "^6.1.1",
     "cypress": "^9.5.3",
     "dotenv": "^8.2.0",
-    "eslint": "^7.2.0",
+    "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-import": "^2.22.1",
