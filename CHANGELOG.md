@@ -1,3 +1,10 @@
+## [1.112.7](https://github.com/webex/sdk-component-adapter/compare/v1.112.6...v1.112.7) (2024-08-13)
+
+
+### Bug Fixes
+
+* **webex:** upgrade webex to the latest 2.x version ([#338](https://github.com/webex/sdk-component-adapter/issues/338)) ([324a824](https://github.com/webex/sdk-component-adapter/commit/324a824bcb1f2d781bee876dac5bec48138b6cc6))
+
 ## [1.112.6](https://github.com/webex/sdk-component-adapter/compare/v1.112.5...v1.112.6) (2024-07-15)
 
 
