@@ -1,3 +1,10 @@
+## [1.112.8](https://github.com/webex/sdk-component-adapter/compare/v1.112.7...v1.112.8) (2024-08-22)
+
+
+### Bug Fixes
+
+* **package:** remove engine requirement from package as this breaks downstream app upgrades ([#339](https://github.com/webex/sdk-component-adapter/issues/339)) ([6d55c65](https://github.com/webex/sdk-component-adapter/commit/6d55c657acb223de1da391491f646d8843534a49))
+
 ## [1.112.7](https://github.com/webex/sdk-component-adapter/compare/v1.112.6...v1.112.7) (2024-08-13)
 
 
