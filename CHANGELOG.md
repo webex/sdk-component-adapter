@@ -1,3 +1,10 @@
+## [1.112.9](https://github.com/webex/sdk-component-adapter/compare/v1.112.8...v1.112.9) (2024-10-01)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** handle joinMeeting with empty password ([#340](https://github.com/webex/sdk-component-adapter/issues/340)) ([bf9182e](https://github.com/webex/sdk-component-adapter/commit/bf9182e5cd373561e6bd42a811733239bab10586))
+
 ## [1.112.8](https://github.com/webex/sdk-component-adapter/compare/v1.112.7...v1.112.8) (2024-08-22)
 
 
