@@ -1196,5 +1196,14 @@ describe('Meetings SDK Adapter', () => {
       expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject(mockResponse2);
     });
+
+    it('joinMeeting with empty password', async () => {
+      mockSDKMeeting.verifyPassword = jest.fn();
+      await meetingsSDKAdapter.joinMeeting(meetingID, {password: ''});
+
+      expect(mockSDKMeeting.verifyPassword).not.toHaveBeenCalled();
+      expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
+      expect(mockSDKMeeting.join).not.toHaveBeenCalled();
+    });
   });
 });
