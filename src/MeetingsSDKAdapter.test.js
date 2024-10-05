@@ -450,6 +450,40 @@ describe('Meetings SDK Adapter', () => {
       });
     });
 
+    it('should emit EVENT_MEETING_UPDATED with the updated title from sdkMeeting.meetingInfo.topic', (done) => {
+      // Mock implementations
+      meetingsSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
+      meetingsSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
+        localAudio: {
+          stream: mockSDKMediaStreams.localAudio,
+          permission: 'ALLOWED',
+        },
+        localVideo: {
+          stream: mockSDKMediaStreams.localVideo,
+          permission: 'ALLOWED',
+        },
+      }));
+
+      // Mock fetchMeeting to return an object containing meetingInfo.topic and an emit function
+      const mockEmit = jest.fn();
+
+      meetingsSDKAdapter.fetchMeeting = jest.fn(() => ({
+        meetingInfo: {
+          topic: 'Updated Meeting Title',
+        },
+        emit: mockEmit,
+      }));
+
+      meetingsSDKAdapter.createMeeting(target).pipe(last()).subscribe(() => {
+        // Ensure the emit function was called with the updated meeting
+        expect(mockEmit).toHaveBeenCalledWith('adapter:meeting:updated', expect.objectContaining({
+          title: 'Updated Meeting Title',
+        }));
+
+        done();
+      });
+    });
+
     it('throws error on failed meeting push request', (done) => {
       const wrongTarget = 'wrongTarget';
       const errorMessage = `Unable to create a meeting "${wrongTarget}"`;

@@ -595,9 +595,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       )),
       tap((meeting) => {
         const sdkMeeting = this.fetchMeeting(meeting.ID);
+        const updatedTitle = sdkMeeting.meetingInfo.topic || meeting.title;
+        const updatedMeeting = {...meeting, title: updatedTitle};
 
-        this.meetings[meeting.ID] = meeting;
-        sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
+        this.meetings[meeting.ID] = updatedMeeting;
+        sdkMeeting.emit(EVENT_MEETING_UPDATED, updatedMeeting);
       }),
       catchError((err) => {
         logger.error('MEETING', destination, 'createMeeting()', `Unable to create a meeting with "${destination}"`, err);
