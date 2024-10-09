@@ -452,7 +452,6 @@ describe('Meetings SDK Adapter', () => {
 
     it('should emit EVENT_MEETING_UPDATED with the updated title from sdkMeeting.meetingInfo.topic', (done) => {
       // Mock implementations
-      meetingsSDKAdapter.fetchMeetingTitle = jest.fn(() => Promise.resolve('my meeting'));
       meetingsSDKAdapter.getLocalMedia = jest.fn(() => rxjs.of({
         localAudio: {
           stream: mockSDKMediaStreams.localAudio,

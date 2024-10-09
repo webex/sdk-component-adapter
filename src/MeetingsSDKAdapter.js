@@ -595,11 +595,12 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       )),
       tap((meeting) => {
         const sdkMeeting = this.fetchMeeting(meeting.ID);
-        const updatedTitle = sdkMeeting.meetingInfo.topic || meeting.title;
-        const updatedMeeting = {...meeting, title: updatedTitle};
 
-        this.meetings[meeting.ID] = updatedMeeting;
-        sdkMeeting.emit(EVENT_MEETING_UPDATED, updatedMeeting);
+        this.meetings[meeting.ID] = {
+          ...meeting,
+          title: sdkMeeting.meetingInfo.topic || meeting.title,
+        };
+        sdkMeeting.emit(EVENT_MEETING_UPDATED, this.meetings[meeting.ID]);
       }),
       catchError((err) => {
         logger.error('MEETING', destination, 'createMeeting()', `Unable to create a meeting with "${destination}"`, err);
@@ -636,6 +637,13 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
+      // eslint-disable-next-line no-console
+      console.log('ravi joinMeeting sdkMeeting ', sdkMeeting);
+
+      if (sdkMeeting.meetingInfo.topic) {
+        this.updateMeeting(ID, () => ({title: sdkMeeting.meetingInfo.topic}));
+      }
+
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
         if (!(options.password || options.hostKey)) {
           this.updateMeeting(ID, () => (
@@ -663,6 +671,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
               }),
             }));
         } else {
+          // update the meeting title if available after password verification
+          if (sdkMeeting.meetingInfo.topic) {
+            this.updateMeeting(ID, () => ({title: sdkMeeting.meetingInfo.topic}));
+          }
           logger.info('MEETING', ID, 'joinMeeting()', 'Password successfully verified');
         }
       }
