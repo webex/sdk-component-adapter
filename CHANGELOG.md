@@ -1,3 +1,10 @@
+## [1.112.11](https://github.com/webex/sdk-component-adapter/compare/v1.112.10...v1.112.11) (2024-10-10)
+
+
+### Bug Fixes
+
+* update meeting name after fetch meetinginfo ([#342](https://github.com/webex/sdk-component-adapter/issues/342)) ([20a46f8](https://github.com/webex/sdk-component-adapter/commit/20a46f8450dbc10555edb8aea0798a29c5547e78))
+
 ## [1.112.10](https://github.com/webex/sdk-component-adapter/compare/v1.112.9...v1.112.10) (2024-10-05)
 
 
