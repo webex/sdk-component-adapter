@@ -596,8 +596,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       tap((meeting) => {
         const sdkMeeting = this.fetchMeeting(meeting.ID);
 
-        this.meetings[meeting.ID] = meeting;
-        sdkMeeting.emit(EVENT_MEETING_UPDATED, meeting);
+        this.meetings[meeting.ID] = {
+          ...meeting,
+          title: sdkMeeting.meetingInfo.topic || meeting.title,
+        };
+        sdkMeeting.emit(EVENT_MEETING_UPDATED, this.meetings[meeting.ID]);
       }),
       catchError((err) => {
         logger.error('MEETING', destination, 'createMeeting()', `Unable to create a meeting with "${destination}"`, err);
@@ -661,6 +664,10 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
               }),
             }));
         } else {
+          // update the meeting title if available after password verification
+          if (sdkMeeting.meetingInfo.topic) {
+            this.updateMeeting(ID, () => ({title: sdkMeeting.meetingInfo.topic}));
+          }
           logger.info('MEETING', ID, 'joinMeeting()', 'Password successfully verified');
         }
       }
