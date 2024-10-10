@@ -637,13 +637,6 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     try {
       const sdkMeeting = this.fetchMeeting(ID);
 
-      // eslint-disable-next-line no-console
-      console.log('ravi joinMeeting sdkMeeting ', sdkMeeting);
-
-      if (sdkMeeting.meetingInfo.topic) {
-        this.updateMeeting(ID, () => ({title: sdkMeeting.meetingInfo.topic}));
-      }
-
       if (sdkMeeting.passwordStatus === 'REQUIRED') {
         if (!(options.password || options.hostKey)) {
           this.updateMeeting(ID, () => (
