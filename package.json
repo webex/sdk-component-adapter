@@ -31,11 +31,11 @@
   "license": "MIT",
   "peerDependencies": {
     "rxjs": "^6.5.4",
-    "webex": "^2.60.2"
+    "webex": "^2.60.4"
   },
   "dependencies": {
     "@babel/plugin-transform-runtime": "^7.16.0",
-    "@webex/common": "^2.60.2",
+    "@webex/common": "^2.60.4",
     "@webex/component-adapter-interfaces": "^1.28.0",
     "deasync": "^0.1.29",
     "logform": "^2.2.0"
@@ -54,7 +54,7 @@
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
-    "@webex/test-users": "^2.60.2",
+    "@webex/test-users": "^2.60.4",
     "babel-loader": "^8.2.4",
     "babel-plugin-istanbul": "^6.1.1",
     "cypress": "^9.5.3",
