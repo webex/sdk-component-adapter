@@ -676,7 +676,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       await sdkMeeting.join({
         pin: options.hostKey || options.password,
         moderator: !!(options.hostKey),
-        name: options.name,
+        alias: options.name,
       });
       logger.info('MEETING', ID, 'JOIN', 'Joining meeting');
     } catch (error) {
