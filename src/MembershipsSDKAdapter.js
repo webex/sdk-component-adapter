@@ -115,7 +115,7 @@ function getMembers(sdkMembers, meeting) {
     sharing: member.isContentSharing,
     host: !!meeting.meetingInfo.isWebexScheduled && member.isModerator,
     guest: member.isGuest,
-    name:member.name,
+    name: member.name,
   }));
 }
 
