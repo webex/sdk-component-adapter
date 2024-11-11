@@ -44,6 +44,7 @@ describe('Memberships SDK Adapter', () => {
                 sharing: false,
                 host: false,
                 guest: false,
+                name: 'Barbara German',
               },
               {
                 ID: 'mutedPerson',
@@ -53,6 +54,7 @@ describe('Memberships SDK Adapter', () => {
                 sharing: true,
                 host: true,
                 guest: true,
+                name: 'Brenda Song',
               },
               {
                 ID: 'notJoinedPerson',
@@ -62,6 +64,7 @@ describe('Memberships SDK Adapter', () => {
                 sharing: false,
                 host: false,
                 guest: true,
+                name: 'Giacomo Edwards',
               },
               {
                 ID: 'device',
@@ -71,6 +74,7 @@ describe('Memberships SDK Adapter', () => {
                 sharing: false,
                 host: false,
                 guest: false,
+                name: undefined,
               },
             ]);
             done();
