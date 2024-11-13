@@ -44,7 +44,7 @@ describe('Memberships SDK Adapter', () => {
                 sharing: false,
                 host: false,
                 guest: false,
-                name: 'John Doe',
+                name: 'Barbara German', //test names against mock sdk
               },
               {
                 ID: 'mutedPerson',
