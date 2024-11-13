@@ -44,7 +44,7 @@ describe('Memberships SDK Adapter', () => {
                 sharing: false,
                 host: false,
                 guest: false,
-                name: 'Barbara German',
+                name: 'John Doe',
               },
               {
                 ID: 'mutedPerson',
