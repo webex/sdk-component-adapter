@@ -1,3 +1,10 @@
+## [1.112.13](https://github.com/webex/sdk-component-adapter/compare/v1.112.12...v1.112.13) (2024-11-13)
+
+
+### Bug Fixes
+
+* **MembershipsSdkAdapter:** add name for members in getMembers method ([#345](https://github.com/webex/sdk-component-adapter/issues/345)) ([3ae1c00](https://github.com/webex/sdk-component-adapter/commit/3ae1c00644d79ce166e2a9f36ffa22ef77c2094b))
+
 ## [1.112.12](https://github.com/webex/sdk-component-adapter/compare/v1.112.11...v1.112.12) (2024-10-22)
 
 
