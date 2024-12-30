@@ -41,7 +41,7 @@ describe('Video Control', () => {
   describe('action()', () => {
     it('calls handleLocalVideo() SDK adapter method', async () => {
       meetingsSDKAdapter.handleLocalVideo = jest.fn();
-      await meetingsSDKAdapter.meetingControls['mute-video'].action(meetingID);
+      await meetingsSDKAdapter.meetingControls['mute-video'].action({meetingID});
       expect(meetingsSDKAdapter.handleLocalVideo).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.handleLocalVideo).toHaveBeenCalledWith(meetingID);
     });

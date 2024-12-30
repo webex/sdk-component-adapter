@@ -15,12 +15,15 @@ export default class JoinControl extends MeetingControl {
   /**
    * Calls the adapter joinMeeting method.
    *
-   * @param {string} meetingID  Id of the meeting to join
+   * @param {meetingID, meetingPasswordOrPin}
    */
-  async action(meetingID) {
+  async action({meetingID, meetingPasswordOrPin, participantName}) {
     logger.debug('MEETING', meetingID, 'JoinControl::action()', ['called with', {meetingID}]);
 
-    await this.adapter.joinMeeting(meetingID);
+    await this.adapter.joinMeeting(meetingID, {
+      password: meetingPasswordOrPin,
+      name: participantName,
+    });
   }
 
   /**

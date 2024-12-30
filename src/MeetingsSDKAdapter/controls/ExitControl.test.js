@@ -29,7 +29,7 @@ describe('Exit Control', () => {
   describe('action()', () => {
     it('calls leaveMeeting() SDK adapter method', async () => {
       meetingsSDKAdapter.leaveMeeting = jest.fn();
-      await meetingsSDKAdapter.meetingControls['leave-meeting'].action(meetingID);
+      await meetingsSDKAdapter.meetingControls['leave-meeting'].action({meetingID});
       expect(meetingsSDKAdapter.leaveMeeting).toHaveBeenCalledWith(meetingID);
     });
   });

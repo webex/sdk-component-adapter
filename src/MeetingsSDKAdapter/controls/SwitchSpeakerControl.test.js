@@ -64,7 +64,7 @@ describe('Switch Speaker Control', () => {
   describe('action()', () => {
     it('calls switchSpeaker() SDK adapter method', async () => {
       meetingsSDKAdapter.switchSpeaker = jest.fn();
-      await meetingsSDKAdapter.meetingControls['switch-speaker'].action(meetingID, 'speakerID');
+      await meetingsSDKAdapter.meetingControls['switch-speaker'].action({meetingID, speakerId: 'speakerID'});
       expect(meetingsSDKAdapter.switchSpeaker).toHaveBeenCalledWith(meetingID, 'speakerID');
     });
   });

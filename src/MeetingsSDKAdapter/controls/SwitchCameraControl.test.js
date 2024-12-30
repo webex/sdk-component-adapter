@@ -45,7 +45,7 @@ describe('Switch Camera Control', () => {
   describe('action()', () => {
     it('calls switchCamera() SDK adapter method', async () => {
       meetingsSDKAdapter.switchCamera = jest.fn();
-      await meetingsSDKAdapter.meetingControls['switch-camera'].action(meetingID, 'cameraID');
+      await meetingsSDKAdapter.meetingControls['switch-camera'].action({meetingID, cameraId: 'cameraID'});
       expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledWith(meetingID, 'cameraID');
     });

@@ -60,7 +60,7 @@ describe('Switch Microphone Control', () => {
   describe('action()', () => {
     it('calls switchMicrophone() SDK adapter method', async () => {
       meetingsSDKAdapter.switchMicrophone = jest.fn();
-      await meetingsSDKAdapter.meetingControls['switch-microphone'].action(meetingID, 'microphoneID');
+      await meetingsSDKAdapter.meetingControls['switch-microphone'].action({meetingID, microphoneId: 'microphoneID'});
       expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledWith(meetingID, 'microphoneID');
     });

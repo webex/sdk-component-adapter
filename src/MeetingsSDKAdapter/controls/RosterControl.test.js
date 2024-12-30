@@ -31,7 +31,7 @@ describe('Roster Control', () => {
   describe('action()', () => {
     it('calls toggleRoster() SDK adapter method', async () => {
       meetingsSDKAdapter.toggleRoster = jest.fn();
-      await meetingsSDKAdapter.meetingControls['member-roster'].action(meetingID);
+      await meetingsSDKAdapter.meetingControls['member-roster'].action({meetingID});
       expect(meetingsSDKAdapter.toggleRoster).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.toggleRoster).toHaveBeenCalledWith(meetingID);
     });

@@ -42,7 +42,7 @@ describe('Share Control', () => {
   describe('action()', () => {
     it('calls handleLocalShare() SDK adapter method', async () => {
       meetingsSDKAdapter.handleLocalShare = jest.fn();
-      await meetingsSDKAdapter.meetingControls['share-screen'].action(meetingID);
+      await meetingsSDKAdapter.meetingControls['share-screen'].action({meetingID});
       expect(meetingsSDKAdapter.handleLocalShare).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.handleLocalShare).toHaveBeenCalledWith(meetingID);
     });
