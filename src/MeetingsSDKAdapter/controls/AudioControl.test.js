@@ -41,7 +41,7 @@ describe('Audio Control', () => {
   describe('action()', () => {
     it('calls handleLocalAudio() SDK adapter method', async () => {
       meetingsSDKAdapter.handleLocalAudio = jest.fn();
-      await meetingsSDKAdapter.meetingControls['mute-audio'].action(meetingID);
+      await meetingsSDKAdapter.meetingControls['mute-audio'].action({meetingID});
       expect(meetingsSDKAdapter.handleLocalAudio).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.handleLocalAudio).toHaveBeenCalledWith(meetingID);
     });

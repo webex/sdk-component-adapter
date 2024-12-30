@@ -17,10 +17,10 @@ export default class SwitchSpeakerControl extends MeetingControl {
    * @param {string} meetingID  Meeting ID
    * @param {string} speakerID  ID of the speaker device to switch to
    */
-  async action(meetingID, speakerID) {
+  async action({meetingID, speakerId}) {
     logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::action()', ['called with', {meetingID}]);
 
-    await this.adapter.switchSpeaker(meetingID, speakerID);
+    await this.adapter.switchSpeaker(meetingID, speakerId);
   }
 
   /**

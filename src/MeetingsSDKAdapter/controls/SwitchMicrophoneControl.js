@@ -18,10 +18,10 @@ export default class SwitchMicrophoneControl extends MeetingControl {
    * @param {string} meetingID  Meeting ID
    * @param {string} microphoneID  Id of the microphone to switch to
    */
-  async action(meetingID, microphoneID) {
+  async action({meetingID, microphoneId}) {
     logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::action()', ['called with', {meetingID}]);
 
-    await this.adapter.switchMicrophone(meetingID, microphoneID);
+    await this.adapter.switchMicrophone(meetingID, microphoneId);
   }
 
   /**

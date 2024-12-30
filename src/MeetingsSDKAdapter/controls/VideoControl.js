@@ -15,9 +15,9 @@ export default class VideoControl extends MeetingControl {
   /**
    * Calls the adapter handleLocalVideo() method
    *
-   * @param {string} meetingID  Meeting id
+   * @param {meetingID}  Meeting ID to mute video
    */
-  action(meetingID) {
+  action({meetingID}) {
     logger.debug('MEETING', meetingID, 'VideoControl::action()', ['called with', {meetingID}]);
 
     return this.adapter.handleLocalVideo(meetingID);

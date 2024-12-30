@@ -18,7 +18,7 @@ export default class RosterControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to toggle roster
    */
-  async action(meetingID) {
+  async action({meetingID}) {
     logger.debug('MEETING', meetingID, 'RosterControl::action()', ['called with', {meetingID}]);
 
     await this.adapter.toggleRoster(meetingID);

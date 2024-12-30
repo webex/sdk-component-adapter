@@ -16,9 +16,9 @@ export default class AudioControl extends MeetingControl {
    * Calls the adapter handleLocalAudio() method
    *
    * @private
-   * @param {string} meetingID  ID of the meeting to mute audio
+   * @param {meetingID}  ID of the meeting to mute audio
    */
-  action(meetingID) {
+  action({meetingID}) {
     logger.debug('MEETING', meetingID, 'AudioControl::action()', ['called with', {meetingID}]);
 
     return this.adapter.handleLocalAudio(meetingID);

@@ -17,7 +17,7 @@ export default class ShareControl extends MeetingControl {
    *
    * @param {string} meetingID  ID of the meeting to share screen
    */
-  async action(meetingID) {
+  async action({meetingID}) {
     logger.debug('MEETING', meetingID, 'ShareControl::action()', ['called with', {meetingID}]);
 
     await this.adapter.handleLocalShare(meetingID);

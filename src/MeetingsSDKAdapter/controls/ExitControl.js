@@ -16,7 +16,7 @@ export default class ExitControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to leave from
    */
-  async action(meetingID) {
+  async action({meetingID}) {
     logger.debug('MEETING', meetingID, 'ExitControl::action()', ['called with', {meetingID}]);
 
     await this.adapter.leaveMeeting(meetingID);

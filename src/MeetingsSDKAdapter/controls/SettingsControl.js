@@ -18,7 +18,7 @@ export default class SettingsControl extends MeetingControl {
    *
    * @param {string} meetingID  Meeting ID
    */
-  action(meetingID) {
+  action({meetingID}) {
     logger.debug('Meeting', meetingID, 'SettingsControl::action()', ['called with', {meetingID}]);
 
     this.adapter.toggleSettings(meetingID);

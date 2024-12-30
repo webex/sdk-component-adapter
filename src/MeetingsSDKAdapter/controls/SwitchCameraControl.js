@@ -17,10 +17,10 @@ export default class SwitchCameraControl extends MeetingControl {
    * @param {string} meetingID  Meeting ID
    * @param {string} cameraID  Id of the camera to switch to
    */
-  async action(meetingID, cameraID) {
+  async action({meetingID, cameraId}) {
     logger.debug('MEETING', meetingID, 'SwitchCameraControl::action()', ['called with', {meetingID}]);
 
-    await this.adapter.switchCamera(meetingID, cameraID);
+    await this.adapter.switchCamera(meetingID, cameraId);
   }
 
   /**

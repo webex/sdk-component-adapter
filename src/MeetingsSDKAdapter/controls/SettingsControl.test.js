@@ -31,7 +31,7 @@ describe('Settings Control', () => {
   describe('action()', () => {
     it('calls toggleSettings() SDK adapter method', async () => {
       meetingsSDKAdapter.toggleSettings = jest.fn();
-      await meetingsSDKAdapter.meetingControls.settings.action(meetingID);
+      await meetingsSDKAdapter.meetingControls.settings.action({meetingID});
       expect(meetingsSDKAdapter.toggleSettings).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.toggleSettings).toHaveBeenCalledWith(meetingID);
     });
