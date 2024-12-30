@@ -1,3 +1,10 @@
+# [1.113.0](https://github.com/webex/sdk-component-adapter/compare/v1.112.13...v1.113.0) (2024-12-30)
+
+
+### Features
+
+* **meeting:** enable input of password and name while initializing widget ([#346](https://github.com/webex/sdk-component-adapter/issues/346)) ([32d3446](https://github.com/webex/sdk-component-adapter/commit/32d344648ccf5f93f7609516bd64ba465430266c))
+
 ## [1.112.13](https://github.com/webex/sdk-component-adapter/compare/v1.112.12...v1.112.13) (2024-11-13)
 
 
