@@ -35,7 +35,8 @@ import cache from './cache';
 export const ROOM_UPDATED_EVENT = 'updated';
 export const CONVERSATION_ACTIVITY_EVENT = 'event:conversation.activity';
 
-const sortByPublished = (arr) => arr.sort((a, b) => new Date(b.published) - new Date(a.published));
+// eslint-disable-next-line max-len
+export const sortByPublished = (arr) => arr.sort((a, b) => new Date(a.published) - new Date(b.published));
 
 // TODO: Need to remove this once we figure out why we need to pre-cache conversations
 let FETCHED_CONVERSATIONS = false;
