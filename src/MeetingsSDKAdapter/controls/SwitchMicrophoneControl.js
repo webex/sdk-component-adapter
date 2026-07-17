@@ -15,11 +15,16 @@ export default class SwitchMicrophoneControl extends MeetingControl {
   /**
    * Switches the microphone control.
    *
-   * @param {string} meetingID  Meeting ID
-   * @param {string} microphoneID  Id of the microphone to switch to
+   * @param {object} context  Meeting control context
+   * @param {string} context.meetingID  Meeting ID
+   * @param {string} [context.microphoneId]  Id of the microphone to switch to
+   * @param {string} [deviceId]  Id of the microphone to switch to (passed by @webex/components)
    */
-  async action({meetingID, microphoneId}) {
-    logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::action()', ['called with', {meetingID}]);
+  async action(context, deviceId) {
+    const {meetingID} = context;
+    const microphoneId = context.microphoneId != null ? context.microphoneId : deviceId;
+
+    logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::action()', ['called with', {meetingID, microphoneId}]);
 
     await this.adapter.switchMicrophone(meetingID, microphoneId);
   }

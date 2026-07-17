@@ -14,11 +14,16 @@ export default class SwitchSpeakerControl extends MeetingControl {
   /**
    * Calls the the action of the switch speaker control.
    *
-   * @param {string} meetingID  Meeting ID
-   * @param {string} speakerID  ID of the speaker device to switch to
+   * @param {object} context  Meeting control context
+   * @param {string} context.meetingID  Meeting ID
+   * @param {string} [context.speakerId]  ID of the speaker device to switch to
+   * @param {string} [deviceId]  ID of the speaker device to switch to (passed by @webex/components)
    */
-  async action({meetingID, speakerId}) {
-    logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::action()', ['called with', {meetingID}]);
+  async action(context, deviceId) {
+    const {meetingID} = context;
+    const speakerId = context.speakerId != null ? context.speakerId : deviceId;
+
+    logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::action()', ['called with', {meetingID, speakerId}]);
 
     await this.adapter.switchSpeaker(meetingID, speakerId);
   }

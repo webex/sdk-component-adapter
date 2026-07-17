@@ -67,5 +67,12 @@ describe('Switch Speaker Control', () => {
       await meetingsSDKAdapter.meetingControls['switch-speaker'].action({meetingID, speakerId: 'speakerID'});
       expect(meetingsSDKAdapter.switchSpeaker).toHaveBeenCalledWith(meetingID, 'speakerID');
     });
+
+    it('calls switchSpeaker() with device ID passed as second argument', async () => {
+      meetingsSDKAdapter.switchSpeaker = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-speaker'].action({meetingID}, 'speakerID');
+      expect(meetingsSDKAdapter.switchSpeaker).toHaveBeenCalledTimes(1);
+      expect(meetingsSDKAdapter.switchSpeaker).toHaveBeenCalledWith(meetingID, 'speakerID');
+    });
   });
 });

@@ -49,5 +49,12 @@ describe('Switch Camera Control', () => {
       expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledWith(meetingID, 'cameraID');
     });
+
+    it('calls switchCamera() with device ID passed as second argument', async () => {
+      meetingsSDKAdapter.switchCamera = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-camera'].action({meetingID}, 'cameraID');
+      expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledTimes(1);
+      expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledWith(meetingID, 'cameraID');
+    });
   });
 });

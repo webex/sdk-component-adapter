@@ -14,11 +14,16 @@ export default class SwitchCameraControl extends MeetingControl {
   /**
    * Calls the action of the switch camera control.
    *
-   * @param {string} meetingID  Meeting ID
-   * @param {string} cameraID  Id of the camera to switch to
+   * @param {object} context  Meeting control context
+   * @param {string} context.meetingID  Meeting ID
+   * @param {string} [context.cameraId]  Id of the camera to switch to
+   * @param {string} [deviceId]  Id of the camera to switch to (passed by @webex/components)
    */
-  async action({meetingID, cameraId}) {
-    logger.debug('MEETING', meetingID, 'SwitchCameraControl::action()', ['called with', {meetingID}]);
+  async action(context, deviceId) {
+    const {meetingID} = context;
+    const cameraId = context.cameraId != null ? context.cameraId : deviceId;
+
+    logger.debug('MEETING', meetingID, 'SwitchCameraControl::action()', ['called with', {meetingID, cameraId}]);
 
     await this.adapter.switchCamera(meetingID, cameraId);
   }
