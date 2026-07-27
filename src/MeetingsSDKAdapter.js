@@ -1159,7 +1159,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     logger.debug('MEETING', ID, 'switchSpeaker()', ['called with', {ID, speakerID}]);
     logger.info('MEETING', ID, 'SWITCH SPEAKER', `Switching current speaker to speaker with id "${speakerID}"`);
 
-    return this.updateMeeting(ID, () => ({speakerID}));
+    await this.updateMeeting(ID, () => ({speakerID}));
   }
 
   /**

@@ -3,6 +3,7 @@ import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -17,7 +18,9 @@ export default class VideoControl extends MeetingControl {
    *
    * @param {meetingID}  Meeting ID to mute video
    */
-  action({meetingID}) {
+  action(contextOrMeetingID) {
+    const meetingID = resolveMeetingID(contextOrMeetingID);
+
     logger.debug('MEETING', meetingID, 'VideoControl::action()', ['called with', {meetingID}]);
 
     return this.adapter.handleLocalVideo(meetingID);

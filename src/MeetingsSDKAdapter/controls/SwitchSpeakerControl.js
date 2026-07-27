@@ -2,7 +2,7 @@ import {Observable} from 'rxjs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
-import {combineLatestImmediate, isSpeakerSupported} from '../../utils';
+import {combineLatestImmediate, isSpeakerSupported, resolveDeviceSwitchArgs} from '../../utils';
 /**
  * Display options of a meeting control.
  *
@@ -12,16 +12,25 @@ import {combineLatestImmediate, isSpeakerSupported} from '../../utils';
 
 export default class SwitchSpeakerControl extends MeetingControl {
   /**
-   * Calls the the action of the switch speaker control.
+   * Calls the action of the switch speaker control.
    *
-   * @param {object} context  Meeting control context
-   * @param {string} context.meetingID  Meeting ID
-   * @param {string} [context.speakerId]  ID of the speaker device to switch to
-   * @param {string} [deviceId]  ID of the speaker device to switch to (passed by @webex/components)
+   * @param {object|string} contextOrMeetingID  Meeting context object or meeting ID string (@webex/components)
+   * @param {string} context.meetingID  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {string} [context.speakerId]  Speaker device ID on the context object (PR #346 call shape)
+   * @param {string} [deviceId]  Speaker device ID as the second argument (@webex/components call shape)
    */
-  async action(context, deviceId) {
-    const {meetingID} = context;
-    const speakerId = context.speakerId != null ? context.speakerId : deviceId;
+  async action(contextOrMeetingID, deviceId) {
+    const {meetingID, deviceId: speakerId} = resolveDeviceSwitchArgs(
+      contextOrMeetingID,
+      deviceId,
+      'speakerId',
+    );
+
+    if (speakerId == null) {
+      logger.warn('MEETING', meetingID, 'SwitchSpeakerControl::action()', 'No speaker device ID provided');
+
+      return;
+    }
 
     logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::action()', ['called with', {meetingID, speakerId}]);
 

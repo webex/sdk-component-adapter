@@ -43,18 +43,37 @@ describe('Switch Camera Control', () => {
   });
 
   describe('action()', () => {
-    it('calls switchCamera() SDK adapter method', async () => {
+    it('calls switchCamera() with camera ID on the context object', async () => {
       meetingsSDKAdapter.switchCamera = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-camera'].action({meetingID, cameraId: 'cameraID'});
-      expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledTimes(1);
-      expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledWith(meetingID, 'cameraID');
+      expect(meetingsSDKAdapter.switchCamera.mock.calls).toEqual([[meetingID, 'cameraID']]);
     });
 
     it('calls switchCamera() with device ID passed as second argument', async () => {
       meetingsSDKAdapter.switchCamera = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-camera'].action({meetingID}, 'cameraID');
-      expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledTimes(1);
-      expect(meetingsSDKAdapter.switchCamera).toHaveBeenCalledWith(meetingID, 'cameraID');
+      expect(meetingsSDKAdapter.switchCamera.mock.calls).toEqual([[meetingID, 'cameraID']]);
+    });
+
+    it('calls switchCamera() with meeting ID and device ID passed as strings', async () => {
+      meetingsSDKAdapter.switchCamera = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-camera'].action(meetingID, 'cameraID');
+      expect(meetingsSDKAdapter.switchCamera.mock.calls).toEqual([[meetingID, 'cameraID']]);
+    });
+
+    it('prefers context camera ID when both context and second argument are provided', async () => {
+      meetingsSDKAdapter.switchCamera = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-camera'].action(
+        {meetingID, cameraId: 'context-camera'},
+        'second-arg-camera',
+      );
+      expect(meetingsSDKAdapter.switchCamera.mock.calls).toEqual([[meetingID, 'context-camera']]);
+    });
+
+    it('does not call switchCamera() when no device ID is provided', async () => {
+      meetingsSDKAdapter.switchCamera = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-camera'].action({meetingID});
+      expect(meetingsSDKAdapter.switchCamera).not.toHaveBeenCalled();
     });
   });
 });

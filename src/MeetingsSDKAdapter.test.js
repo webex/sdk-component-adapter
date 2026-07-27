@@ -9,6 +9,13 @@ import {meetingID, createTestMeetingsSDKAdapter} from './MeetingsSDKAdapter/test
 
 import logger from './logger';
 
+class MockDOMException extends Error {
+  constructor(message, name) {
+    super(message);
+    this.name = name;
+  }
+}
+
 describe('Meetings SDK Adapter', () => {
   let meeting;
   let meetingsSDKAdapter;
@@ -97,6 +104,36 @@ describe('Meetings SDK Adapter', () => {
             'Unable to retrieve local media stream',
             sdkError.error,
           );
+          done();
+        },
+      );
+    });
+
+    it('returns DENIED when media access is not allowed', (done) => {
+      global.DOMException = MockDOMException;
+      const sdkError = {error: new MockDOMException('Permission denied', 'NotAllowedError')};
+
+      logger.error = jest.fn();
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
+      meetingsSDKAdapter.getStream(meetingID, {sendAudio: true}).pipe(last()).subscribe(
+        ({permission, stream}) => {
+          expect(stream).toBeNull();
+          expect(permission).toBe('DENIED');
+          done();
+        },
+      );
+    });
+
+    it('returns DISABLED when the media device is not readable', (done) => {
+      global.DOMException = MockDOMException;
+      const sdkError = {error: new MockDOMException('Could not start video source', 'NotReadableError')};
+
+      logger.error = jest.fn();
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
+      meetingsSDKAdapter.getStream(meetingID, {sendVideo: true}).pipe(last()).subscribe(
+        ({permission, stream}) => {
+          expect(stream).toBeNull();
+          expect(permission).toBe('DISABLED');
           done();
         },
       );

@@ -37,6 +37,12 @@ describe('Join Control', () => {
       });
     });
 
+    it('calls joinMeeting() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.joinMeeting = jest.fn();
+      await meetingsSDKAdapter.meetingControls['join-meeting'].action(meetingID);
+      expect(meetingsSDKAdapter.joinMeeting).toHaveBeenCalledWith(meetingID, {});
+    });
+
     it('calls joinMeeting() SDK adapter method with pin/password and participant\'s name', async () => {
       meetingsSDKAdapter.joinMeeting = jest.fn();
       await meetingsSDKAdapter.meetingControls['join-meeting'].action({meetingID, meetingPasswordOrPin: '123456', participantName: 'name'});

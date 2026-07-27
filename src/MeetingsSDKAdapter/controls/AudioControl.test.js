@@ -45,5 +45,11 @@ describe('Audio Control', () => {
       expect(meetingsSDKAdapter.handleLocalAudio).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.handleLocalAudio).toHaveBeenCalledWith(meetingID);
     });
+
+    it('calls handleLocalAudio() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.handleLocalAudio = jest.fn();
+      await meetingsSDKAdapter.meetingControls['mute-audio'].action(meetingID);
+      expect(meetingsSDKAdapter.handleLocalAudio.mock.calls).toEqual([[meetingID]]);
+    });
   });
 });

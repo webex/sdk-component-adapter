@@ -58,18 +58,37 @@ describe('Switch Microphone Control', () => {
   });
 
   describe('action()', () => {
-    it('calls switchMicrophone() SDK adapter method', async () => {
+    it('calls switchMicrophone() with microphone ID on the context object', async () => {
       meetingsSDKAdapter.switchMicrophone = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-microphone'].action({meetingID, microphoneId: 'microphoneID'});
-      expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledTimes(1);
-      expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledWith(meetingID, 'microphoneID');
+      expect(meetingsSDKAdapter.switchMicrophone.mock.calls).toEqual([[meetingID, 'microphoneID']]);
     });
 
     it('calls switchMicrophone() with device ID passed as second argument', async () => {
       meetingsSDKAdapter.switchMicrophone = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-microphone'].action({meetingID}, 'microphoneID');
-      expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledTimes(1);
-      expect(meetingsSDKAdapter.switchMicrophone).toHaveBeenCalledWith(meetingID, 'microphoneID');
+      expect(meetingsSDKAdapter.switchMicrophone.mock.calls).toEqual([[meetingID, 'microphoneID']]);
+    });
+
+    it('calls switchMicrophone() with meeting ID and device ID passed as strings', async () => {
+      meetingsSDKAdapter.switchMicrophone = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-microphone'].action(meetingID, 'microphoneID');
+      expect(meetingsSDKAdapter.switchMicrophone.mock.calls).toEqual([[meetingID, 'microphoneID']]);
+    });
+
+    it('prefers context microphone ID when both context and second argument are provided', async () => {
+      meetingsSDKAdapter.switchMicrophone = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-microphone'].action(
+        {meetingID, microphoneId: 'context-microphone'},
+        'second-arg-microphone',
+      );
+      expect(meetingsSDKAdapter.switchMicrophone.mock.calls).toEqual([[meetingID, 'context-microphone']]);
+    });
+
+    it('does not call switchMicrophone() when no device ID is provided', async () => {
+      meetingsSDKAdapter.switchMicrophone = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-microphone'].action({meetingID});
+      expect(meetingsSDKAdapter.switchMicrophone).not.toHaveBeenCalled();
     });
   });
 });

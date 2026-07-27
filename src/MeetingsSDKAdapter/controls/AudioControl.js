@@ -3,6 +3,7 @@ import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -18,7 +19,9 @@ export default class AudioControl extends MeetingControl {
    * @private
    * @param {meetingID}  ID of the meeting to mute audio
    */
-  action({meetingID}) {
+  action(contextOrMeetingID) {
+    const meetingID = resolveMeetingID(contextOrMeetingID);
+
     logger.debug('MEETING', meetingID, 'AudioControl::action()', ['called with', {meetingID}]);
 
     return this.adapter.handleLocalAudio(meetingID);

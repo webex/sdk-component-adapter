@@ -2,7 +2,7 @@ import {Observable} from 'rxjs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
-import {combineLatestImmediate} from '../../utils';
+import {combineLatestImmediate, resolveDeviceSwitchArgs} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -15,14 +15,23 @@ export default class SwitchMicrophoneControl extends MeetingControl {
   /**
    * Switches the microphone control.
    *
-   * @param {object} context  Meeting control context
-   * @param {string} context.meetingID  Meeting ID
-   * @param {string} [context.microphoneId]  Id of the microphone to switch to
-   * @param {string} [deviceId]  Id of the microphone to switch to (passed by @webex/components)
+   * @param {object|string} contextOrMeetingID  Meeting context object or meeting ID string (@webex/components)
+   * @param {string} context.meetingID  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {string} [context.microphoneId]  Microphone device ID on the context object (PR #346 call shape)
+   * @param {string} [deviceId]  Microphone device ID as the second argument (@webex/components call shape)
    */
-  async action(context, deviceId) {
-    const {meetingID} = context;
-    const microphoneId = context.microphoneId != null ? context.microphoneId : deviceId;
+  async action(contextOrMeetingID, deviceId) {
+    const {meetingID, deviceId: microphoneId} = resolveDeviceSwitchArgs(
+      contextOrMeetingID,
+      deviceId,
+      'microphoneId',
+    );
+
+    if (microphoneId == null) {
+      logger.warn('MEETING', meetingID, 'SwitchMicrophoneControl::action()', 'No microphone device ID provided');
+
+      return;
+    }
 
     logger.debug('MEETING', meetingID, 'SwitchMicrophoneControl::action()', ['called with', {meetingID, microphoneId}]);
 
