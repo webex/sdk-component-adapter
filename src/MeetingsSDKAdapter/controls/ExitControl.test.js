@@ -32,5 +32,11 @@ describe('Exit Control', () => {
       await meetingsSDKAdapter.meetingControls['leave-meeting'].action({meetingID});
       expect(meetingsSDKAdapter.leaveMeeting).toHaveBeenCalledWith(meetingID);
     });
+
+    it('calls leaveMeeting() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.leaveMeeting = jest.fn();
+      await meetingsSDKAdapter.meetingControls['leave-meeting'].action(meetingID);
+      expect(meetingsSDKAdapter.leaveMeeting.mock.calls).toEqual([[meetingID]]);
+    });
   });
 });

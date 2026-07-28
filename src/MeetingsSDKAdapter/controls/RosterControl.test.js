@@ -35,5 +35,11 @@ describe('Roster Control', () => {
       expect(meetingsSDKAdapter.toggleRoster).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.toggleRoster).toHaveBeenCalledWith(meetingID);
     });
+
+    it('calls toggleRoster() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.toggleRoster = jest.fn();
+      await meetingsSDKAdapter.meetingControls['member-roster'].action(meetingID);
+      expect(meetingsSDKAdapter.toggleRoster.mock.calls).toEqual([[meetingID]]);
+    });
   });
 });

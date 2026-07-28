@@ -46,5 +46,11 @@ describe('Share Control', () => {
       expect(meetingsSDKAdapter.handleLocalShare).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.handleLocalShare).toHaveBeenCalledWith(meetingID);
     });
+
+    it('calls handleLocalShare() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.handleLocalShare = jest.fn();
+      await meetingsSDKAdapter.meetingControls['share-screen'].action(meetingID);
+      expect(meetingsSDKAdapter.handleLocalShare.mock.calls).toEqual([[meetingID]]);
+    });
   });
 });
