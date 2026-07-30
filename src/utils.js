@@ -59,15 +59,13 @@ export function combineLatestImmediate(...observables) {
  * Resolves meetingID from control action arguments.
  * Supports @webex/components string meetingID and PR #346 `{ meetingID }` context object.
  *
- * @param {object|string} contextOrMeetingID
+ * @param {object|string} meetingContext  Meeting ID string or context object with meetingID
  * @returns {string|undefined}
  */
-export function resolveMeetingID(contextOrMeetingID) {
-  if (typeof contextOrMeetingID === 'string') {
-    return contextOrMeetingID;
-  }
-
-  return contextOrMeetingID && contextOrMeetingID.meetingID;
+export function resolveMeetingID(meetingContext) {
+  return typeof meetingContext === 'string'
+    ? meetingContext
+    : meetingContext && meetingContext.meetingID;
 }
 
 /**
@@ -77,22 +75,22 @@ export function resolveMeetingID(contextOrMeetingID) {
  * - `action({ meetingID }, deviceId)`
  * - `action({ meetingID, microphoneId|speakerId|cameraId })` — PR #346
  *
- * @param {object|string} contextOrMeetingID
- * @param {string} [secondArg]  Device ID from the second argument
+ * @param {object|string} meetingContext  Meeting ID string or context object with meetingID
+ * @param {string} [deviceIdArg]  Device ID from the second argument
  * @param {string} contextDeviceKey  Property name on context (`microphoneId`, etc.)
  * @returns {{meetingID: string|undefined, deviceId: string|undefined}}
  */
-export function resolveDeviceSwitchArgs(contextOrMeetingID, secondArg, contextDeviceKey) {
-  if (typeof contextOrMeetingID === 'string') {
-    return {
-      meetingID: contextOrMeetingID,
-      deviceId: secondArg,
-    };
-  }
+export function resolveDeviceSwitchArgs(meetingContext, deviceIdArg, contextDeviceKey) {
+  const meetingID = resolveMeetingID(meetingContext);
+  let deviceId;
 
-  const meetingID = contextOrMeetingID && contextOrMeetingID.meetingID;
-  const fromContext = contextOrMeetingID && contextOrMeetingID[contextDeviceKey];
-  const deviceId = fromContext != null ? fromContext : secondArg;
+  if (typeof meetingContext === 'string') {
+    deviceId = deviceIdArg;
+  } else if (meetingContext && meetingContext[contextDeviceKey] != null) {
+    deviceId = meetingContext[contextDeviceKey];
+  } else {
+    deviceId = deviceIdArg;
+  }
 
   return {meetingID, deviceId};
 }

@@ -14,14 +14,14 @@ export default class SwitchCameraControl extends MeetingControl {
   /**
    * Calls the action of the switch camera control.
    *
-   * @param {object|string} contextOrMeetingID  Meeting context object or meeting ID string (@webex/components)
-   * @param {string} context.meetingID  Meeting ID when passed on the context object (PR #346 call shape)
-   * @param {string} [context.cameraId]  Camera device ID on the context object (PR #346 call shape)
+   * @param {object|string} meetingContext  Meeting context object or meeting ID string (@webex/components)
+   * @param {string} [meetingContext.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {string} [meetingContext.cameraId]  Camera device ID on the context object (PR #346 call shape)
    * @param {string} [deviceId]  Camera device ID as the second argument (@webex/components call shape)
    */
-  async action(contextOrMeetingID, deviceId) {
+  async action(meetingContext, deviceId) {
     const {meetingID, deviceId: cameraId} = resolveDeviceSwitchArgs(
-      contextOrMeetingID,
+      meetingContext,
       deviceId,
       'cameraId',
     );

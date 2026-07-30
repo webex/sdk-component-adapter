@@ -19,8 +19,8 @@ export default class AudioControl extends MeetingControl {
    * @private
    * @param {meetingID}  ID of the meeting to mute audio
    */
-  action(contextOrMeetingID) {
-    const meetingID = resolveMeetingID(contextOrMeetingID);
+  action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
 
     logger.debug('MEETING', meetingID, 'AudioControl::action()', ['called with', {meetingID}]);
 

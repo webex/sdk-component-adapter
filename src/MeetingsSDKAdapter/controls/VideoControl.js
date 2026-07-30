@@ -18,8 +18,8 @@ export default class VideoControl extends MeetingControl {
    *
    * @param {meetingID}  Meeting ID to mute video
    */
-  action(contextOrMeetingID) {
-    const meetingID = resolveMeetingID(contextOrMeetingID);
+  action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
 
     logger.debug('MEETING', meetingID, 'VideoControl::action()', ['called with', {meetingID}]);
 

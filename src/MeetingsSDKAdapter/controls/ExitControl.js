@@ -17,8 +17,8 @@ export default class ExitControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to leave from
    */
-  async action(contextOrMeetingID) {
-    const meetingID = resolveMeetingID(contextOrMeetingID);
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
 
     logger.debug('MEETING', meetingID, 'ExitControl::action()', ['called with', {meetingID}]);
 

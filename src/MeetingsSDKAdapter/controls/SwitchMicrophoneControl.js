@@ -15,14 +15,14 @@ export default class SwitchMicrophoneControl extends MeetingControl {
   /**
    * Switches the microphone control.
    *
-   * @param {object|string} contextOrMeetingID  Meeting context object or meeting ID string (@webex/components)
-   * @param {string} context.meetingID  Meeting ID when passed on the context object (PR #346 call shape)
-   * @param {string} [context.microphoneId]  Microphone device ID on the context object (PR #346 call shape)
+   * @param {object|string} meetingContext  Meeting context object or meeting ID string (@webex/components)
+   * @param {string} [meetingContext.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {string} [meetingContext.microphoneId]  Microphone device ID on the context object (PR #346 call shape)
    * @param {string} [deviceId]  Microphone device ID as the second argument (@webex/components call shape)
    */
-  async action(contextOrMeetingID, deviceId) {
+  async action(meetingContext, deviceId) {
     const {meetingID, deviceId: microphoneId} = resolveDeviceSwitchArgs(
-      contextOrMeetingID,
+      meetingContext,
       deviceId,
       'microphoneId',
     );

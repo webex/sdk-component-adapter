@@ -18,8 +18,8 @@ export default class ShareControl extends MeetingControl {
    *
    * @param {string} meetingID  ID of the meeting to share screen
    */
-  async action(contextOrMeetingID) {
-    const meetingID = resolveMeetingID(contextOrMeetingID);
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
 
     logger.debug('MEETING', meetingID, 'ShareControl::action()', ['called with', {meetingID}]);
 

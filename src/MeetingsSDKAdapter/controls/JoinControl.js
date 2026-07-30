@@ -3,6 +3,7 @@ import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -15,24 +16,20 @@ export default class JoinControl extends MeetingControl {
   /**
    * Calls the adapter joinMeeting method.
    *
-   * @param {meetingID, meetingPasswordOrPin}
+   * @param {object|string} meetingContext  Meeting ID string or context with password and name
    */
-  async action(contextOrMeetingID) {
-    if (typeof contextOrMeetingID === 'string') {
-      logger.debug('MEETING', contextOrMeetingID, 'JoinControl::action()', ['called with', {meetingID: contextOrMeetingID}]);
-      await this.adapter.joinMeeting(contextOrMeetingID, {});
-
-      return;
-    }
-
-    const {meetingID, meetingPasswordOrPin, participantName} = contextOrMeetingID;
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
+    const joinOptions = typeof meetingContext === 'string'
+      ? {}
+      : {
+        password: meetingContext.meetingPasswordOrPin,
+        name: meetingContext.participantName,
+      };
 
     logger.debug('MEETING', meetingID, 'JoinControl::action()', ['called with', {meetingID}]);
 
-    await this.adapter.joinMeeting(meetingID, {
-      password: meetingPasswordOrPin,
-      name: participantName,
-    });
+    await this.adapter.joinMeeting(meetingID, joinOptions);
   }
 
   /**

@@ -19,8 +19,8 @@ export default class RosterControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to toggle roster
    */
-  async action(contextOrMeetingID) {
-    const meetingID = resolveMeetingID(contextOrMeetingID);
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
 
     logger.debug('MEETING', meetingID, 'RosterControl::action()', ['called with', {meetingID}]);
 

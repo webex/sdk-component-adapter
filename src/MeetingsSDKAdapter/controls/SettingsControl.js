@@ -17,11 +17,11 @@ export default class SettingsControl extends MeetingControl {
    * Toggles the showSettings flag of the given meeting ID.
    * A settings toggle event is dispatched.
    *
-   * @param {object|string} context  Meeting control context or meeting ID string
-   * @param {string} [context.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {object|string} meetingContext  Meeting control context or meeting ID string
+   * @param {string} [meetingContext.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
    */
-  action(contextOrMeetingID) {
-    const meetingID = resolveMeetingID(contextOrMeetingID);
+  action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
 
     logger.debug('Meeting', meetingID, 'SettingsControl::action()', ['called with', {meetingID}]);
 
