@@ -1,3 +1,10 @@
+## [1.113.1](https://github.com/webex/sdk-component-adapter/compare/v1.113.0...v1.113.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **meeting:** resolve control action args for @webex/components contract ([#350](https://github.com/webex/sdk-component-adapter/issues/350)) ([8e80917](https://github.com/webex/sdk-component-adapter/commit/8e80917ec784ff5a6cd885bd1b8e161cb782084e))
+
 # [1.113.0](https://github.com/webex/sdk-component-adapter/compare/v1.112.13...v1.113.0) (2024-12-30)
 
 
