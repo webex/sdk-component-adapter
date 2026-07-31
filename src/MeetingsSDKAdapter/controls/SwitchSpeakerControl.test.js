@@ -62,10 +62,37 @@ describe('Switch Speaker Control', () => {
   });
 
   describe('action()', () => {
-    it('calls switchSpeaker() SDK adapter method', async () => {
+    it('calls switchSpeaker() with speaker ID on the context object', async () => {
       meetingsSDKAdapter.switchSpeaker = jest.fn();
       await meetingsSDKAdapter.meetingControls['switch-speaker'].action({meetingID, speakerId: 'speakerID'});
-      expect(meetingsSDKAdapter.switchSpeaker).toHaveBeenCalledWith(meetingID, 'speakerID');
+      expect(meetingsSDKAdapter.switchSpeaker.mock.calls).toEqual([[meetingID, 'speakerID']]);
+    });
+
+    it('calls switchSpeaker() with device ID passed as second argument', async () => {
+      meetingsSDKAdapter.switchSpeaker = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-speaker'].action({meetingID}, 'speakerID');
+      expect(meetingsSDKAdapter.switchSpeaker.mock.calls).toEqual([[meetingID, 'speakerID']]);
+    });
+
+    it('calls switchSpeaker() with meeting ID and device ID passed as strings', async () => {
+      meetingsSDKAdapter.switchSpeaker = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-speaker'].action(meetingID, 'speakerID');
+      expect(meetingsSDKAdapter.switchSpeaker.mock.calls).toEqual([[meetingID, 'speakerID']]);
+    });
+
+    it('prefers context speaker ID when both context and second argument are provided', async () => {
+      meetingsSDKAdapter.switchSpeaker = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-speaker'].action(
+        {meetingID, speakerId: 'context-speaker'},
+        'second-arg-speaker',
+      );
+      expect(meetingsSDKAdapter.switchSpeaker.mock.calls).toEqual([[meetingID, 'context-speaker']]);
+    });
+
+    it('does not call switchSpeaker() when no device ID is provided', async () => {
+      meetingsSDKAdapter.switchSpeaker = jest.fn();
+      await meetingsSDKAdapter.meetingControls['switch-speaker'].action({meetingID});
+      expect(meetingsSDKAdapter.switchSpeaker).not.toHaveBeenCalled();
     });
   });
 });

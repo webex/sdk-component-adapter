@@ -3,6 +3,7 @@ import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -16,9 +17,12 @@ export default class SettingsControl extends MeetingControl {
    * Toggles the showSettings flag of the given meeting ID.
    * A settings toggle event is dispatched.
    *
-   * @param {string} meetingID  Meeting ID
+   * @param {object|string} meetingContext  Meeting control context or meeting ID string
+   * @param {string} [meetingContext.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
    */
-  action({meetingID}) {
+  action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
+
     logger.debug('Meeting', meetingID, 'SettingsControl::action()', ['called with', {meetingID}]);
 
     this.adapter.toggleSettings(meetingID);

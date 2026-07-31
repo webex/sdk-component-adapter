@@ -56,6 +56,46 @@ export function combineLatestImmediate(...observables) {
 }
 
 /**
+ * Resolves meetingID from control action arguments.
+ * Supports @webex/components string meetingID and PR #346 `{ meetingID }` context object.
+ *
+ * @param {object|string} meetingContext  Meeting ID string or context object with meetingID
+ * @returns {string|undefined}
+ */
+export function resolveMeetingID(meetingContext) {
+  return typeof meetingContext === 'string'
+    ? meetingContext
+    : meetingContext && meetingContext.meetingID;
+}
+
+/**
+ * Resolves meetingID and device ID for switch-* controls.
+ * Supports:
+ * - `action(meetingID, deviceId)` — @webex/components
+ * - `action({ meetingID }, deviceId)`
+ * - `action({ meetingID, microphoneId|speakerId|cameraId })` — PR #346
+ *
+ * @param {object|string} meetingContext  Meeting ID string or context object with meetingID
+ * @param {string} [deviceIdArg]  Device ID from the second argument
+ * @param {string} contextDeviceKey  Property name on context (`microphoneId`, etc.)
+ * @returns {{meetingID: string|undefined, deviceId: string|undefined}}
+ */
+export function resolveDeviceSwitchArgs(meetingContext, deviceIdArg, contextDeviceKey) {
+  const meetingID = resolveMeetingID(meetingContext);
+  let deviceId;
+
+  if (typeof meetingContext === 'string') {
+    deviceId = deviceIdArg;
+  } else if (meetingContext && meetingContext[contextDeviceKey] != null) {
+    deviceId = meetingContext[contextDeviceKey];
+  } else {
+    deviceId = deviceIdArg;
+  }
+
+  return {meetingID, deviceId};
+}
+
+/**
  * Helper function for deep merge on objects.
  *
  * @param {object} dest - The destination object.
@@ -112,6 +152,8 @@ export default {
   chainWith,
   combineLatestImmediate,
   deepMerge,
+  resolveDeviceSwitchArgs,
+  resolveMeetingID,
   safeJsonStringify,
 };
 

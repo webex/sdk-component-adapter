@@ -29,11 +29,16 @@ describe('Settings Control', () => {
   });
 
   describe('action()', () => {
-    it('calls toggleSettings() SDK adapter method', async () => {
+    it('calls toggleSettings() SDK adapter method with context object', async () => {
       meetingsSDKAdapter.toggleSettings = jest.fn();
       await meetingsSDKAdapter.meetingControls.settings.action({meetingID});
-      expect(meetingsSDKAdapter.toggleSettings).toHaveBeenCalledTimes(1);
-      expect(meetingsSDKAdapter.toggleSettings).toHaveBeenCalledWith(meetingID);
+      expect(meetingsSDKAdapter.toggleSettings.mock.calls).toEqual([[meetingID]]);
+    });
+
+    it('calls toggleSettings() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.toggleSettings = jest.fn();
+      await meetingsSDKAdapter.meetingControls.settings.action(meetingID);
+      expect(meetingsSDKAdapter.toggleSettings.mock.calls).toEqual([[meetingID]]);
     });
   });
 });

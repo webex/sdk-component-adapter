@@ -2,7 +2,7 @@ import {Observable} from 'rxjs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
-import {combineLatestImmediate} from '../../utils';
+import {combineLatestImmediate, resolveDeviceSwitchArgs} from '../../utils';
 /**
  * Display options of a meeting control.
  *
@@ -14,11 +14,25 @@ export default class SwitchCameraControl extends MeetingControl {
   /**
    * Calls the action of the switch camera control.
    *
-   * @param {string} meetingID  Meeting ID
-   * @param {string} cameraID  Id of the camera to switch to
+   * @param {object|string} meetingContext  Meeting context object or meeting ID string (@webex/components)
+   * @param {string} [meetingContext.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {string} [meetingContext.cameraId]  Camera device ID on the context object (PR #346 call shape)
+   * @param {string} [deviceId]  Camera device ID as the second argument (@webex/components call shape)
    */
-  async action({meetingID, cameraId}) {
-    logger.debug('MEETING', meetingID, 'SwitchCameraControl::action()', ['called with', {meetingID}]);
+  async action(meetingContext, deviceId) {
+    const {meetingID, deviceId: cameraId} = resolveDeviceSwitchArgs(
+      meetingContext,
+      deviceId,
+      'cameraId',
+    );
+
+    if (cameraId == null) {
+      logger.warn('MEETING', meetingID, 'SwitchCameraControl::action()', 'No camera device ID provided');
+
+      return;
+    }
+
+    logger.debug('MEETING', meetingID, 'SwitchCameraControl::action()', ['called with', {meetingID, cameraId}]);
 
     await this.adapter.switchCamera(meetingID, cameraId);
   }

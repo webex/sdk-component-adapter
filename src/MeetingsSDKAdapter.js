@@ -227,79 +227,87 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   getStream(ID, mediaDirection, audioVideo) {
     logger.debug('MEETING', ID, 'getStream()', ['called with', {ID, mediaDirection, audioVideo}]);
 
-    return new Observable(async (subscriber) => {
+    return new Observable((subscriber) => {
       let ignored = false;
       let isAsking;
 
-      try {
-        const sdkMeeting = this.fetchMeeting(ID);
+      const ignore = () => {
+        ignored = true;
+        subscriber.next({permission: 'IGNORED', stream: null});
+        subscriber.complete();
+      };
 
-        const ignore = () => {
-          ignored = true;
-          subscriber.next({permission: 'IGNORED', stream: null});
-          subscriber.complete();
-        };
-
-        // wait a bit for the prompt to appear before emitting ASKING
-        isAsking = true;
-        setTimeout(() => {
-          if (isAsking) {
-            // media access promise was neither fulfilled nor rejected, so the browser prompt is probably showing
-            subscriber.next({permission: 'ASKING', stream: null, ignore});
-          }
-        }, 2000);
-
-        const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
-        const availableDevices = await navigator.mediaDevices.enumerateDevices();
-        const [{label: deviceLabel}] = localStream.getTracks();
-        const mediaDevice = availableDevices.find((device) => device.label === deviceLabel);
-        const deviceId = mediaDevice && mediaDevice.deviceId;
-
-        isAsking = false;
-
-        for (const track of localStream.getTracks()) {
-          if (track.kind === 'video' && !mediaDirection.sendVideo) {
-            localStream.removeTrack(track);
-          }
-          if (track.kind === 'audio' && !mediaDirection.sendAudio) {
-            localStream.removeTrack(track);
-          }
+      // wait a bit for the prompt to appear before emitting ASKING
+      isAsking = true;
+      const askingTimeout = setTimeout(() => {
+        if (isAsking) {
+          // media access promise was neither fulfilled nor rejected, so the browser prompt is probably showing
+          subscriber.next({permission: 'ASKING', stream: null, ignore});
         }
+      }, 2000);
 
-        if (!ignored) {
-          subscriber.next({permission: 'ALLOWED', stream: localStream, deviceId});
-          subscriber.complete();
-        }
-      } catch (error) {
-        isAsking = false;
+      (async () => {
+        try {
+          const sdkMeeting = this.fetchMeeting(ID);
+          const [localStream] = await sdkMeeting.getMediaStreams(mediaDirection, audioVideo);
+          const availableDevices = await navigator.mediaDevices.enumerateDevices();
+          const [{label: deviceLabel}] = localStream.getTracks();
+          const mediaDevice = availableDevices.find((device) => device.label === deviceLabel);
+          const deviceId = mediaDevice && mediaDevice.deviceId;
 
-        if (!ignored) {
-          let perm;
-          const ee = error.error;
+          isAsking = false;
+          clearTimeout(askingTimeout);
 
-          logger.error('MEETING', ID, 'getStream()', 'Unable to retrieve local media stream', ee || error);
+          for (const track of localStream.getTracks()) {
+            if (track.kind === 'video' && !mediaDirection.sendVideo) {
+              localStream.removeTrack(track);
+            }
+            if (track.kind === 'audio' && !mediaDirection.sendAudio) {
+              localStream.removeTrack(track);
+            }
+          }
 
-          if (ee instanceof DOMException) {
-            if (ee.name === 'NotAllowedError') {
-              if (ee.message === 'Permission dismissed') {
-                perm = 'DISMISSED';
-              } else if (ee.message === 'Permission denied by system') {
+          if (!ignored) {
+            subscriber.next({permission: 'ALLOWED', stream: localStream, deviceId});
+            subscriber.complete();
+          }
+        } catch (error) {
+          isAsking = false;
+          clearTimeout(askingTimeout);
+
+          if (!ignored) {
+            let perm;
+            const ee = error.error;
+
+            logger.error('MEETING', ID, 'getStream()', 'Unable to retrieve local media stream', ee || error);
+
+            if (ee instanceof DOMException) {
+              if (ee.name === 'NotAllowedError') {
+                if (ee.message === 'Permission dismissed') {
+                  perm = 'DISMISSED';
+                } else if (ee.message === 'Permission denied by system') {
+                  perm = 'DISABLED';
+                } else {
+                  perm = 'DENIED';
+                }
+              } else if (ee.name === 'NotReadableError') {
                 perm = 'DISABLED';
               } else {
-                perm = 'DENIED';
+                perm = 'ERROR';
               }
-            } else if (ee.name === 'NotReadableError') {
-              perm = 'DISABLED';
             } else {
               perm = 'ERROR';
             }
-          } else {
-            perm = 'ERROR';
+            subscriber.next({permission: perm, stream: null});
+            subscriber.complete();
           }
-          subscriber.next({permission: perm, stream: null});
-          subscriber.complete();
         }
-      }
+      })();
+
+      return () => {
+        isAsking = false;
+        clearTimeout(askingTimeout);
+      };
     });
   }
 
@@ -1061,7 +1069,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const {stream, permission, deviceId} = await this.getStream(
         ID,
         {sendVideo: true},
-        {video: {deviceId: cameraID}},
+        {video: {deviceId: cameraID === 'default' ? 'default' : {exact: cameraID}}},
       ).toPromise();
 
       if (stream) {
@@ -1092,6 +1100,11 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
   async switchMicrophone(ID, microphoneID) {
     logger.debug('MEETING', ID, 'switchMicrophone()', ['called with', {ID, microphoneID}]);
     logger.info('MEETING', ID, 'SWITCH MICROPHONE', `Switching current microphone to microphone with id "${microphoneID}"`);
+
+    const audioConstraints = {
+      deviceId: microphoneID === 'default' ? 'default' : {exact: microphoneID},
+    };
+
     await this.updateMeeting(ID, async (meeting) => {
       let updates;
 
@@ -1099,7 +1112,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
       const {stream, permission, deviceId} = await this.getStream(
         ID,
         {sendAudio: true},
-        {audio: {deviceId: microphoneID}},
+        {audio: audioConstraints},
       ).toPromise();
 
       if (stream) {
@@ -1146,7 +1159,7 @@ export default class MeetingsSDKAdapter extends MeetingsAdapter {
     logger.debug('MEETING', ID, 'switchSpeaker()', ['called with', {ID, speakerID}]);
     logger.info('MEETING', ID, 'SWITCH SPEAKER', `Switching current speaker to speaker with id "${speakerID}"`);
 
-    return this.updateMeeting(ID, () => ({speakerID}));
+    await this.updateMeeting(ID, () => ({speakerID}));
   }
 
   /**

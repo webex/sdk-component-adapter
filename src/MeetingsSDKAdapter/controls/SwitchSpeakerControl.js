@@ -2,7 +2,7 @@ import {Observable} from 'rxjs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
-import {combineLatestImmediate, isSpeakerSupported} from '../../utils';
+import {combineLatestImmediate, isSpeakerSupported, resolveDeviceSwitchArgs} from '../../utils';
 /**
  * Display options of a meeting control.
  *
@@ -12,13 +12,27 @@ import {combineLatestImmediate, isSpeakerSupported} from '../../utils';
 
 export default class SwitchSpeakerControl extends MeetingControl {
   /**
-   * Calls the the action of the switch speaker control.
+   * Calls the action of the switch speaker control.
    *
-   * @param {string} meetingID  Meeting ID
-   * @param {string} speakerID  ID of the speaker device to switch to
+   * @param {object|string} meetingContext  Meeting context object or meeting ID string (@webex/components)
+   * @param {string} [meetingContext.meetingID]  Meeting ID when passed on the context object (PR #346 call shape)
+   * @param {string} [meetingContext.speakerId]  Speaker device ID on the context object (PR #346 call shape)
+   * @param {string} [deviceId]  Speaker device ID as the second argument (@webex/components call shape)
    */
-  async action({meetingID, speakerId}) {
-    logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::action()', ['called with', {meetingID}]);
+  async action(meetingContext, deviceId) {
+    const {meetingID, deviceId: speakerId} = resolveDeviceSwitchArgs(
+      meetingContext,
+      deviceId,
+      'speakerId',
+    );
+
+    if (speakerId == null) {
+      logger.warn('MEETING', meetingID, 'SwitchSpeakerControl::action()', 'No speaker device ID provided');
+
+      return;
+    }
+
+    logger.debug('MEETING', meetingID, 'SwitchSpeakerControl::action()', ['called with', {meetingID, speakerId}]);
 
     await this.adapter.switchSpeaker(meetingID, speakerId);
   }

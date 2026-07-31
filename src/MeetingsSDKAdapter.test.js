@@ -9,6 +9,13 @@ import {meetingID, createTestMeetingsSDKAdapter} from './MeetingsSDKAdapter/test
 
 import logger from './logger';
 
+class MockDOMException extends Error {
+  constructor(message, name) {
+    super(message);
+    this.name = name;
+  }
+}
+
 describe('Meetings SDK Adapter', () => {
   let meeting;
   let meetingsSDKAdapter;
@@ -97,6 +104,36 @@ describe('Meetings SDK Adapter', () => {
             'Unable to retrieve local media stream',
             sdkError.error,
           );
+          done();
+        },
+      );
+    });
+
+    it('returns DENIED when media access is not allowed', (done) => {
+      global.DOMException = MockDOMException;
+      const sdkError = {error: new MockDOMException('Permission denied', 'NotAllowedError')};
+
+      logger.error = jest.fn();
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
+      meetingsSDKAdapter.getStream(meetingID, {sendAudio: true}).pipe(last()).subscribe(
+        ({permission, stream}) => {
+          expect(stream).toBeNull();
+          expect(permission).toBe('DENIED');
+          done();
+        },
+      );
+    });
+
+    it('returns DISABLED when the media device is not readable', (done) => {
+      global.DOMException = MockDOMException;
+      const sdkError = {error: new MockDOMException('Could not start video source', 'NotReadableError')};
+
+      logger.error = jest.fn();
+      mockSDKMeeting.getMediaStreams = jest.fn(() => Promise.reject(sdkError));
+      meetingsSDKAdapter.getStream(meetingID, {sendVideo: true}).pipe(last()).subscribe(
+        ({permission, stream}) => {
+          expect(stream).toBeNull();
+          expect(permission).toBe('DISABLED');
           done();
         },
       );
@@ -942,9 +979,31 @@ describe('Meetings SDK Adapter', () => {
       meetingsSDKAdapter.getStream = jest.fn(() => ({stream: new MediaStream(), deviceId: '', toPromise: () => Promise.resolve({stream: new MediaStream(), permission: 'ALLOWED', deviceId: 'example-camera-id'})}));
       await meetingsSDKAdapter.switchCamera(meetingID, 'example-camera-id');
 
+      expect(meetingsSDKAdapter.getStream).toHaveBeenCalledWith(
+        meetingID,
+        {sendVideo: true},
+        {video: {deviceId: {exact: 'example-camera-id'}}},
+      );
       expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
       expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({cameraID: 'example-camera-id'});
+    });
+
+    it('uses plain default deviceId constraint for the default alias', async () => {
+      meetingsSDKAdapter.getStream = jest.fn(() => ({
+        toPromise: () => Promise.resolve({
+          stream: new MediaStream(),
+          permission: 'ALLOWED',
+          deviceId: 'default',
+        }),
+      }));
+      await meetingsSDKAdapter.switchCamera(meetingID, 'default');
+
+      expect(meetingsSDKAdapter.getStream).toHaveBeenCalledWith(
+        meetingID,
+        {sendVideo: true},
+        {video: {deviceId: 'default'}},
+      );
     });
 
     it('returns a rejected promise if meeting does not exist', async () => {
@@ -968,9 +1027,31 @@ describe('Meetings SDK Adapter', () => {
       meetingsSDKAdapter.getStream = jest.fn(() => ({stream: new MediaStream(), deviceId: '', toPromise: () => Promise.resolve({stream: new MediaStream(), permission: 'ALLOWED', deviceId: 'example-microphone-id'})}));
       await meetingsSDKAdapter.switchMicrophone(meetingID, 'example-microphone-id');
 
+      expect(meetingsSDKAdapter.getStream).toHaveBeenCalledWith(
+        meetingID,
+        {sendAudio: true},
+        {audio: {deviceId: {exact: 'example-microphone-id'}}},
+      );
       expect(mockSDKMeeting.emit).toHaveBeenCalledTimes(1);
       expect(mockSDKMeeting.emit.mock.calls[0][0]).toBe('adapter:meeting:updated');
       expect(mockSDKMeeting.emit.mock.calls[0][1]).toMatchObject({microphoneID: 'example-microphone-id'});
+    });
+
+    it('uses plain default deviceId constraint for the default alias', async () => {
+      meetingsSDKAdapter.getStream = jest.fn(() => ({
+        toPromise: () => Promise.resolve({
+          stream: new MediaStream(),
+          permission: 'ALLOWED',
+          deviceId: 'default',
+        }),
+      }));
+      await meetingsSDKAdapter.switchMicrophone(meetingID, 'default');
+
+      expect(meetingsSDKAdapter.getStream).toHaveBeenCalledWith(
+        meetingID,
+        {sendAudio: true},
+        {audio: {deviceId: 'default'}},
+      );
     });
 
     it('returns a rejected promise if meeting does not exist', async () => {

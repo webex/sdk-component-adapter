@@ -45,5 +45,11 @@ describe('Video Control', () => {
       expect(meetingsSDKAdapter.handleLocalVideo).toHaveBeenCalledTimes(1);
       expect(meetingsSDKAdapter.handleLocalVideo).toHaveBeenCalledWith(meetingID);
     });
+
+    it('calls handleLocalVideo() with meeting ID passed as a string', async () => {
+      meetingsSDKAdapter.handleLocalVideo = jest.fn();
+      await meetingsSDKAdapter.meetingControls['mute-video'].action(meetingID);
+      expect(meetingsSDKAdapter.handleLocalVideo.mock.calls).toEqual([[meetingID]]);
+    });
   });
 });

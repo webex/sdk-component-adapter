@@ -2,6 +2,7 @@ import {Observable, of} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -16,7 +17,9 @@ export default class ExitControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to leave from
    */
-  async action({meetingID}) {
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
+
     logger.debug('MEETING', meetingID, 'ExitControl::action()', ['called with', {meetingID}]);
 
     await this.adapter.leaveMeeting(meetingID);

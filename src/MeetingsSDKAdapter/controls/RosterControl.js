@@ -3,6 +3,7 @@ import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -18,7 +19,9 @@ export default class RosterControl extends MeetingControl {
    *
    * @param {string} meetingID  Id of the meeting to toggle roster
    */
-  async action({meetingID}) {
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
+
     logger.debug('MEETING', meetingID, 'RosterControl::action()', ['called with', {meetingID}]);
 
     await this.adapter.toggleRoster(meetingID);

@@ -3,6 +3,7 @@ import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {MeetingControlState} from '@webex/component-adapter-interfaces';
 import logger from '../../logger';
 import MeetingControl from './MeetingControl';
+import {resolveMeetingID} from '../../utils';
 
 /**
  * Display options of a meeting control.
@@ -17,7 +18,9 @@ export default class ShareControl extends MeetingControl {
    *
    * @param {string} meetingID  ID of the meeting to share screen
    */
-  async action({meetingID}) {
+  async action(meetingContext) {
+    const meetingID = resolveMeetingID(meetingContext);
+
     logger.debug('MEETING', meetingID, 'ShareControl::action()', ['called with', {meetingID}]);
 
     await this.adapter.handleLocalShare(meetingID);
