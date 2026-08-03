@@ -1,3 +1,10 @@
+## [1.113.2](https://github.com/webex/sdk-component-adapter/compare/v1.113.1...v1.113.2) (2026-08-03)
+
+
+### Bug Fixes
+
+* **release:** retry npm publish after token fix ([#352](https://github.com/webex/sdk-component-adapter/issues/352)) ([7e4a3ec](https://github.com/webex/sdk-component-adapter/commit/7e4a3ec68eb92d80eb0c709f5e705757aa70d08b))
+
 ## [1.113.1](https://github.com/webex/sdk-component-adapter/compare/v1.113.0...v1.113.1) (2026-07-31)
 
 
