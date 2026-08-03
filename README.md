@@ -17,6 +17,8 @@
 
 **Webex SDK Adapter** is a library of adapters to provide live data from [Webex JavaScript SDK](https://github.com/webex/webex-js-sdk) to [Webex Components](https://github.com/webex/components).
 
+Release notes for each version are tracked in [CHANGELOG.md](./CHANGELOG.md).
+
 ## Project Status
 
 The Webex Component System is considered to be in beta stage and it's not a generally available product from Webex at this time.
