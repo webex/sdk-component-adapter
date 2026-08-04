@@ -19,6 +19,16 @@
 
 Release notes for each version are tracked in [CHANGELOG.md](./CHANGELOG.md).
 
+## Architecture
+
+This package is a **JavaScript data layer** — it does not ship React UI. Adapters wrap the [Webex JavaScript SDK](https://github.com/webex/webex-js-sdk), implement [`@webex/component-adapter-interfaces`](https://www.npmjs.com/package/@webex/component-adapter-interfaces), and expose meeting, people, and rooms data as **RxJS observables** for [`@webex/components`](https://github.com/webex/components) to consume.
+
+```
+Webex JS SDK  →  @webex/sdk-component-adapter (this repo)  →  @webex/components (React UI)
+```
+
+Peer dependencies: `webex` and `rxjs`.
+
 ## Project Status
 
 The Webex Component System is considered to be in beta stage and it's not a generally available product from Webex at this time.
@@ -30,6 +40,7 @@ We would love for you to use the Webex Component System and be part of the feedb
 
 ## Table of Contents
 
+- [Architecture](#architecture)
 - [Install](#install)
 - [Usage](#usage)
   - [Setup](#setup)
