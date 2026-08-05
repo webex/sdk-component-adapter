@@ -132,8 +132,8 @@ sequenceDiagram
   else cache miss — construct getRoomMembers
     alt listenerCount === 0
       Adapter->>Adapter: memberships.listen()
-    else listenerCount > 0
-      Note over Adapter: skip listen — already active
+    else listenerCount !== 0
+      Note over Adapter: skip listen (includes negative count from prior finalize)
     end
     Adapter->>Adapter: listenerCount++
     Adapter->>People: get('me')
@@ -146,6 +146,24 @@ sequenceDiagram
     Note over Adapter: finalize per subscriber teardown decrements listenerCount; may stopListening early
   end
   Note over Caller,Adapter: Re-subscribe to cached observable does not call listen again
+```
+
+### getMembersFromDestination — room path (negative listenerCount)
+
+When repeated finalize drove `listenerCount` below zero, a **new uncached** room construction increments toward zero **without** calling `memberships.listen()`:
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as MembershipsSDKAdapter
+
+  Note over Adapter: listenerCount is -1 after prior over-decrement
+  Caller->>Adapter: getMembersFromDestination(newRoomID, ROOM)
+  alt uncached key and listenerCount !== 0
+    Note over Adapter: skip memberships.listen()
+    Adapter->>Adapter: listenerCount++ (e.g. -1 → 0)
+    Adapter-->>Caller: roster observable without SDK listener restored
+  end
 ```
 
 ### getMembersFromDestination — meeting path
@@ -207,9 +225,10 @@ classDiagram
 | State | Shape | Create / update trigger | Retention / teardown | Error behavior |
 |---|---|---|---|---|
 | `members$` | `${destinationType}-${destinationID}` → cached observable | First cache miss for key constructs room or meeting pipeline | Persists for **this adapter instance** lifetime; not cleared on unsubscribe | Unsupported type → throwError observable |
-| `listenerCount` | integer ref-count | Increment when constructing uncached **room** observable; decrement in finalize | When `listenerCount === 0`, `memberships.stopListening()` runs | **Sharp edge:** repeated finalize can drive count negative and block later `listen()` until new adapter |
+| `listenerCount` | integer ref-count | Increment when constructing uncached **room** observable; decrement in finalize | **`memberships.stopListening()` when post-decrement count is `<= 0`** | **Sharp edge:** repeated finalize can drive count **negative**; while `listenerCount !== 0`, new uncached room paths skip `listen()` even as count increments toward zero |
 
-- `memberships.listen()` runs only when constructing an **uncached** room roster and `listenerCount === 0` before increment.
+- `memberships.listen()` runs only when constructing an **uncached** room roster and **`listenerCount === 0` exactly** before increment.
+- When `listenerCount !== 0` (including negative values), `listen()` is skipped.
 - Cache hit returns existing observable — **no** `getRoomMembers`, **no** listen call.
 
 ## Concurrency & Reactive Flow

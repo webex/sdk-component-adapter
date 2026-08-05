@@ -111,7 +111,7 @@ src/
 
 | ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| SHU-R-001 | Cache is process-wide singleton Map | Share activity/conversation bodies across adapters | `src/cache.js` | `src/cache.test.js` singleton, set/get/has/remove/keys/values/size, bulk helpers | facade.cache identity; cachSDKActivities; empty-array bulk | PRESENT |
+| SHU-R-001 | Cache is process-wide singleton Map | Share activity/conversation bodies across adapters | `src/cache.js` | `src/cache.test.js` set/get/has/remove/keys/values/size; cacheConversations/cachActivities | singleton identity across imports; WebexSDKAdapter.cache same reference; cachSDKActivities; empty bulk | PRESENT |
 | SHU-R-002 | Logger defaults to level `error`; console transport added when NODE_ENV !== production | Reduce noise in production builds | `src/logger.js` | none found | none | PRESENT |
 | SHU-R-003 | Browser exposes `window.webexSDKAdapterSetLogLevel` when window defined | Runtime debug control in demos | `src/logger.js` | none found | none | PRESENT |
 | SHU-R-004 | `polyfills.js` imported from `src/index.js` — patches missing getTracks to empty array | Prevent throws on legacy browsers | `src/polyfills.js`, `src/index.js` | none found | none | PRESENT |
@@ -338,7 +338,7 @@ classDiagram
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
 | SHU-R-005 | indirect via `src/MeetingsSDKAdapter.test.js` | Direct utils unit tests |
-| SHU-R-001 | `src/cache.test.js` set/get/has/remove/keys/values/size; cacheConversations/cachActivities | facade cache property; cachSDKActivities; empty bulk arrays |
+| SHU-R-001 | `src/cache.test.js` method/bulk coverage | singleton identity; facade.cache reference; cachSDKActivities |
 | SHU-R-003 | none found | window hook manual/browser test |
 
 ## Traceability

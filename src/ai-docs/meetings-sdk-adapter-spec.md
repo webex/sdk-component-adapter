@@ -75,34 +75,34 @@ src/
 | meetings-adapter.getMeeting | SDK method | `getMeeting(ID: string): Observable<Meeting>` | Hot meeting state stream until LEFT | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.joinMeeting | SDK method | `joinMeeting(ID: string, options?: { password?, hostKey?, name?, captcha? }): Promise<void>` | Join with optional password/host key/name/captcha | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.leaveMeeting | SDK method | `leaveMeeting(ID: string): Promise<void>` | removeMedia then sdkMeeting.leave | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.incomingMeeting | SDK inherited | `incomingMeeting(destination: Destination): Observable<Meeting>` | **Not overridden** — base class unsupported-operation error | stable; inherited from interface | `@webex/component-adapter-interfaces` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.incomingMeeting | SDK inherited | `incomingMeeting(destination: string): Observable<Meeting>` | **Not overridden** — base class unsupported-operation error | stable; inherited from interface | `@webex/component-adapter-interfaces` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.getLayoutTypes | SDK method | `getLayoutTypes(): string[]` | Layout enum keys (Overlay, Grid, …) | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.clearPasswordRequiredFlag | SDK method | `clearPasswordRequiredFlag(ID: string): Promise<void>` | Reset `passwordRequired` UI flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.clearInvalidPasswordFlag | SDK method | `clearInvalidPasswordFlag(ID: string): Promise<void>` | Reset `invalidPassword` flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.clearInvalidHostKeyFlag | SDK method | `clearInvalidHostKeyFlag(ID: string): Promise<void>` | Reset `invalidHostKey` flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.refreshCaptcha | SDK method | `refreshCaptcha(ID: string): Promise<void>` | Refresh captcha on meeting object | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.supportedControls | SDK method | `supportedControls(): string[]` | Runtime control key list | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.meetingControls | SDK property | `meetingControls` | `Record<string, MeetingControl>` keyed by runtime control string | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.meetingControls | SDK property | `meetingControls` | Record of MeetingControl instances keyed by runtime control string | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.join-meeting | SDK control | `JoinControl` | `action(meetingContext: string\|object): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/JoinControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.mute-audio | SDK control | `AudioControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/AudioControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.mute-video | SDK control | `VideoControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/VideoControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.leave-meeting | SDK control | `ExitControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/ExitControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.member-roster | SDK control | `RosterControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/RosterControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.share-screen | SDK control | `ShareControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/ShareControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.settings | SDK control | `SettingsControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/SettingsControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.switch-camera | SDK control | `SwitchCameraControl` | `action(meetingContext, deviceId): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/SwitchCameraControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.switch-microphone | SDK control | `SwitchMicrophoneControl` | `action(meetingContext, deviceId): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/SwitchMicrophoneControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.switch-speaker | SDK control | `SwitchSpeakerControl` | `action(meetingContext, deviceId): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/SwitchSpeakerControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.MeetingControl | barrel export | `MeetingControl` | `export { MeetingControl } from './MeetingControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.JoinControl | barrel export | `JoinControl` | `export { JoinControl } from './JoinControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.AudioControl | barrel export | `AudioControl` | `export { AudioControl } from './AudioControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.VideoControl | barrel export | `VideoControl` | `export { VideoControl } from './VideoControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.ExitControl | barrel export | `ExitControl` | `export { ExitControl } from './ExitControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.RosterControl | barrel export | `RosterControl` | `export { RosterControl } from './RosterControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SettingsControl | barrel export | `SettingsControl` | `export { SettingsControl } from './SettingsControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SwitchCameraControl | barrel export | `SwitchCameraControl` | `export { SwitchCameraControl } from './SwitchCameraControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SwitchMicrophoneControl | barrel export | `SwitchMicrophoneControl` | `export { SwitchMicrophoneControl } from './SwitchMicrophoneControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SwitchSpeakerControl | barrel export | `SwitchSpeakerControl` | `export { SwitchSpeakerControl } from './SwitchSpeakerControl.js'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.settings | SDK control | `SettingsControl` | `action(meetingContext): void` (calls toggleSettings without await); `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/SettingsControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-camera | SDK control | `SwitchCameraControl` | `action(meetingContext, deviceId?): Promise<void>` — cameraId from context or optional 2nd arg; missing ID → warn, return | stable | `src/MeetingsSDKAdapter/controls/SwitchCameraControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-microphone | SDK control | `SwitchMicrophoneControl` | `action(meetingContext, deviceId?): Promise<void>` — microphoneId from context or optional 2nd arg; missing ID → warn, return | stable | `src/MeetingsSDKAdapter/controls/SwitchMicrophoneControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-speaker | SDK control | `SwitchSpeakerControl` | `action(meetingContext, deviceId?): Promise<void>` — speakerId from context or optional 2nd arg; missing ID → warn, return | stable | `src/MeetingsSDKAdapter/controls/SwitchSpeakerControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.MeetingControl | barrel export | `MeetingControl` | `export {default as MeetingControl} from './MeetingControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.JoinControl | barrel export | `JoinControl` | `export {default as JoinControl} from './JoinControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.AudioControl | barrel export | `AudioControl` | `export {default as AudioControl} from './AudioControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.VideoControl | barrel export | `VideoControl` | `export {default as VideoControl} from './VideoControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.ExitControl | barrel export | `ExitControl` | `export {default as ExitControl} from './ExitControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.RosterControl | barrel export | `RosterControl` | `export {default as RosterControl} from './RosterControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.SettingsControl | barrel export | `SettingsControl` | `export {default as SettingsControl} from './SettingsControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.SwitchCameraControl | barrel export | `SwitchCameraControl` | `export {default as SwitchCameraControl} from './SwitchCameraControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.SwitchMicrophoneControl | barrel export | `SwitchMicrophoneControl` | `export {default as SwitchMicrophoneControl} from './SwitchMicrophoneControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.controls-barrel.SwitchSpeakerControl | barrel export | `SwitchSpeakerControl` | `export {default as SwitchSpeakerControl} from './SwitchSpeakerControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 Note: `ShareControl` is wired on the adapter at runtime (`share-screen` key) but is **not** exported from the controls barrel (`src/MeetingsSDKAdapter/controls/index.js`).
 
@@ -303,7 +303,7 @@ sequenceDiagram
 
 ### meeting controls — device switch action/display
 
-Applies to SwitchCameraControl, SwitchMicrophoneControl, SwitchSpeakerControl — **second argument `deviceId` required**.
+Applies to SwitchCameraControl, SwitchMicrophoneControl, SwitchSpeakerControl. Device ID may come from the context object (`cameraId` / `microphoneId` / `speakerId`) **or** an optional second `deviceId` argument.
 
 ```mermaid
 sequenceDiagram
@@ -314,9 +314,13 @@ sequenceDiagram
   Host->>Control: display(meetingID)
   Control->>Adapter: getMeeting(meetingID)
   Control-->>Host: MeetingControlDisplay
-  Host->>Control: action(meetingContext, deviceId)
+  Host->>Control: action(meetingContext, deviceId?)
   Control->>Control: resolveDeviceSwitchArgs(meetingContext, deviceId)
-  Control->>Adapter: switchCamera(meetingID, deviceId) or equivalent
+  alt device ID resolved
+    Control->>Adapter: switchCamera(meetingID, cameraId)
+  else missing device ID
+    Control->>Control: logger.warn and return (no switch)
+  end
 ```
 
 ### leaveMeeting
@@ -358,7 +362,7 @@ classDiagram
 | State | Shape | Create / update trigger | Retention / teardown | Error behavior |
 |---|---|---|---|---|
 | `this.meetings[ID]` | in-memory `Meeting` object (media, flags, settings) | `createMeeting`, `updateMeeting`, SDK/adapter events | Persists until adapter discarded; **`disconnect()` does not clear** | `updateMeeting` on unknown ID throws |
-| `getMeetingObservables[ID]` | refCounted hot observable | First `getMeeting(ID)` builds merge pipeline | Removed from map when `takeWhile` completes after LEFT | Unknown ID errors on subscribe |
+| `getMeetingObservables[ID]` | refCounted hot observable | First `getMeeting(ID)` builds merge pipeline | **Map entry persists** for adapter instance; downstream pipeline completes after LEFT (`takeWhile` inclusive) | Unknown ID errors on subscribe; later `getMeeting(ID)` returns the **same cached observable reference** (may complete immediately if already LEFT) |
 | `meetingControls` | static map of control instances | Constructor wires ten runtime keys | Lives for adapter instance | N/A |
 | Meeting `state` field | `MeetingState` enum on in-memory object | **`members:update` → `sdkMeeting.joinedWith.state`** (default NOT_JOINED) | Updated on each distinct members update | LEFT stops `getMeeting` emissions via `takeWhile` |
 
