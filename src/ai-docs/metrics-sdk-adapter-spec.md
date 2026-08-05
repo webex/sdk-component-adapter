@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — single submitMetrics operation group documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -138,6 +138,10 @@ classDiagram
 
 - Each `submitMetrics` call returns independent cold defer observable.
 - No shared state on adapter instance.
+
+## Host Integration & Theming
+
+Host application is `@webex/components`. Pass an **authenticated** Webex JS SDK instance to `WebexSDKAdapter`. `submitMetrics(metric)` does not require facade `connect()` — subscribe to the returned observable in host telemetry hooks; errors are swallowed and emit `{type: null}` rather than observable errors.
 
 ## Pitfalls
 

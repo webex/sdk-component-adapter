@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — room stream, pagination with conversation.list pre-step, realtime activities, hasMoreActivities documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -94,6 +94,7 @@ src/
 | ROM-R-004 | `getRoom` uses refCounted listen/stopListening with listenerCount | SDK rooms.listen is global — ref-count shared listener | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` | Multi-subscriber stopListening edge similar to memberships | WEAK |
 | ROM-R-005 | `hasMoreActivities` triggers `fetchPastActivities` when hasMore true | Pull-based pagination driver | `src/RoomsSDKAdapter.js` | none found | none | PRESENT |
 | ROM-R-006 | Real-time handler filters Mercury events by deconstructed room UUID | Only emit activities for subscribed room | `src/RoomsSDKAdapter.js` | none found | Mercury path untested in unit tests | PRESENT |
+| ROM-R-007 | `fetchPastActivities` subscribes to `from(fetchActivities)` with a **next-only** handler — `conversation.list` / `listActivities` rejection does not propagate to the room Subject; `FETCHED_CONVERSATIONS` stays false until success so later pagination retries | Silent failure on first pre-step; retry without reload | `src/RoomsSDKAdapter.js` | none found | Unhandled rejection risk in internal subscription | PRESENT |
 
 ## Design Overview
 
@@ -160,7 +161,8 @@ sequenceDiagram
     Adapter->>ConvList: list()
     alt conversation.list fails
       ConvList-->>Adapter: rejected promise
-      Note over Adapter: error propagates to fetchPastActivities subscriber
+      Note over Adapter: next-only subscribe — room Subject not errored; FETCHED_CONVERSATIONS stays false
+      Note over Adapter: later hasMoreActivities can retry list without page reload
     else success
       ConvList-->>Adapter: conversations[]
       Adapter->>Cache: cacheConversations
@@ -239,13 +241,17 @@ classDiagram
 | Missing ID on `getPastActivities` / `getActivitiesInRealTime` | `throwError` with message containing Must provide room ID | Validate ID before subscribe |
 | Missing ID on `fetchPastActivities` internal | Subject error `fetchPastActivities - Must provide room ID` | Same as above |
 | `createRoom` SDK failure | Observable error (logged, rethrown) | Show create failure to user |
-| `internal.conversation.list()` failure on first pagination | Unhandled rejection in fetchPastActivities subscription | Retry pagination; ensure SDK conversation plugin healthy |
+| `internal.conversation.list()` failure on first pagination | Rejection swallowed by next-only internal subscribe — **returned Subject not errored**; module flag remains false so later `hasMoreActivities` retries | Retry pagination; monitor console for unhandled rejection; ensure SDK conversation plugin healthy |
 | `listActivities` returns falsy | Past activities Subject completes | End of history |
 | No more activities (`hasMore` false) | `hasMoreActivities` completes Subject | Stop requesting pages |
 
+## Host Integration & Theming
+
+Host application is `@webex/components`. Pass an **authenticated** Webex JS SDK instance to `WebexSDKAdapter`. Await facade `connect()` for `getActivitiesInRealTime` — Mercury must be connected. Subscribe to `getRoom(id)`, `getPastActivities(id)` (with `hasMoreActivities` pagination driver), and real-time activity ID streams in host timeline components.
+
 ## Pitfalls
 
-- **Conversation list pre-step is global once per page** — failure blocks all first-time pagination until reload.
+- **Conversation list pre-step is global once per successful list** — until `FETCHED_CONVERSATIONS` is true, each pagination attempt may retry `conversation.list()`; failure does not error the returned Subject but may log unhandled rejection internally.
 - **`hasMoreActivities` side-effects fetch** — not a pure predicate; calling it drives network I/O.
 - **Real-time cache never removes Mercury listener** — long-lived handler per room ID subscribed.
 

@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — getActivity, postActivity, postAction, adaptive card helpers, and per-group sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -93,10 +93,11 @@ src/
 | ACT-R-005 | Malformed card JSON in fetch maps to fallback AdaptiveCard body | UI still renders parse failure message | `src/ActivitiesSDKAdapter.js` | none found | Fallback card untested | WEAK |
 | ACT-R-006 | `postAction` encrypts inputs with parent activity encryption key | Secure card action submission | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` | none | PRESENT |
 | ACT-R-007 | `hasAdaptiveCards` returns true iff `activity.cards.length > 0` | Gate encryption path | `src/ActivitiesSDKAdapter.js` | none found | Trivial helper | PRESENT |
+| ACT-R-008 | `postAction` uses `from(this.fetchActivity(activityID))` — parent fetch starts when constructing the observable on method call, not on subscribe | Eager parent-activity load before external subscription | `src/ActivitiesSDKAdapter.js` | none found | Unsubscribed return value may still trigger fetch | PRESENT |
 
 ## Design Overview
 
-Activities are loaded via REST `conversation/activities/{id}`, cached in module-level cache and per-ID `ReplaySubject`. Posts route through internal conversation API with optional card encryption keyed by room conversation. `fromSDKActivity` normalizes Hydra IDs and parses embedded card JSON.
+Activities are loaded via REST `conversation/activities/{id}`, cached in module-level cache and per-ID `ReplaySubject`. Posts route through internal conversation API with optional card encryption keyed by room conversation. `fromSDKActivity` normalizes Hydra IDs and parses embedded card JSON. **`postAction` eagerly invokes `fetchActivity` when the method returns** because `from(this.fetchActivity(...))` evaluates the promise at construction time — network work may begin before any subscriber attaches.
 
 ## Data Flow
 
@@ -183,6 +184,7 @@ sequenceDiagram
   participant Conv as internal.conversation
 
   Caller->>Adapter: postAction(activityID, inputs)
+  Note over Adapter: fetchActivity starts eagerly (from() evaluates promise at construction)
   Adapter->>Adapter: fetchActivity(activityID)
   Adapter->>Enc: encryptText(inputs JSON)
   Adapter->>Conv: cardAction(target, {inputs}, parent)
@@ -213,7 +215,8 @@ classDiagram
 ## Concurrency & Reactive Flow
 
 - Per-activity `ReplaySubject` created once; internal subscribe drives emissions — late subscribers receive replayed value.
-- `postActivity` / `postAction` return cold defer/from observables per call.
+- `postActivity` returns cold defer observables per call.
+- **`postAction` parent fetch is eager** — `from(this.fetchActivity(activityID))` starts fetch on method call when building the returned observable, not on first subscribe.
 
 ## Error Handling & Failure Modes
 
@@ -224,11 +227,16 @@ classDiagram
 | `postAction` parent fetch or encrypt fails | Observable error (logged, rethrown) | Ensure parent activity exists and is card message |
 | Unparseable card JSON on read | Fallback AdaptiveCard in `cards` array | Display parse error text to user |
 
+## Host Integration & Theming
+
+Host application is `@webex/components`. Construct `WebexSDKAdapter` with an **authenticated** Webex JS SDK instance. Activity read/post methods do not require facade `connect()` / Mercury for basic REST flows. Subscribe to returned observables (`getActivity`, `postActivity`, `postAction`) in host message components; note `postAction` may start parent fetch before subscribe attaches.
+
 ## Pitfalls
 
 - **`getActivity` ReplaySubject never completes** — long-lived cache entry for ID.
 - **`hasAdaptiveCards` assumes `activity.cards` exists** — caller must supply array (may throw if undefined).
 - **Card encryption requires conversation fetch** — extra round trip on every card post.
+- **`postAction` fetch is eager** — calling the method without subscribing still starts `fetchActivity`.
 
 ## Test-Case Strategy (module)
 

@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — getMe/getPerson/searchPeople, presence wiring, error propagation, and per-operation sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -98,10 +98,11 @@ Compatibility notes:
 | PPL-R-006 | `people.get` failure in `getMe`/`getPerson` propagates as observable error | Caller must handle unknown or inaccessible person | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
 | PPL-R-007 | `people.list` failure in `searchPeople` propagates via `catchError` rethrow | Search errors must not silently return empty | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
 | PPL-R-008 | Finalize on `getPerson` calls `presence.unsubscribe(personUUID)`; failure logged as warn only | Cleanup when refCount reaches zero | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | Unsubscribe failure path untested | PRESENT |
+| PPL-R-009 | Normal `getPerson` subscription performs **two** `people.get` calls — `person$` is subscribed in `personWithStatus$` flatMap and again when `concat` advances to `personUpdate$` flatMap | Duplicate network work on every new subscriber pipeline | `src/PeopleSDKAdapter.js` | none found | Characterization gap — not asserted in tests | PRESENT |
 
 ## Design Overview
 
-`getPerson` builds a pipeline: fetch person once via `fetchPerson`, merge initial Apheleia subscription status, then concat ongoing Mercury-driven status updates mapped back onto the person object. The composed stream is multicasted. `getMe` is a cold `defer` chain that completes after one enriched emission. `searchPeople` maps SDK list pages through `fromSDKPeople`.
+`getPerson` builds a pipeline: `defer(() => fetchPerson)` as shared `person$`, merge initial Apheleia subscription status via `personWithStatus$` (which flatMaps over `person$`), then `concat` to `personUpdate$` (which flatMaps over `person$` again for Mercury-driven status). Because `person$` is a cold defer, **each flatMap subscription triggers a separate `people.get` call** — a normal subscription performs two fetches before live updates. The composed stream is multicasted via `publishReplay(1)` + `refCount()`. `getMe` is a cold `defer` chain that completes after one enriched emission. `searchPeople` maps SDK list pages through `fromSDKPeople`.
 
 ## Data Flow
 
@@ -164,12 +165,13 @@ sequenceDiagram
   participant Mercury as mercury event:apheleia.subscription_update
 
   Caller->>Adapter: getPerson(ID)
-  Adapter->>People: get(ID)
+  Note over Adapter: person$ = defer(fetchPerson) — cold, re-subscribed per flatMap
+  Adapter->>People: get(ID) via personWithStatus$ flatMap
   alt people.get fails
     People-->>Adapter: error
     Adapter-->>Caller: observable error
   else success
-    People-->>Adapter: profile
+    People-->>Adapter: profile (first fetch)
     Adapter->>Apheleia: subscribe(personUUID)
     alt subscribe fails
       Apheleia-->>Adapter: error (caught)
@@ -177,6 +179,9 @@ sequenceDiagram
     else success
       Apheleia-->>Adapter: initial status
       Adapter-->>Caller: Person with status
+      Note over Adapter: concat advances to personUpdate$
+      Adapter->>People: get(ID) again via personUpdate$ flatMap
+      People-->>Adapter: profile (second fetch)
       Mercury-->>Adapter: subscription_update (matching UUID)
       Adapter-->>Caller: updated Person status
     end
@@ -221,6 +226,7 @@ classDiagram
 ## Concurrency & Reactive Flow
 
 - `getPerson` per-ID cache stores refCounted hot observable; last unsubscribe triggers `finalize` cleanup and deletes cache entry.
+- **`person$` is cold defer** — subscribed twice per normal pipeline (`personWithStatus$` then `personUpdate$`), producing two `people.get` calls before Mercury updates.
 - Mercury events filtered by `event.data.subject === personUUID` — ordering follows SDK event delivery.
 - `getMe` and `searchPeople` are cold per subscription.
 
@@ -234,9 +240,14 @@ classDiagram
 | `internal.presence.subscribe` fails in `getPerson` initial path | Emits Person with `status: null` then continues Mercury path if connected | Same as above; live updates may still arrive via Mercury |
 | `presence.unsubscribe` fails on finalize | Warn logged; cache entry still deleted | No caller action; may leave orphan Apheleia subscription if presence disabled |
 
+## Host Integration & Theming
+
+Host application is `@webex/components`. Pass an **authenticated** Webex JS SDK instance to `WebexSDKAdapter`. Await facade `connect()` before relying on live `getPerson` presence updates — Mercury must be connected (`device.register` → `mercury.connect`). Subscribe to `getPerson(id)` / `getMe()` observables in host components; unsubscribe on unmount to trigger presence cleanup. `searchPeople(query)` is cold per subscription and does not require Mercury.
+
 ## Pitfalls
 
 - **Mercury must be connected** (facade `connect()`) for live `getPerson` status updates after initial emission.
+- **`getPerson` performs two `people.get` calls** on a normal subscription — duplicate fetch is current behavior, not a single-shot cache.
 - **`getMe` uses `presence.get`, not subscribe** — status will not live-update for current user via this method.
 - **Presence unsubscribe failures are swallowed** when user has presence disabled — cache entry still deleted on finalize.
 

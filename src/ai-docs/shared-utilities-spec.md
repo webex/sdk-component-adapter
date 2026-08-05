@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — cache, logger, RxJS utils, polyfills with operation-group sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -59,6 +59,17 @@ src/
 └── ai-docs/
 ```
 
+## Key Files (source of truth)
+
+| File | Holds |
+|---|---|
+| `src/cache.js` | CacheMeOutside singleton — set/get/has/remove, bulk cache helpers |
+| `src/logger.js` | Logger singleton wiring, console transport gate, window hook |
+| `src/logger/logger.js` | createLogger, setLevel, addTransport |
+| `src/logger/consoleTransport.js` | Console output transport factory |
+| `src/utils.js` | RxJS operators (chainWith, combineLatestImmediate), meeting ID helpers, deepMerge, safeJsonStringify |
+| `src/polyfills.js` | MediaStream.prototype.getTracks shim loaded via `src/index.js` |
+
 ## Public Surface
 
 Internal Surface — consumed by other modules in this package, not exported from npm entry.
@@ -69,12 +80,18 @@ Internal Surface — consumed by other modules in this package, not exported fro
 | shared.cache.set | internal method | `set(key, value)` | Store or update entry | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.get | internal method | `get(key)` | Retrieve entry or undefined | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.has | internal method | `has(key): boolean` | Key existence check | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.remove | internal method | `remove(key): boolean` | Delete key from cache | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.values | internal method | `values(): Iterator` | Iterate cached values | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.size | internal method | `size(): number` | Entry count | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.keys | internal method | `keys(): Iterator` | Iterate cache keys | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.cacheConversations | internal method | `cacheConversations(conversations[])` | Bulk cache SDK conversations | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.cachActivities | internal method | `cachActivities(activities[])` | Bulk cache SDK activities (typo preserved) | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.cachSDKActivities | internal method | `cachSDKActivities(sdkActivities[])` | Bulk cache SDK activity objects by id | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.default | internal module | `default export` logger instance | Domain debug/error logging | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.setLevel | internal method | `setLevel(level)` | Adjust log verbosity | stable internal | `src/logger/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.windowHook | internal global | `window.webexSDKAdapterSetLogLevel(level)` | Browser-only level control | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.chainWith | internal export | RxJS operator | Chain dependent observables | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.combineLatestImmediate | internal export | RxJS helper | combineLatest with startWith(undefined) per source | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.deepMerge | internal export | object merge | Meeting state updates | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.resolveMeetingID | internal export | `(meetingContext) => string` | Control action meeting ID resolution | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.resolveDeviceSwitchArgs | internal export | device switch arg resolver | switch-* control compatibility | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
@@ -123,6 +140,7 @@ Sequence coverage:
 |---|---|---|
 | cache get/set | Cache read-through | miss → undefined; set overwrites |
 | logger level hook | Browser setLogLevel | N/A in Node without window |
+| polyfill load + utils resolveMeetingID | Package load + control arg resolution | polyfill no-op when getTracks exists; resolveMeetingID returns undefined for bad context |
 
 ### cache get / set
 
@@ -153,6 +171,29 @@ sequenceDiagram
   Dev->>Window: webexSDKAdapterSetLogLevel('debug')
   Window->>Logger: setLevel('debug')
   Note over Adapter: subsequent domain logger.debug calls emit
+```
+
+### polyfill load and resolveMeetingID (utils group)
+
+```mermaid
+sequenceDiagram
+  participant Host as Host bundle import
+  participant Index as src/index.js
+  participant Poly as polyfills.js
+  participant Control as MeetingsSDKAdapter control
+
+  Host->>Index: import WebexSDKAdapter
+  Index->>Poly: side-effect import
+  alt MediaStream.getTracks missing
+    Poly->>Poly: assign getTracks → empty array
+  end
+  Note over Control: later control action
+  Control->>Control: resolveMeetingID(meetingContext)
+  alt string meetingID
+    Control-->>Control: meetingContext
+  else context object
+    Control-->>Control: meetingContext.meetingID
+  end
 ```
 
 ## Class / Component Relationships

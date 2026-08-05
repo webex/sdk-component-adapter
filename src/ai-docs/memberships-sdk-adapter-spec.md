@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — room/meeting rosters, addRoomMember, inherited removeRoomMember, refCount sharp edge documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -208,6 +208,10 @@ classDiagram
 | `addRoomMember` create failure | Observable error (logged, rethrown) | Show add failure; check permissions |
 | `removeRoomMember` on this adapter | Base class unsupported-operation error | Use host/SDK workflow for removal or extend adapter |
 | Early stopListening due to finalize sharp edge | Remaining room subscribers stop receiving CREATED/DELETED updates | Re-subscribe or fix refCount/finalize ordering in a future change |
+
+## Host Integration & Theming
+
+Host application is `@webex/components`. Construct `WebexSDKAdapter` with an **authenticated** Webex JS SDK instance. Await facade `connect()` for live room roster updates (Mercury-backed membership events). Subscribe to `getMembersFromDestination(id, type)` observables in host roster UI; meeting rosters require an active SDK meeting object from the meetings adapter flow.
 
 ## Pitfalls
 

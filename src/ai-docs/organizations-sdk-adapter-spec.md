@@ -19,7 +19,7 @@
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — single getOrg operation group, fetch error path, and sequence documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -83,10 +83,11 @@ This module exposes **one operation group** (`getOrg`); a single sequence diagra
 | ORG-R-001 | `getOrg` caches `ReplaySubject(1)` per org ID | Avoid duplicate fetch pipelines | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` | none | PRESENT |
 | ORG-R-002 | Successful fetch maps `{ID: response.id, name: response.displayName}` | Adapter Organization shape | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` | none | PRESENT |
 | ORG-R-003 | Fetch failure emits `Error: Could't find organization with ID "…"` | Caller-visible not-found signal (typo preserved from source) | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` | none | PRESENT |
+| ORG-R-004 | First `getOrg(ID)` call eagerly starts internal `defer(fetchOrganization).subscribe()` even when no external subscriber exists yet | Hydra fetch begins on method call, not on first external subscription | `src/OrganizationsSDKAdapter.js` | none found | Matches manifest eager semantics | PRESENT |
 
 ## Design Overview
 
-Cold defer fetch on first `getOrg` subscription populates a ReplaySubject; subsequent subscribers to same ID share the cached subject and receive replayed organization or error.
+On first `getOrg(ID)` call, the adapter creates a per-ID `ReplaySubject(1)` and **immediately** subscribes to `defer(() => fetchOrganization(ID))` — the Hydra request starts eagerly during the method call, not when an external consumer first subscribes to the returned subject. Subsequent callers for the same ID receive the cached ReplaySubject; late external subscribers replay the prior organization emission or error.
 
 ## Data Flow
 
@@ -114,6 +115,7 @@ sequenceDiagram
 
   Caller->>Adapter: getOrg(ID)
   alt first call for ID
+    Note over Adapter: creates ReplaySubject; internal subscribe starts fetch eagerly
     Adapter->>Hydra: GET organizations/{orgID}
     alt failure
       Hydra-->>Adapter: error
@@ -141,8 +143,8 @@ classDiagram
 
 ## Concurrency & Reactive Flow
 
-- One ReplaySubject per org ID; internal subscribe runs once on first getter.
-- No live updates — single-shot fetch semantics.
+- One ReplaySubject per org ID; internal `defer(...).subscribe()` runs once on first `getOrg` call — **eager fetch** even if the returned subject has zero external subscribers yet.
+- No live updates — single-shot fetch semantics; external subscribers receive replayed value or error.
 
 ## Error Handling & Failure Modes
 
@@ -150,6 +152,10 @@ classDiagram
 |---|---|---|
 | Hydra request fails | Observable error `Could't find organization with ID "…"` | Treat as unknown org; verify ID format |
 | Success | Single Organization emission | Bind display name in UI |
+
+## Host Integration & Theming
+
+Host application is `@webex/components`. Construct `WebexSDKAdapter` with an **authenticated** Webex JS SDK instance. `getOrg(orgID)` returns a ReplaySubject-backed observable — subscribe in the host UI to bind organization display name. No facade `connect()` Mercury dependency for this module (Hydra REST only). Calling `getOrg` without subscribing still triggers the eager internal fetch on first call per org ID.
 
 ## Pitfalls
 
