@@ -48,6 +48,7 @@
 | Patterns | `ai-docs/patterns/` | RxJS and adapter conventions |
 | Rules | `ai-docs/RULES.md` | Enforceable do/don't |
 | Glossary | `ai-docs/GLOSSARY.md` | Domain terms |
+| Data model | `ai-docs/DATA_MODEL.md` | In-memory entities and caches |
 | Security | `ai-docs/SECURITY.md` | Trust boundaries |
 | Contracts | `ai-docs/CONTRACTS.md` | npm public surface index |
 | Getting started | `ai-docs/GETTING_STARTED.md` | Build/test loop |

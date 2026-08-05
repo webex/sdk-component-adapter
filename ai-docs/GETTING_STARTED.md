@@ -53,3 +53,9 @@ npx npm-install-peers
 - **Missing peer deps:** Run `npx npm-install-peers` after `npm install`.
 - **Cypress failures:** Ensure `.env` has valid Webex test credentials; run `npx cypress install`.
 - **Build externals:** Peers `webex` and `rxjs` must resolve in host app — not bundled in dist.
+
+## Where to Go Next
+
+- Agent entry: [`AGENTS.md`](../AGENTS.md) · System shape: [`ARCHITECTURE.md`](ARCHITECTURE.md) · Routing: [`SPEC_INDEX.md`](SPEC_INDEX.md)
+- Public contracts: [`CONTRACTS.md`](CONTRACTS.md) · Conventions: [`patterns/`](patterns/) and [`RULES.md`](RULES.md)
+- Module behavior: `src/ai-docs/<module>-spec.md` per [`SPEC_INDEX.md`](SPEC_INDEX.md)

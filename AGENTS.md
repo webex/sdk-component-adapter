@@ -79,6 +79,14 @@ src/
 - Meetings adapter holds in-memory meeting state and MediaStream handles — callers must `disconnect()` to release.
 - Missing room/meeting/activity IDs surface RxJS errors on observables (see module specs).
 
+## Pre-Commit Checklist
+
+- [ ] `npm run test:unit` passes; changed public behavior has unit tests
+- [ ] `npm run linter` passes (husky pre-commit)
+- [ ] Canonical module spec updated in the same change as behavior changes (spec-currency)
+- [ ] No secrets in diff; peer deps `webex` and `rxjs` remain Rollup externals
+- [ ] `Validation status` in specs stays `not-run` until independent `spec-validator` pass at HEAD SHA
+
 ## Boundaries
 
 ### Always

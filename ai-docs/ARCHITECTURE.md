@@ -88,23 +88,30 @@ Evidence: `src/WebexSDKAdapter.js`, `src/index.js`.
 | WebexSDKAdapter | ActivitiesSDKAdapter | call | Delegate activities |
 | WebexSDKAdapter | MeetingsSDKAdapter | call | Delegate meetings + connect hook |
 | Domain adapters | webex SDK | call | Fetch/mutate cloud resources |
-| RoomsSDKAdapter | Mercury (via SDK) | event | Real-time activity IDs |
-| All adapters | cache.js | call | Dedupe SDK fetches |
+| RoomsSDKAdapter | Mercury (via SDK) | event | Real-time activity IDs for `getActivitiesInRealTime` |
+| ActivitiesSDKAdapter, RoomsSDKAdapter | cache.js | call | Dedupe activity/conversation fetches |
+| PeopleSDKAdapter, RoomsSDKAdapter | RxJS publishReplay/refCount | in-memory | Per-entity hot observables (not cache.js) |
 
 ## Object / Data Ownership
 
 | Domain object | System-of-record | Read by |
 |---|---|---|
 | Room, Activity, Person | Webex cloud via SDK | Rooms/Activities/People adapters |
-| Meeting state | SDK meetings plugin + adapter cache | Meetings adapter, controls |
-| Cached SDK entities | In-memory `cache.js` | Activities, rooms adapters |
+| Meeting state | SDK meetings plugin + adapter in-memory maps | Meetings adapter, controls |
+| Cached SDK fetch bodies | In-memory `cache.js` Map | Activities adapter (activity fetch), Rooms adapter (conversation fetch) |
+| Reactive stream state | Per-adapter ReplaySubject / publishReplay caches | Activities, People, Rooms, Organizations adapters |
 
 ## Caching Catalog
 
 | Cache | Backend | What it holds | TTL | Invalidation |
 |---|---|---|---|---|
-| `cache.js` singleton | In-memory Map | Conversations, activities | Session | Explicit remove; process restart |
-| Per-ID ReplaySubjects | In-memory | Room/activity/person streams | Subscription lifetime | Adapter instance teardown |
+| `cache.js` singleton | In-memory Map | Activity and conversation fetch bodies keyed by deconstructed id | Session (process lifetime) | Explicit `cache.remove`; page reload |
+| Activities `getActivity` ReplaySubject | In-memory per activity ID | Mapped Activity emissions | Until adapter instance discarded | New adapter instance |
+| People/Rooms `publishReplay(1)` | In-memory per entity ID | Last mapped entity value | refCount teardown when unsubscribed | Resubscribe triggers refetch pipeline |
+| Organizations `getOrg` ReplaySubject(1) | In-memory per org ID | Organization object | Until adapter instance discarded | New adapter instance |
+| Meetings `getMeetingObservables` | In-memory object map | Meeting observables and SDK meeting handles | Until disconnect | `disconnect()` clears meetings plugin state |
+
+→ Full entity and cache ownership: [`DATA_MODEL.md`](DATA_MODEL.md)
 
 ## Observability Patterns
 
@@ -117,6 +124,31 @@ Evidence: `src/WebexSDKAdapter.js`, `src/index.js`.
 - **semantic-release** on `master` branch (CircleCI `release` job).
 - Published artifacts: npm package + GitHub release asset (ESM bundle).
 - Version in `package.json`; changelog in `CHANGELOG.md` (reference only per keep-separate policy).
+
+## Host Integration & Theming
+
+- Host (`@webex/components`) constructs `new WebexSDKAdapter(webex)` with an authenticated SDK instance.
+- Host must call `await adapter.connect()` before Mercury-dependent realtime (presence updates, meeting sync, room activity streams).
+- Host accesses domain adapters via facade properties (`roomsAdapter`, `meetingsAdapter`, etc.).
+- Peer dependencies: `webex` and `rxjs` must be provided by the host bundle — not embedded in adapter dist.
+- No UI theming in this repo; design tokens live in the host component library.
+
+## Shared / Base Libraries
+
+| Library | What every module inherits from it | Version floor |
+|---|---|---|
+| `@webex/component-adapter-interfaces` | Adapter base classes and shared type contracts | `^1.28.0` |
+| `@webex/common` | Hydra ID helpers, SDK event constants | `^2.60.4` |
+| `rxjs` | Observable primitives and operators | `^6.5.4` |
+| `src/logger.js` | Structured debug/error logging with domain tags | repo-internal |
+| `src/cache.js` | Fetch deduplication for activities/conversations | repo-internal |
+
+## Cross-Repo Dependency Graph
+
+- **Internal (same org):** Consumes `@webex/component-adapter-interfaces` (contracts); consumed by `@webex/components` (React UI host).
+- **Cross-project:** Webex JS SDK (`webex` peer) — all cloud I/O.
+- **External read-only:** README and upstream SDK documentation referenced in module specs.
+- **External services:** Webex REST and Mercury endpoints via SDK (no direct adapter HTTP client).
 
 ## CI Pipeline
 
@@ -147,3 +179,22 @@ Evidence: `.circleci/config.yml`, `package.json`.
 ## Security Architecture
 
 Trust boundary: host application supplies authenticated SDK. Adapter does not store long-lived secrets. See `ai-docs/SECURITY.md`.
+
+---
+→ Per-module orientation and detailed design live in each manifest-routed module spec, source-local as `src/ai-docs/<module-name>-spec.md` by default. Routing: `SPEC_INDEX.md`.
+
+## Architecture Reference Links
+
+| Reference | Location | When to read |
+|---|---|---|
+| Architecture decisions | (none committed yet) | When ADRs are added for adapter design choices |
+| Repo patterns | `ai-docs/patterns/` | Observable error handling, connect lifecycle |
+| Enforceable rules | `ai-docs/RULES.md` | Before changing imports, logging, or public API |
+| Data model & caches | `ai-docs/DATA_MODEL.md` | Before changing cache.js or reactive cache semantics |
+| Public contracts | `ai-docs/CONTRACTS.md` | Before changing exports or peer dependencies |
+
+## WS6 References
+
+| WS6 artifact | Relevance to this repo | Link |
+|---|---|---|
+| N/A — no WS6 architecture artifacts referenced in bootstrap | This component adapter follows `@webex/component-adapter-interfaces` and host `@webex/components` integration only | — |

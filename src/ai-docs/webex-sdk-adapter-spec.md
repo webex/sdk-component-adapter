@@ -17,190 +17,216 @@
 | Module id | webex-sdk-adapter |
 | Source path(s) | `src/WebexSDKAdapter.js`, `src/index.js` |
 | Doc kind | Module spec |
-| Coverage score | 92% assessed 2026-08-05 — facade connect/disconnect and export surface documented |
+| Coverage score | 92% assessed 2026-08-05 — facade composition, connect/disconnect scope, and export surface documented against source |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / pending PR approval / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
 
-Requirements cite `file path` evidence only. Tests referenced by file name.
+Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` files. Gaps and confidence are recorded per row.
 
 ## Source Material Register
 
-| Source material | Scope | Decision | Detail location |
+| Source material | Scope | Decision | Detail location or disposition |
 |---|---|---|---|
-| README connect/disconnect | usage | reference-only | Sequence diagrams in this spec; README unchanged (keep-separate) |
-| Code | behavior | verified | `src/WebexSDKAdapter.js` |
+| README connect/disconnect | usage | reference-only | Sequence diagrams; README unchanged (keep-separate policy) |
+| Implementation | behavior | verified | Requirements and Design Overview in this spec |
 
 ## Overview
 
-`WebexSDKAdapter` is the **only public export** of this package. It extends `WebexAdapter` from `@webex/component-adapter-interfaces`, instantiates all domain adapters with the same SDK instance, and exposes `connect()` / `disconnect()` to register the device, open Mercury, and synchronize the meetings plugin.
+`WebexSDKAdapter` is the **only public export** of `@webex/sdk-component-adapter`. It extends `WebexAdapter` from `@webex/component-adapter-interfaces`, instantiates all domain adapters with the same authenticated Webex JS SDK instance, and exposes `connect()` / `disconnect()` to orchestrate device registration, Mercury WebSocket connectivity, and the meetings plugin lifecycle.
+
+Domain adapters are exposed as properties (`activitiesAdapter`, `peopleAdapter`, etc.) so `@webex/components` can subscribe to RxJS observables without importing sub-modules directly. The facade also exposes the raw `sdk` reference and the shared `cache` singleton.
 
 ## Purpose / Responsibility
 
-Owns facade composition and lifecycle orchestration for Webex cloud connectivity. Does **not** implement domain queries (delegated to `*Adapter` properties).
+Owns facade composition and **selective** lifecycle orchestration for Webex cloud connectivity (device + Mercury + meetings). Does **not** implement domain queries — those delegate to `*SDKAdapter` properties.
 
 ## Stack
 
-JavaScript, `@webex/component-adapter-interfaces`, Webex JS SDK, shared `cache` and `logger`.
+JavaScript (ES modules), `@webex/component-adapter-interfaces`, Webex JS SDK (peer), RxJS 6 (peer), Rollup build, Jest unit tests.
 
 ## Folder / Package Structure
 
 ```
 src/
 ├── WebexSDKAdapter.js    # Facade class
-├── index.js              # default export only
+├── index.js              # default export + polyfills side-effect
+├── *SDKAdapter.js        # Domain adapters (wired in constructor)
+├── cache.js, logger.js   # Shared utilities
 └── ai-docs/              # Module specs
 ```
 
 ## Key Files (source of truth)
 
-| File | Role |
+| File | Holds |
 |---|---|
 | `src/index.js` | Public entry — `export default WebexSDKAdapter` |
-| `src/WebexSDKAdapter.js` | Facade implementation |
-| `src/WebexSDKAdapter.test.js` | connect/disconnect unit tests |
+| `src/WebexSDKAdapter.js` | Facade implementation and connect/disconnect |
+| `src/WebexSDKAdapter.test.js` | Sub-adapter wiring unit tests |
+| `package.json` | Package name/version logged at construction |
 
 ## Public Surface
 
-| Symbol | Kind | Description |
-|---|---|---|
-| `WebexSDKAdapter` | class (default export) | Facade adapter |
-| `constructor(sdk)` | method | Wire sub-adapters to authenticated SDK |
-| `connect()` | async method | device.register → mercury.connect → meetingsAdapter.connect |
-| `disconnect()` | async method | meetingsAdapter.disconnect → mercury.disconnect → device.unregister |
-| `activitiesAdapter` | property | ActivitiesSDKAdapter instance |
-| `peopleAdapter` | property | PeopleSDKAdapter instance |
-| `roomsAdapter` | property | RoomsSDKAdapter instance |
-| `meetingsAdapter` | property | MeetingsSDKAdapter instance |
-| `membershipsAdapter` | property | MembershipsSDKAdapter instance |
-| `organizationsAdapter` | property | OrganizationsSDKAdapter instance |
-| `metricsAdapter` | property | MetricsSDKAdapter instance |
-| `sdk` | property | Raw Webex SDK reference |
-| `cache` | property | Shared cache singleton |
+| Contract ID | Symbol | Kind | Signature/Type | Stability | Detail link | Defined at |
+|---|---|---|---|---|---|---|
+| webex-sdk-adapter.default | `WebexSDKAdapter` | class (default export) | `class WebexSDKAdapter extends WebexAdapter` | stable | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) | `src/index.js` |
+| webex-sdk-adapter.constructor | `constructor(sdk)` | method | `(sdk: WebexSDK) => WebexSDKAdapter` | stable | this spec | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.connect | `connect()` | async method | `() => Promise<void>` | stable | this spec | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.disconnect | `disconnect()` | async method | `() => Promise<void>` | stable | this spec | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.activities | `activitiesAdapter` | property | `ActivitiesSDKAdapter` | stable | [`activities-sdk-adapter-spec.md`](activities-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.people | `peopleAdapter` | property | `PeopleSDKAdapter` | stable | [`people-sdk-adapter-spec.md`](people-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.rooms | `roomsAdapter` | property | `RoomsSDKAdapter` | stable | [`rooms-sdk-adapter-spec.md`](rooms-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.meetings | `meetingsAdapter` | property | `MeetingsSDKAdapter` | stable | [`meetings-sdk-adapter-spec.md`](meetings-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.memberships | `membershipsAdapter` | property | `MembershipsSDKAdapter` | stable | [`memberships-sdk-adapter-spec.md`](memberships-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.organizations | `organizationsAdapter` | property | `OrganizationsSDKAdapter` | stable | [`organizations-sdk-adapter-spec.md`](organizations-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.metrics | `metricsAdapter` | property | `MetricsSDKAdapter` | stable | [`metrics-sdk-adapter-spec.md`](metrics-sdk-adapter-spec.md) | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.sdk | `sdk` | property | authenticated Webex SDK instance | stable | this spec | `src/WebexSDKAdapter.js` |
+| webex-sdk-adapter.cache | `cache` | property | shared cache singleton | stable | [`shared-utilities-spec.md`](shared-utilities-spec.md) | `src/WebexSDKAdapter.js` |
 
-Evidence: `src/index.js`, `src/WebexSDKAdapter.js`
+Compatibility notes:
+
+- Additive optional properties on sub-adapters are minor-compatible; removing or renaming facade properties is breaking.
+- Peer dependencies `webex` and `rxjs` must remain external in Rollup bundles.
 
 ## Requires (dependencies)
 
 | Dependency | Purpose |
 |---|---|
-| Authenticated `webex` SDK | Data source for all adapters |
+| Authenticated Webex JS SDK instance | Data source for all sub-adapters |
 | `@webex/component-adapter-interfaces` | `WebexAdapter` base class |
-| Domain `*SDKAdapter` modules | Composed adapters |
-| `cache.js`, `logger.js` | Cross-cutting utilities |
+| `webex` (peer) | SDK runtime |
+| `rxjs` (peer) | Observable streams from sub-adapters |
+| `./cache`, `./logger` | Shared singleton utilities |
 
 ## Requirements
 
-| ID | WHAT | WHY | Evidence | Tests |
-|---|---|---|---|---|
-| R-F1 | Package default export is only `WebexSDKAdapter` | Single entry for `@webex/components` host integration | `src/index.js` | Import tests in consumers |
-| R-F2 | `connect()` registers device then Mercury then meetings | SDK requires device + websocket before live updates | `src/WebexSDKAdapter.js` | `src/WebexSDKAdapter.test.js` |
-| R-F3 | `disconnect()` reverses connect order (meetings → mercury → unregister) | Clean teardown of media and sockets | `src/WebexSDKAdapter.js` | `src/WebexSDKAdapter.test.js` |
-| R-F4 | Constructor creates all domain adapters with same SDK | Shared session across domains | `src/WebexSDKAdapter.js` | Constructor tests |
+| ID | WHAT | WHY | Evidence | Test evidence | Gaps | Confidence |
+|---|---|---|---|---|---|---|
+| WSA-R-001 | Constructor instantiates all seven domain adapters and assigns `sdk` and `cache` | Host receives a fully wired facade from one SDK instance | `src/WebexSDKAdapter.js` | `src/WebexSDKAdapter.test.js` (positive: adapter instance types) | No test for organizations/metrics/memberships/activities adapter types | PRESENT |
+| WSA-R-002 | `connect()` awaits `device.register()`, `mercury.connect()`, then `meetingsAdapter.connect()` in order | Live Mercury events and meeting sync require registered device and open WebSocket | `src/WebexSDKAdapter.js` | none found | connect/disconnect sequence untested | PRESENT |
+| WSA-R-003 | `connect()` is required only for Mercury-dependent and meetings-plugin flows; organizations and metrics adapters work without facade `connect()` | Orgs use Hydra REST; metrics use SDK internal metrics — neither depends on device/Mercury/meetings registration | `src/WebexSDKAdapter.js`, `src/OrganizationsSDKAdapter.js`, `src/MetricsSDKAdapter.js` | none found | Integration proof of orgs/metrics without connect not automated | PRESENT |
+| WSA-R-004 | `disconnect()` reverses connect: meetings disconnect, Mercury disconnect, device unregister | Releases WebSocket and device registration in safe order | `src/WebexSDKAdapter.js` | none found | disconnect sequence untested | PRESENT |
+| WSA-R-005 | Package default export is only `WebexSDKAdapter` | Published npm contract is a single facade entry | `src/index.js` | none found | Export surface not asserted in tests | PRESENT |
 
 ## Design Overview
 
-Thin facade: no domain RxJS logic here — only lifecycle and dependency injection of sub-adapters.
+The facade follows composition over inheritance for domain logic: each `*SDKAdapter` implements its `@webex/component-adapter-interfaces` counterpart while sharing one SDK datasource. Connect/disconnect is intentionally narrow — only the cross-cutting infrastructure (device, Mercury, meetings plugin) that multiple adapters implicitly rely on is centralized here. Callers that only need REST-backed org lookup or fire-and-forget metrics can invoke those sub-adapters immediately after construction without awaiting `connect()`.
 
 ## Data Flow
 
-Host constructs facade → calls `connect()` → SDK internal services ready → host uses `adapter.<domain>Adapter` observables.
-
 ```mermaid
 flowchart LR
-  Host --> Facade[WebexSDKAdapter]
-  Facade --> SDK[webex SDK]
-  Facade --> Sub[Domain adapters]
-  Sub --> SDK
+  Host["@webex/components host"] --> Facade["WebexSDKAdapter"]
+  Facade --> Activities["ActivitiesSDKAdapter"]
+  Facade --> People["PeopleSDKAdapter"]
+  Facade --> Rooms["RoomsSDKAdapter"]
+  Facade --> Meetings["MeetingsSDKAdapter"]
+  Facade --> Memberships["MembershipsSDKAdapter"]
+  Facade --> Orgs["OrganizationsSDKAdapter"]
+  Facade --> Metrics["MetricsSDKAdapter"]
+  Facade -->|"connect()"| Device["sdk.internal.device"]
+  Facade -->|"connect()"| Mercury["sdk.internal.mercury"]
+  Facade -->|"connect()"| MeetPlugin["meetingsAdapter.connect()"]
+  Activities & People & Rooms & Memberships --> SDK["Webex JS SDK"]
+  Orgs & Metrics --> SDK
+  Meetings --> SDK
 ```
 
 ## Sequence Diagram(s)
 
-**connect() — operation group: cloud connectivity**
+Sequence coverage:
+
+| Operation group | Diagram | Failure / recovery coverage |
+|---|---|---|
+| Facade connect | Connect lifecycle | Errors propagate from SDK register/connect — host must catch |
+| Facade disconnect | Disconnect lifecycle | Reverse teardown; errors from SDK propagate |
 
 ```mermaid
 sequenceDiagram
   participant Host
   participant Facade as WebexSDKAdapter
-  participant SDK as webex SDK
+  participant Device as sdk.internal.device
+  participant Mercury as sdk.internal.mercury
   participant Meetings as MeetingsSDKAdapter
 
   Host->>Facade: connect()
-  Facade->>SDK: internal.device.register()
-  Facade->>SDK: internal.mercury.connect()
+  Facade->>Device: register()
+  Device-->>Facade: ok / error
+  Facade->>Mercury: connect()
+  Mercury-->>Facade: ok / error
   Facade->>Meetings: connect()
+  Meetings-->>Facade: ok / error
   Facade-->>Host: resolved
 ```
-
-**disconnect() — operation group: teardown**
 
 ```mermaid
 sequenceDiagram
   participant Host
   participant Facade as WebexSDKAdapter
-  participant SDK as webex SDK
   participant Meetings as MeetingsSDKAdapter
+  participant Mercury as sdk.internal.mercury
+  participant Device as sdk.internal.device
 
   Host->>Facade: disconnect()
   Facade->>Meetings: disconnect()
-  Facade->>SDK: internal.mercury.disconnect()
-  Facade->>SDK: internal.device.unregister()
+  Facade->>Mercury: disconnect()
+  Facade->>Device: unregister()
   Facade-->>Host: resolved
 ```
-
-Evidence: `src/WebexSDKAdapter.js` — **not** `@webex/components` `withAdapter` / `WebexDataProvider` lifecycle.
 
 ## Class / Component Relationships
 
 ```mermaid
 classDiagram
   WebexAdapter <|-- WebexSDKAdapter
-  WebexSDKAdapter --> ActivitiesSDKAdapter
-  WebexSDKAdapter --> MeetingsSDKAdapter
-  WebexSDKAdapter --> PeopleSDKAdapter
-  WebexSDKAdapter --> RoomsSDKAdapter
-  WebexSDKAdapter --> MembershipsSDKAdapter
-  WebexSDKAdapter --> OrganizationsSDKAdapter
-  WebexSDKAdapter --> MetricsSDKAdapter
-  WebexSDKAdapter --> cache
+  WebexSDKAdapter *-- ActivitiesSDKAdapter
+  WebexSDKAdapter *-- PeopleSDKAdapter
+  WebexSDKAdapter *-- RoomsSDKAdapter
+  WebexSDKAdapter *-- MeetingsSDKAdapter
+  WebexSDKAdapter *-- MembershipsSDKAdapter
+  WebexSDKAdapter *-- OrganizationsSDKAdapter
+  WebexSDKAdapter *-- MetricsSDKAdapter
+  WebexSDKAdapter --> cache : shared singleton
 ```
 
 ## Use Cases
 
-| Actor | Steps | Outcome |
-|---|---|---|
-| Host app | new WebexSDKAdapter(sdk); await connect() | Live updates enabled |
-| Host app | await disconnect() on unmount | Resources released |
+- **UC-1 Host bootstrap:** Authenticated SDK passed to constructor → sub-adapters available → host calls `connect()` before live meeting/presence/room-update flows. Evidence: `src/WebexSDKAdapter.js`.
+- **UC-2 Org/metrics without connect:** Host reads organization or submits metrics via sub-adapters without awaiting facade `connect()`. Evidence: `src/OrganizationsSDKAdapter.js`, `src/MetricsSDKAdapter.js`.
+- **UC-3 Teardown:** Host calls `disconnect()` to unregister device and close Mercury. Evidence: `src/WebexSDKAdapter.js`.
 
 ## Concurrency & Reactive Flow
 
-Async `connect`/`disconnect`; domain data via RxJS on sub-adapters (not facade methods).
+- `connect()` and `disconnect()` are async and must be awaited serially by the host; concurrent connect calls are not guarded in the facade.
+- Sub-adapters return cold/hot RxJS observables independently; the facade does not serialize observable subscriptions.
 
 ## Export Stability
 
-Default export class name and connect/disconnect signatures are semver-sensitive npm contract.
+Default export semver follows package releases. Sub-adapter property names mirror interface domains and are stable public composition API.
 
-## Host Integration
+## Host Integration & Theming
 
-Host must await `connect()` before subscribing to domain observables. See `ai-docs/CONTRACTS.md`.
+Host must supply an **authenticated** Webex SDK instance. `@webex/components` typically wraps the facade with `withAdapter`; connect/disconnect lifecycle is the host's responsibility before relying on Mercury or meeting state.
 
 ## Pitfalls
 
-- Calling domain adapters before `connect()` may yield stale or empty streams.
-- Passing unauthenticated SDK breaks all downstream adapters.
+- **Do not assume all adapters need `connect()`** — only Mercury-backed realtime (people presence updates, room `updated` events, conversation activities) and meetings plugin sync require facade connect. Organizations (`getOrg`) and metrics (`submitMetrics`) use REST/SDK calls that work without connect.
+- **Meetings adapter connect is separate from facade connect** — facade `connect()` delegates to `meetingsAdapter.connect()` which registers the meetings plugin; skipping facade connect leaves meetings unsynced.
+- **Authenticated SDK required at construction** — unauthenticated SDK instances cause downstream adapter failures unrelated to connect order.
 
 ## Test-Case Strategy (module)
 
-| Area | Test file | Coverage |
+| Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| connect/disconnect call order | `src/WebexSDKAdapter.test.js` | Mock SDK internal APIs |
-| Sub-adapter construction | `src/WebexSDKAdapter.test.js` | Property presence |
+| WSA-R-001 | `src/WebexSDKAdapter.test.js` — positive: rooms/people/meetings adapter instance types | Negative: missing adapter type assertions for activities, memberships, organizations, metrics |
+| WSA-R-002 | none found | Positive: connect calls register/mercury/meetings in order; Negative: SDK register failure propagates |
+| WSA-R-003 | none found | Positive: getOrg/submitMetrics without connect; documented as integration gap |
+| WSA-R-004 | none found | Positive/negative disconnect teardown tests |
+| WSA-R-005 | none found | Assert default export shape from `src/index.js` |
 
 ## Traceability
 
-| Requirement | Spec section | Source | Test |
-|---|---|---|---|
-| R-F2 | Sequence connect | `src/WebexSDKAdapter.js` | `WebexSDKAdapter.test.js` |
-| R-F3 | Sequence disconnect | `src/WebexSDKAdapter.js` | `WebexSDKAdapter.test.js` |
+- Repo architecture: [`ai-docs/ARCHITECTURE.md`](../../ai-docs/ARCHITECTURE.md) · Registry: [`ai-docs/SPEC_INDEX.md`](../../ai-docs/SPEC_INDEX.md)
+- Coverage state & contracts baseline: `.sdd/manifest.json`
