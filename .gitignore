@@ -45,3 +45,6 @@ node_modules/
 
 # Cypress
 cypress/screenshots/
+
+# SDD Bootstrap temporary outputs
+.generated/
