@@ -108,10 +108,12 @@ Compatibility notes:
 
 ```mermaid
 flowchart TD
-  getPerson["getPerson(ID)"] --> fetch["fetchPerson → people.get"]
-  fetch --> aph["presence.subscribe UUID"]
-  aph --> concat["concat initial + Mercury updates"]
-  concat --> pr["publishReplay(1) + refCount"]
+  getPerson["getPerson(ID)"] --> aph["presence.subscribe UUID"]
+  aph --> fetch1["first people.get via personWithStatus$ flatMap"]
+  fetch1 --> emit1["initial Person emission"]
+  emit1 --> fetch2["second people.get via personUpdate$ flatMap"]
+  fetch2 --> mercury["Mercury apheleia updates"]
+  mercury --> pr["publishReplay(1) + refCount"]
   getMe["getMe()"] --> meFetch["fetchPerson('me')"]
   meFetch --> presGet["internal.presence.get"]
   search["searchPeople"] --> list["people.list"]

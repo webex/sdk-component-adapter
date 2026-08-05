@@ -84,9 +84,9 @@ src/
 | ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
 | MEM-R-001 | ROOM path lists memberships with max 1000 and sorts current user first | Predictable roster ordering for UI | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` | none | PRESENT |
-| MEM-R-002 | MEETING path uses BehaviorSubject + `members:update` with `payload.full` | Replay last roster to new subscribers | `src/MembershipsSDKAdapter.js` | none found | Meeting not found error path | PRESENT |
+| MEM-R-002 | MEETING path uses BehaviorSubject + `members:update` with `payload.full` | Replay last roster to new subscribers | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` meeting roster + missing meeting error | members:update live path untested | PRESENT |
 | MEM-R-003 | Unknown `destinationType` returns throwError | Explicit unsupported destination guard | `src/MembershipsSDKAdapter.js` | none found | none | PRESENT |
-| MEM-R-004 | `addRoomMember` maps SDK membership via `fromSDKMembership`; errors rethrown | Caller sees create failures | `src/MembershipsSDKAdapter.js` | none found | none | PRESENT |
+| MEM-R-004 | `addRoomMember` maps SDK membership via `fromSDKMembership`; errors rethrown | Caller sees create failures | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` addRoomMember success and rejected create | none | PRESENT |
 | MEM-R-005 | `removeRoomMember` not overridden — base unsupported error | Document effective callable surface | `src/MembershipsSDKAdapter.js` | none found | Exact base error message not asserted | WEAK |
 | MEM-R-006 | Room path `finalize` runs per subscription after refCount — first unsubscribe may call stopListening while others remain | **Sharp edge:** not last-subscriber guarantee | `src/MembershipsSDKAdapter.js` | none found | Two-subscriber negative test missing | PRESENT |
 
@@ -127,15 +127,25 @@ sequenceDiagram
   participant Events as memberships CREATED/DELETED
 
   Caller->>Adapter: getMembersFromDestination(roomID, ROOM)
-  Adapter->>Adapter: startListeningToMembershipsUpdates
-  Adapter->>People: get('me')
-  Adapter->>Mem: list({roomId, max: 1000})
-  Mem-->>Adapter: items
-  Adapter-->>Caller: sorted Member[]
-  Events-->>Adapter: created/deleted (matching roomId)
-  Adapter->>Mem: list refresh
-  Adapter-->>Caller: updated Member[]
-  Note over Adapter: finalize on each subscriber teardown may stopListening while other subscribers active
+  alt cache hit (members$[ROOM-roomID] exists)
+    Adapter-->>Caller: return cached observable (no new listen/list)
+  else cache miss — construct getRoomMembers
+    alt listenerCount === 0
+      Adapter->>Adapter: memberships.listen()
+    else listenerCount > 0
+      Note over Adapter: skip listen — already active
+    end
+    Adapter->>Adapter: listenerCount++
+    Adapter->>People: get('me')
+    Adapter->>Mem: list({roomId, max: 1000})
+    Mem-->>Adapter: items
+    Adapter-->>Caller: sorted Member[]
+    Events-->>Adapter: created/deleted (matching roomId)
+    Adapter->>Mem: list refresh
+    Adapter-->>Caller: updated Member[]
+    Note over Adapter: finalize per subscriber teardown decrements listenerCount; may stopListening early
+  end
+  Note over Caller,Adapter: Re-subscribe to cached observable does not call listen again
 ```
 
 ### getMembersFromDestination — meeting path
@@ -194,15 +204,20 @@ classDiagram
 
 ## State Model
 
-- `members$` — map of `${destinationType}-${destinationID}` → cached room/meeting membership observable; persists for adapter lifetime.
-- `listenerCount` — ref-count for global `memberships.listen()` / `stopListening()`; only first room roster construction calls `listen()`.
+| State | Shape | Create / update trigger | Retention / teardown | Error behavior |
+|---|---|---|---|---|
+| `members$` | `${destinationType}-${destinationID}` → cached observable | First cache miss for key constructs room or meeting pipeline | Persists for **this adapter instance** lifetime; not cleared on unsubscribe | Unsupported type → throwError observable |
+| `listenerCount` | integer ref-count | Increment when constructing uncached **room** observable; decrement in finalize | When `listenerCount === 0`, `memberships.stopListening()` runs | **Sharp edge:** repeated finalize can drive count negative and block later `listen()` until new adapter |
+
+- `memberships.listen()` runs only when constructing an **uncached** room roster and `listenerCount === 0` before increment.
+- Cache hit returns existing observable — **no** `getRoomMembers`, **no** listen call.
 
 ## Concurrency & Reactive Flow
 
 - Room observable: `concat(members$, event$)` wrapped in `publishReplay(1)` + `refCount()`, with `finalize` calling `stopListeningToMembershipsUpdates`.
 - **Sharp edge (MEM-R-006):** `finalize` is attached after `refCount()`, so it runs once per external subscription teardown. With two subscribers, the first unsubscribe decrements `listenerCount` and may invoke `memberships.stopListening()` while the second subscriber is still active — **do not assume last-subscriber semantics**.
 - Meeting observable: plain BehaviorSubject without shared refCount; no global memberships listen.
-- Cached observables in `this.members$` persist for process lifetime.
+- Cached observables in `this.members$` persist for **adapter instance** lifetime (not process-global).
 
 ## Error Handling & Failure Modes
 
@@ -230,8 +245,8 @@ Host application is `@webex/components`. Construct `WebexSDKAdapter` with an **a
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
 | MEM-R-001 | `src/MembershipsSDKAdapter.test.js` room members | MEM-R-006 two-subscriber finalize |
-| MEM-R-002 | none found | Meeting members:update path |
-| MEM-R-004 | none found | addRoomMember negative |
+| MEM-R-002 | `src/MembershipsSDKAdapter.test.js` meeting roster + missing meeting | members:update live emission |
+| MEM-R-004 | `src/MembershipsSDKAdapter.test.js` addRoomMember success/reject | none |
 | MEM-R-005 | none found | removeRoomMember inherited error |
 
 ## Traceability

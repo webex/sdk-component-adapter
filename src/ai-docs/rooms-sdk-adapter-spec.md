@@ -90,7 +90,7 @@ src/
 |---|---|---|---|---|---|---|
 | ROM-R-001 | First `fetchActivities` calls `internal.conversation.list()` once, then `cache.cacheConversations` | Pre-cache conversations before listActivities (legacy SDK requirement) | `src/RoomsSDKAdapter.js` | none found | conversation.list failure path untested | PRESENT |
 | ROM-R-002 | `fetchActivities` requests `activityLimit + 1` items to detect more pages | Enables hasMore without extra guesswork | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` | none | PRESENT |
-| ROM-R-003 | Missing room ID on getPastActivities returns throwError | Fail fast on invalid input | `src/RoomsSDKAdapter.js` | none found | none | PRESENT |
+| ROM-R-003 | Missing room ID on getPastActivities returns throwError | Fail fast on invalid input | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` getPastActivities missing ID | none | PRESENT |
 | ROM-R-004 | `getRoom` uses refCounted listen/stopListening with listenerCount | SDK rooms.listen is global — ref-count shared listener | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` | Multi-subscriber stopListening edge similar to memberships | WEAK |
 | ROM-R-005 | `hasMoreActivities` triggers `fetchPastActivities` when hasMore true | Pull-based pagination driver | `src/RoomsSDKAdapter.js` | none found | none | PRESENT |
 | ROM-R-006 | Real-time handler filters Mercury events by deconstructed room UUID | Only emit activities for subscribed room | `src/RoomsSDKAdapter.js` | none found | Mercury path untested in unit tests | PRESENT |
@@ -104,8 +104,9 @@ Room metadata streams concat initial REST fetch with `rooms` plugin `updated` ev
 
 ```mermaid
 flowchart TD
-  getRoom["getRoom(ID)"] --> fetch["rooms.get"]
-  fetch --> listen["rooms.listen + updated events"]
+  getRoom["getRoom(ID)"] --> listen["startListening → rooms.listen if listenerCount was 0"]
+  listen --> fetch["rooms.get initial fetch"]
+  fetch --> updated["rooms updated event → refetch"]
   past["getPastActivities"] --> subject["Subject per room"]
   hasMore["hasMoreActivities"] --> fetchPast["fetchPastActivities"]
   fetchPast --> convList["internal.conversation.list (once)"]
@@ -276,7 +277,7 @@ Host application is `@webex/components`. Pass an **authenticated** Webex JS SDK 
 |---|---|---|
 | ROM-R-002 | `src/RoomsSDKAdapter.test.js` pagination | conversation.list pre-step ROM-R-001 |
 | ROM-R-004 | getRoom listen tests | Multi-subscriber listenerCount |
-| ROM-R-003 | none found | Missing ID negative tests |
+| ROM-R-003 | `src/RoomsSDKAdapter.test.js` getPastActivities missing room ID | none |
 | ROM-R-006 | none found | Mercury realtime unit test |
 
 ## Traceability

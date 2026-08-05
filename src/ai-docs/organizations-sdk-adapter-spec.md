@@ -143,7 +143,10 @@ classDiagram
 
 ## State Model
 
-- `organizationObservables` — map of org ID → `ReplaySubject(1)` pipeline for `getOrg`; entries persist for adapter lifetime.
+| State | Shape | Create / update trigger | Retention / teardown | Error behavior |
+|---|---|---|---|---|
+| `organizationObservables` | org ID → `ReplaySubject(1)` | First `getOrg(ID)` creates subject and **eager** internal `defer(fetch).subscribe()` | Entry persists for adapter instance; single-shot (no live updates) | Hydra failure → error emission on subject (`Could't find organization…`) |
+| Cached replay | last Organization or error | Successful fetch maps `{ID, name}` once | Late subscribers replay prior value/error | Same error reused for subsequent callers same ID |
 
 ## Concurrency & Reactive Flow
 

@@ -121,7 +121,9 @@ Sequence coverage:
 |---|---|---|
 | getActivity | Fetch by ID | alt: network/404 → observable error |
 | postActivity | Post text or encrypted cards | alt: encrypt/post failure → rethrow |
-| postAction | Card action submit | alt: fetch/encrypt/action failure → rethrow |
+| postAction | Card action submit | alt: parent fetch fail; encrypt fail; cardAction fail → rethrow |
+| adaptive card helpers | hasAdaptiveCards / getAdaptiveCard | undefined cards → throw; index out of range → undefined |
+| fromSDKActivity | SDK→adapter mapper | malformed card JSON → fallback AdaptiveCard body |
 
 ### getActivity
 
@@ -186,13 +188,59 @@ sequenceDiagram
   Caller->>Adapter: postAction(activityID, inputs)
   Note over Adapter: fetchActivity starts eagerly (from() evaluates promise at construction)
   Adapter->>Adapter: fetchActivity(activityID)
-  Adapter->>Enc: encryptText(inputs JSON)
-  Adapter->>Conv: cardAction(target, {inputs}, parent)
-  alt failure
-    Conv-->>Adapter: error
+  alt parent fetch fails
     Adapter-->>Caller: observable error
+  else parent fetch success
+    Adapter->>Enc: encryptText(inputs JSON)
+    alt encrypt fails
+      Adapter-->>Caller: observable error
+    else encrypt success
+      Adapter->>Conv: cardAction(target, {inputs}, parent)
+      alt cardAction fails
+        Conv-->>Adapter: error
+        Adapter-->>Caller: observable error
+      else success
+        Adapter-->>Caller: Activity fromSDKActivity
+      end
+    end
+  end
+```
+
+### adaptive card helpers
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as ActivitiesSDKAdapter
+
+  Caller->>Adapter: hasAdaptiveCards(activity)
+  alt activity.cards undefined
+    Adapter-->>Caller: throws (length access)
+  else cards.length > 0
+    Adapter-->>Caller: true
+  else empty
+    Adapter-->>Caller: false
+  end
+  Caller->>Adapter: getAdaptiveCard(activity, cardIndex)
+  alt index valid
+    Adapter-->>Caller: cards[cardIndex] object
+  else out of range
+    Adapter-->>Caller: undefined
+  end
+```
+
+### fromSDKActivity mapper
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as ActivitiesSDKAdapter
+
+  Caller->>Adapter: fromSDKActivity(sdkActivity)
+  alt card JSON parse fails
+    Adapter-->>Caller: Activity with fallback AdaptiveCard error body
   else success
-    Adapter-->>Caller: Activity fromSDKActivity
+    Adapter-->>Caller: normalized Activity (Hydra IDs, parsed cards)
   end
 ```
 
@@ -214,7 +262,13 @@ classDiagram
 
 ## State Model
 
-- `activityObservables` — map of activity Hydra ID → per-ID `ReplaySubject` pipeline for `getActivity`; entries persist for adapter lifetime.
+| State | Shape | Create / update trigger | Retention / teardown | Error behavior |
+|---|---|---|---|---|
+| `activityObservables` | activity Hydra ID → `ReplaySubject` pipeline | First `getActivity(ID)` creates pipeline and internal subscribe | Entry persists for adapter instance; never completes | Fetch failure → observable error on subject |
+| Shared `cache` (via `fetchActivity`) | deconstructed activity id → SDK body | `cache.set` after successful GET; `cache.get` on hit before network | Process-wide singleton; no TTL | Cache miss proceeds to network; 404 maps to not-found error |
+
+- `fetchActivity` reads/writes shared `cache.js` keyed by deconstructed activity id (`src/ActivitiesSDKAdapter.js`, `src/cache.js`).
+- ReplaySubject entries are not removed when external subscribers unsubscribe.
 
 ## Concurrency & Reactive Flow
 
