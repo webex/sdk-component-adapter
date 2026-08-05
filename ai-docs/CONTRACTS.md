@@ -19,7 +19,7 @@ One-for-one index of every `Contract ID` in module Public Surface tables. Detail
 | activities-adapter.class | activities-sdk-adapter | ActivitiesSDKAdapter | ActivitiesSDKAdapter extends ActivitiesAdapter | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
 | activities-adapter.fromSDKActivity | activities-sdk-adapter | fromSDKActivity | fromSDKActivity(sdkActivity): Activity | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
 | activities-adapter.getActivity | activities-sdk-adapter | getActivity | getActivity(ID: string): Observable<Activity> | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
-| activities-adapter.getAdaptiveCard | activities-sdk-adapter | getAdaptiveCard | getAdaptiveCard(activity: Activity, cardIndex: number): object | undefined | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
+| activities-adapter.getAdaptiveCard | activities-sdk-adapter | getAdaptiveCard | getAdaptiveCard(activity: Activity, cardIndex: number): object or undefined | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
 | activities-adapter.hasAdaptiveCards | activities-sdk-adapter | hasAdaptiveCards | hasAdaptiveCards(activity: Activity): boolean | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
 | activities-adapter.postAction | activities-sdk-adapter | postAction | postAction(activityID: string, inputs: object): Observable<Activity> | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
 | activities-adapter.postActivity | activities-sdk-adapter | postActivity | postActivity(activity: Activity): Observable<Activity> | stable | src/ActivitiesSDKAdapter.js | src/ActivitiesSDKAdapter.js |
@@ -28,7 +28,7 @@ One-for-one index of every `Contract ID` in module Public Surface tables. Detail
 | meetings-adapter.clearInvalidPasswordFlag | meetings-sdk-adapter | clearInvalidPasswordFlag | clearInvalidPasswordFlag(ID: string): Promise<void> | stable | src/MeetingsSDKAdapter.js | src/MeetingsSDKAdapter.js |
 | meetings-adapter.clearPasswordRequiredFlag | meetings-sdk-adapter | clearPasswordRequiredFlag | clearPasswordRequiredFlag(ID: string): Promise<void> | stable | src/MeetingsSDKAdapter.js | src/MeetingsSDKAdapter.js |
 | meetings-adapter.connect | meetings-sdk-adapter | connect | connect(): Promise<void> | stable | src/MeetingsSDKAdapter.js | src/MeetingsSDKAdapter.js |
-| meetings-adapter.control.join-meeting | meetings-sdk-adapter | JoinControl | action(meetingContext: string|object): Promise<void>; display(meetingID): Observable<MeetingControlDisplay> | stable | src/MeetingsSDKAdapter/controls/JoinControl.js | src/MeetingsSDKAdapter/controls/JoinControl.js |
+| meetings-adapter.control.join-meeting | meetings-sdk-adapter | JoinControl | action(meetingContext: string or object): Promise<void>; display(meetingID): Observable<MeetingControlDisplay> | stable | src/MeetingsSDKAdapter/controls/JoinControl.js | src/MeetingsSDKAdapter/controls/JoinControl.js |
 | meetings-adapter.control.leave-meeting | meetings-sdk-adapter | ExitControl | action(meetingContext): Promise<void>; display(meetingID): Observable<MeetingControlDisplay> | stable | src/MeetingsSDKAdapter/controls/ExitControl.js | src/MeetingsSDKAdapter/controls/ExitControl.js |
 | meetings-adapter.control.member-roster | meetings-sdk-adapter | RosterControl | action(meetingContext): Promise<void>; display(meetingID): Observable<MeetingControlDisplay> | stable | src/MeetingsSDKAdapter/controls/RosterControl.js | src/MeetingsSDKAdapter/controls/RosterControl.js |
 | meetings-adapter.control.mute-audio | meetings-sdk-adapter | AudioControl | action(meetingContext): Promise<void>; display(meetingID): Observable<MeetingControlDisplay> | stable | src/MeetingsSDKAdapter/controls/AudioControl.js | src/MeetingsSDKAdapter/controls/AudioControl.js |
@@ -111,7 +111,9 @@ One-for-one index of every `Contract ID` in module Public Surface tables. Detail
 | webex-sdk-adapter.peopleAdapter | facade | PeopleSDKAdapter instance | Domain delegate | stable | src/ai-docs/people-sdk-adapter-spec.md | src/ai-docs/people-sdk-adapter-spec.md |
 | webex-sdk-adapter.roomsAdapter | facade | RoomsSDKAdapter instance | Domain delegate | stable | src/ai-docs/rooms-sdk-adapter-spec.md | src/ai-docs/rooms-sdk-adapter-spec.md |
 
-### Events| Contract ID | Owner module | Event / topic | Direction | Payload schema link | Delivery guarantees | Compatibility / deprecation | Defined at |
+### Events
+
+| Contract ID | Owner module | Event / topic | Direction | Payload schema link | Delivery guarantees | Compatibility / deprecation | Defined at |
 |---|---|---|---|---|---|---|---|
 | rooms.event.updated | rooms-sdk-adapter | `updated` | consume | `src/ai-docs/rooms-sdk-adapter-spec.md` | SDK plugin dispatch | stable | `src/RoomsSDKAdapter.js` |
 | mercury.event.conversation.activity | rooms-sdk-adapter | `event:conversation.activity` | consume | `src/ai-docs/rooms-sdk-adapter-spec.md` | Mercury push | stable | `src/RoomsSDKAdapter.js` |
