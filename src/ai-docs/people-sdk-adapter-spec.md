@@ -160,31 +160,31 @@ sequenceDiagram
 sequenceDiagram
   participant Caller
   participant Adapter as PeopleSDKAdapter
-  participant People as people.get
   participant Apheleia as presence.subscribe
+  participant People as people.get
   participant Mercury as mercury event:apheleia.subscription_update
 
   Caller->>Adapter: getPerson(ID)
-  Note over Adapter: person$ = defer(fetchPerson) — cold, re-subscribed per flatMap
-  Adapter->>People: get(ID) via personWithStatus$ flatMap
+  Note over Adapter: person$ = defer(fetchPerson) — cold; each flatMap subscribes anew
+  Adapter->>Apheleia: subscribe(personUUID) — personWithStatus$ runs first
+  alt subscribe fails
+    Apheleia-->>Adapter: error (caught → status null)
+  else success
+    Apheleia-->>Adapter: initial status
+  end
+  Note over Adapter: both presence outcomes share flatMap path
+  Adapter->>People: get(ID) — first fetch via personWithStatus$ flatMap
   alt people.get fails
     People-->>Adapter: error
     Adapter-->>Caller: observable error
   else success
     People-->>Adapter: profile (first fetch)
-    Adapter->>Apheleia: subscribe(personUUID)
-    alt subscribe fails
-      Apheleia-->>Adapter: error (caught)
-      Adapter-->>Caller: Person, status null
-    else success
-      Apheleia-->>Adapter: initial status
-      Adapter-->>Caller: Person with status
-      Note over Adapter: concat advances to personUpdate$
-      Adapter->>People: get(ID) again via personUpdate$ flatMap
-      People-->>Adapter: profile (second fetch)
-      Mercury-->>Adapter: subscription_update (matching UUID)
-      Adapter-->>Caller: updated Person status
-    end
+    Adapter-->>Caller: Person with status (or null if presence failed)
+    Note over Adapter: concat advances to personUpdate$
+    Adapter->>People: get(ID) — second fetch via personUpdate$ flatMap
+    People-->>Adapter: profile (second fetch)
+    Mercury-->>Adapter: subscription_update (matching UUID)
+    Adapter-->>Caller: updated Person status
   end
 ```
 
@@ -222,6 +222,11 @@ classDiagram
 - **UC-1 Current user:** `getMe()` → profile + optional status → completes. Evidence: `src/PeopleSDKAdapter.test.js`.
 - **UC-2 Contact card:** `getPerson(id)` → initial profile + live presence until unsubscribe. Evidence: `src/PeopleSDKAdapter.js`, `src/PeopleSDKAdapter.test.js`.
 - **UC-3 Typeahead search:** `searchPeople(query)` → array or propagated SDK error. Evidence: `src/PeopleSDKAdapter.test.js`.
+
+## State Model
+
+- `getPersonObservables` — map of person Hydra ID → cached `publishReplay(1)` + `refCount()` pipeline per ID; entry deleted on finalize after last unsubscribe.
+- Presence subscription state is tied to each cached pipeline lifetime (subscribe on first pipeline build, unsubscribe on finalize).
 
 ## Concurrency & Reactive Flow
 

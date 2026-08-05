@@ -212,6 +212,10 @@ classDiagram
 - **UC-2 Send message/cards:** `postActivity({roomID, text, cards})` → encrypted post when cards present. Evidence: `src/ActivitiesSDKAdapter.test.js`.
 - **UC-3 Card submit:** `postAction(activityID, inputs)` → encrypted action. Evidence: `src/ActivitiesSDKAdapter.test.js`.
 
+## State Model
+
+- `activityObservables` — map of activity Hydra ID → per-ID `ReplaySubject` pipeline for `getActivity`; entries persist for adapter lifetime.
+
 ## Concurrency & Reactive Flow
 
 - Per-activity `ReplaySubject` created once; internal subscribe drives emissions — late subscribers receive replayed value.

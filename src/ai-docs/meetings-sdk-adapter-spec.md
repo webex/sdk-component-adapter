@@ -165,7 +165,9 @@ Sequence coverage:
 | createMeeting / getMeeting | Create + observe meeting stream | alt: create error → throw; missing ID → getMeeting error |
 | joinMeeting | Join with optional password flow | alt: missing password → early return; invalid verifyPassword → flags then join still attempted |
 | leaveMeeting | Leave + media cleanup | alt: leave SDK error logged, not rethrown |
-| sync helpers | Layout, flag clear, captcha refresh, supportedControls | synchronous reads/writes on adapter state — no network |
+| local sync helpers | Layout, flag clear, supportedControls | synchronous in-memory reads/writes only |
+| refreshCaptcha | SDK captcha refresh | async network via sdkMeeting.refreshCaptcha |
+| meeting control action/display | Host invokes control.action / display | JoinControl example; each control implements both methods |
 
 ### connect / disconnect
 
@@ -242,9 +244,9 @@ sequenceDiagram
   end
 ```
 
-### sync helpers (layout, flags, captcha, controls)
+### local sync helpers (layout, flags, supportedControls)
 
-Merged diagram — `getLayoutTypes`, `clearPasswordRequiredFlag`, `clearInvalidPasswordFlag`, `clearInvalidHostKeyFlag`, `refreshCaptcha`, and `supportedControls` are synchronous adapter helpers with no SDK network I/O; they read or mutate in-memory meeting state / control map.
+Synchronous in-memory operations only — no SDK network I/O.
 
 ```mermaid
 sequenceDiagram
@@ -255,10 +257,46 @@ sequenceDiagram
   Adapter-->>Host: layout enum keys
   Host->>Adapter: supportedControls()
   Adapter-->>Host: runtime control key strings
+  Host->>Adapter: clearPasswordRequiredFlag(ID)
+  Adapter->>Adapter: updateMeeting clears passwordRequired
   Host->>Adapter: clearInvalidPasswordFlag(ID)
   Adapter->>Adapter: updateMeeting clears invalidPassword
+  Host->>Adapter: clearInvalidHostKeyFlag(ID)
+  Adapter->>Adapter: updateMeeting clears invalidHostKey
+```
+
+### refreshCaptcha (networked)
+
+```mermaid
+sequenceDiagram
+  participant Host as @webex/components
+  participant Adapter as MeetingsSDKAdapter
+  participant SDK as sdkMeeting
+
   Host->>Adapter: refreshCaptcha(ID)
-  Adapter->>SDK: sdkMeeting.refreshCaptcha (async)
+  Adapter->>SDK: getMeetingByType / resolve handle
+  Adapter->>SDK: refreshCaptcha()
+  SDK-->>Adapter: updated captcha on meeting object
+  Adapter->>Adapter: updateMeeting with captcha fields
+```
+
+### meeting control action / display
+
+Representative flow for runtime controls in `meetingControls` map (`join-meeting`, `mute-audio`, etc.). Each control extends `MeetingControl` with `action(meetingContext)` and `display(meetingID): Observable<MeetingControlDisplay>`.
+
+```mermaid
+sequenceDiagram
+  participant Host as @webex/components
+  participant Control as JoinControl
+  participant Adapter as MeetingsSDKAdapter
+
+  Host->>Control: display(meetingID)
+  Control->>Adapter: getMeeting(meetingID)
+  Adapter-->>Control: Meeting stream
+  Control-->>Host: MeetingControlDisplay (hint, state, ID)
+  Host->>Control: action(meetingContext)
+  Control->>Control: resolveMeetingID(meetingContext)
+  Control->>Adapter: joinMeeting(meetingID, joinOptions)
 ```
 
 ### leaveMeeting

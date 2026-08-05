@@ -192,6 +192,11 @@ classDiagram
 - **UC-2 In-meeting roster:** `getMembersFromDestination(meetingId, MEETING)` → BehaviorSubject stream. Evidence: `src/MembershipsSDKAdapter.js`.
 - **UC-3 Add participant:** `addRoomMember(personId, roomId)` → single emission. Evidence: `src/MembershipsSDKAdapter.js`.
 
+## State Model
+
+- `members$` — map of `${destinationType}-${destinationID}` → cached room/meeting membership observable; persists for adapter lifetime.
+- `listenerCount` — ref-count for global `memberships.listen()` / `stopListening()`; only first room roster construction calls `listen()`.
+
 ## Concurrency & Reactive Flow
 
 - Room observable: `concat(members$, event$)` wrapped in `publishReplay(1)` + `refCount()`, with `finalize` calling `stopListeningToMembershipsUpdates`.
@@ -207,7 +212,7 @@ classDiagram
 | Unsupported destination type | `throwError` with not supported message | Pass ROOM or MEETING only |
 | `addRoomMember` create failure | Observable error (logged, rethrown) | Show add failure; check permissions |
 | `removeRoomMember` on this adapter | Base class unsupported-operation error | Use host/SDK workflow for removal or extend adapter |
-| Early stopListening due to finalize sharp edge | Remaining room subscribers stop receiving CREATED/DELETED updates | Re-subscribe or fix refCount/finalize ordering in a future change |
+| Early stopListening due to finalize sharp edge | Remaining room subscribers stop receiving CREATED/DELETED updates | **Re-subscribing to the cached observable does not call `memberships.listen()` again** — recovery requires a new adapter instance or an implementation fix; do not treat re-subscribe as listener restore |
 
 ## Host Integration & Theming
 
@@ -216,6 +221,7 @@ Host application is `@webex/components`. Construct `WebexSDKAdapter` with an **a
 ## Pitfalls
 
 - **Do not claim last-subscriber stopListening guarantee** for room rosters — see MEM-R-006.
+- **Re-subscribing does not restore SDK listening** — `getMembersFromDestination` returns the cached observable; `startListeningToMembershipsUpdates` runs only on first cache miss.
 - **`removeRoomMember` is not implemented** — calling it hits base adapter unsupported error.
 - **Meeting roster requires live SDK meeting object** — not available before join/create flows populate meetings collection.
 

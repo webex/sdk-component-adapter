@@ -251,8 +251,8 @@
         "module_specific_conventions": false,
         "published_package": false,
         "embedded_in_host": true,
-        "holds_client_state": false,
-        "resolved_by": "cursor-agent (bootstrap questionnaire)",
+        "holds_client_state": true,
+        "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
         "resolved_at": "2026-08-05T00:00:00Z"
       },
       "source_policy": {
@@ -293,8 +293,8 @@
         "module_specific_conventions": false,
         "published_package": false,
         "embedded_in_host": true,
-        "holds_client_state": false,
-        "resolved_by": "cursor-agent (bootstrap questionnaire)",
+        "holds_client_state": true,
+        "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
         "resolved_at": "2026-08-05T00:00:00Z"
       },
       "source_policy": {
@@ -332,8 +332,8 @@
         "module_specific_conventions": false,
         "published_package": false,
         "embedded_in_host": true,
-        "holds_client_state": false,
-        "resolved_by": "cursor-agent (bootstrap questionnaire)",
+        "holds_client_state": true,
+        "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
         "resolved_at": "2026-08-05T00:00:00Z"
       },
       "source_policy": {
@@ -373,8 +373,8 @@
         "module_specific_conventions": false,
         "published_package": false,
         "embedded_in_host": true,
-        "holds_client_state": false,
-        "resolved_by": "cursor-agent (bootstrap questionnaire)",
+        "holds_client_state": true,
+        "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
         "resolved_at": "2026-08-05T00:00:00Z"
       },
       "source_policy": {
@@ -412,8 +412,8 @@
         "module_specific_conventions": false,
         "published_package": false,
         "embedded_in_host": true,
-        "holds_client_state": false,
-        "resolved_by": "cursor-agent (bootstrap questionnaire)",
+        "holds_client_state": true,
+        "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
         "resolved_at": "2026-08-05T00:00:00Z"
       },
       "source_policy": {
@@ -603,7 +603,7 @@
   "section_profiles": {
     "repo": {
       "owns_datastore": false,
-      "holds_client_state": false,
+      "holds_client_state": true,
       "components_interact": true,
       "domain_data_across_components": true,
       "caches_data": true,

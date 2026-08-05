@@ -141,6 +141,10 @@ classDiagram
 
 - **UC-1 Org label:** `getOrg(orgId)` → `{ID, name}` or error. Evidence: `src/OrganizationsSDKAdapter.test.js`.
 
+## State Model
+
+- `organizationObservables` — map of org ID → `ReplaySubject(1)` pipeline for `getOrg`; entries persist for adapter lifetime.
+
 ## Concurrency & Reactive Flow
 
 - One ReplaySubject per org ID; internal `defer(...).subscribe()` runs once on first `getOrg` call — **eager fetch** even if the returned subject has zero external subscribers yet.

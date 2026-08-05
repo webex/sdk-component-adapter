@@ -113,6 +113,19 @@ Evidence: `src/WebexSDKAdapter.js`, `src/index.js`.
 
 → Full entity and cache ownership: [`DATA_MODEL.md`](DATA_MODEL.md)
 
+## State Model
+
+This library owns an **in-memory session model** for the adapter process lifetime. That is distinct from host React/UI state in `@webex/components`.
+
+| State bucket | Owner | Lifetime | Evidence |
+|---|---|---|---|
+| Shared fetch cache (`cache.js` Map) | Facade + Activities/Rooms adapters | Process / adapter instance | `src/cache.js`, `WebexSDKAdapter.cache` |
+| Per-entity observable caches | Activities, People, Rooms, Organizations adapters | Until adapter discarded or refCount teardown | Module specs State Model sections |
+| SDK listener ref-counts | People, Rooms, Memberships adapters | While subscriptions active | `listenerCount` fields in adapter sources |
+| Meeting maps and control instances | Meetings adapter | Until adapter discarded; `disconnect()` does not clear | `src/MeetingsSDKAdapter.js` |
+
+Host supplies authenticated SDK credentials and UI; adapter coordinates SDK listeners, deduplicated fetches, and reactive multicasts. Questionnaire and manifest `holds_client_state` reflect this in-memory model (`section_profiles.repo` and per-module profiles in `.sdd/manifest.json`).
+
 ## Observability Patterns
 
 - Logger levels: error, warn, info, debug (`src/logger.js`).

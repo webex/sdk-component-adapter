@@ -157,21 +157,28 @@ sequenceDiagram
 
   Caller->>Adapter: getPastActivities(ID, limit)
   Caller->>Adapter: hasMoreActivities(ID)
-  alt first pagination ever and not FETCHED_CONVERSATIONS
+  Adapter->>Adapter: fetchPastActivities → from(fetchActivities(...))
+  alt FETCHED_CONVERSATIONS false (first attempt)
     Adapter->>ConvList: list()
     alt conversation.list fails
       ConvList-->>Adapter: rejected promise
-      Note over Adapter: next-only subscribe — room Subject not errored; FETCHED_CONVERSATIONS stays false
-      Note over Adapter: later hasMoreActivities can retry list without page reload
+      Note over Adapter: fetchActivities aborts — listActivities never reached
+      Note over Adapter: Subject receives no next/error; FETCHED_CONVERSATIONS stays false
+      Note over Adapter: later hasMoreActivities retries pre-step
     else success
       ConvList-->>Adapter: conversations[]
       Adapter->>Cache: cacheConversations
+      Adapter->>ListAct: listActivities({conversationId, limit+1, ...})
+      ListAct-->>Adapter: activities[]
+      Adapter->>Adapter: update hasMore, earliestActivityDate
+      Adapter-->>Caller: activity ID chunk (newest first)
     end
+  else FETCHED_CONVERSATIONS true
+    Adapter->>ListAct: listActivities(...)
+    ListAct-->>Adapter: activities[]
+    Adapter->>Adapter: update hasMore, earliestActivityDate
+    Adapter-->>Caller: activity ID chunk
   end
-  Adapter->>ListAct: listActivities({conversationId, limit+1, ...})
-  ListAct-->>Adapter: activities[]
-  Adapter->>Adapter: update hasMore, earliestActivityDate
-  Adapter-->>Caller: activity ID chunk (newest first)
 ```
 
 ### getActivitiesInRealTime
@@ -227,6 +234,14 @@ classDiagram
 - **UC-2 Message history:** `getPastActivities` + repeated `hasMoreActivities` → ID chunks. Evidence: `src/RoomsSDKAdapter.js`.
 - **UC-3 Live timeline:** `getActivitiesInRealTime` → new activity IDs. Evidence: `src/RoomsSDKAdapter.js`.
 - **UC-4 Create space:** `createRoom({title})` → single emission. Evidence: `src/RoomsSDKAdapter.test.js`.
+
+## State Model
+
+- `getRoomObservables` — per-room cached observables for `getRoom`.
+- `activitiesObservableCache` / `roomActivities` — per-room pagination Subject state, activity ID maps, `hasMore`, `earliestActivityDate`.
+- `getActivitiesInRealTimeCache` — Mercury handler registrations per room ID.
+- `listenerCount` — ref-count for `rooms.listen` / `stopListening`.
+- Module-level `FETCHED_CONVERSATIONS` — process-wide flag gating one-time `conversation.list()` pre-step.
 
 ## Concurrency & Reactive Flow
 

@@ -39,7 +39,7 @@ Shared utilities provide cross-cutting support: in-memory cache singleton for ac
 
 ## Purpose / Responsibility
 
-Owns internal helpers and singleton state used by domain adapters. Does **not** expose a public npm API beyond what domain modules import directly.
+Owns internal helpers and singleton state used by domain adapters. **Direct npm exports** are limited to the facade default export (`WebexSDKAdapter`); domain modules import cache/logger/utils/polyfills internally. The **shared cache singleton is host-reachable** via `WebexSDKAdapter.cache` (see `webex-sdk-adapter.cache` in facade spec and manifest). Logger, RxJS utils, and polyfills remain internal-only unless another export path is added.
 
 ## Stack
 
@@ -72,21 +72,21 @@ src/
 
 ## Public Surface
 
-Internal Surface — consumed by other modules in this package, not exported from npm entry.
+**Reachability:** Cache methods are **host-reachable** through `WebexSDKAdapter.cache` (`webex-sdk-adapter.cache`). Logger, utils, and polyfills are **internal-only** (direct domain imports / package side effect).
 
 | Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| shared.cache.singleton | internal module | `default export` CacheMeOutside singleton | Key/value store for SDK objects | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.set | internal method | `set(key, value)` | Store or update entry | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.get | internal method | `get(key)` | Retrieve entry or undefined | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.has | internal method | `has(key): boolean` | Key existence check | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.remove | internal method | `remove(key): boolean` | Delete key from cache | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.values | internal method | `values(): Iterator` | Iterate cached values | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.size | internal method | `size(): number` | Entry count | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.keys | internal method | `keys(): Iterator` | Iterate cache keys | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.cacheConversations | internal method | `cacheConversations(conversations[])` | Bulk cache SDK conversations | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.cachActivities | internal method | `cachActivities(activities[])` | Bulk cache SDK activities (typo preserved) | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.cache.cachSDKActivities | internal method | `cachSDKActivities(sdkActivities[])` | Bulk cache SDK activity objects by id | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.singleton | facade property + internal | `default export` CacheMeOutside singleton | Key/value store; also assigned to `WebexSDKAdapter.cache` | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.set | host-reachable method | `set(key, value)` | Store or update entry | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.get | host-reachable method | `get(key)` | Retrieve entry or undefined | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.has | host-reachable method | `has(key): boolean` | Key existence check | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.remove | host-reachable method | `remove(key): boolean` | Delete key from cache | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.values | host-reachable method | `values(): Iterator` | Iterate cached values | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.size | host-reachable method | `size(): number` | Entry count | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.keys | host-reachable method | `keys(): Iterator` | Iterate cache keys | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.cacheConversations | host-reachable method | `cacheConversations(conversations[])` | Bulk cache SDK conversations | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.cachActivities | host-reachable method | `cachActivities(activities[])` | Bulk cache SDK activities (typo preserved) | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.cachSDKActivities | host-reachable method | `cachSDKActivities(sdkActivities[])` | Bulk cache SDK activity objects by id | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.default | internal module | `default export` logger instance | Domain debug/error logging | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.setLevel | internal method | `setLevel(level)` | Adjust log verbosity | stable internal | `src/logger/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.windowHook | internal global | `window.webexSDKAdapterSetLogLevel(level)` | Browser-only level control | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
@@ -138,11 +138,17 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| cache get/set | Cache read-through | miss → undefined; set overwrites |
+| cache get/set/has | Cache read-through | miss → undefined; set overwrites |
+| cache bulk helpers | Bulk conversation/activity cache | empty array → no-op loops |
+| cache remove/iteration | remove, keys, values, size | remove missing key → false |
 | logger level hook | Browser setLogLevel | N/A in Node without window |
-| polyfill load + utils resolveMeetingID | Package load + control arg resolution | polyfill no-op when getTracks exists; resolveMeetingID returns undefined for bad context |
+| polyfill load | Package import side effect | no-op when getTracks exists |
+| utils resolveMeetingID | Control arg resolution | bad context → undefined ID |
+| utils resolveDeviceSwitchArgs | Device switch arg resolution | PR #346 context object |
+| utils RxJS helpers | chainWith / combineLatestImmediate | inner subscription teardown on unsubscribe |
+| utils misc | deepMerge, safeJsonStringify, isSpeakerSupported | circular JSON → placeholder string |
 
-### cache get / set
+### cache get / set / has
 
 ```mermaid
 sequenceDiagram
@@ -159,6 +165,38 @@ sequenceDiagram
   end
 ```
 
+### cache bulk helpers
+
+```mermaid
+sequenceDiagram
+  participant Adapter as Rooms/Activities adapter
+  participant Cache as cache singleton
+
+  Adapter->>Cache: cacheConversations(conversations[])
+  Note over Cache: each conversation.id → set(id, conv)
+  Adapter->>Cache: cachActivities(activities[])
+  Note over Cache: each activity.id → set(id, activity)
+  Adapter->>Cache: cachSDKActivities(sdkActivities[])
+  Note over Cache: each sdkActivity.id → set(id, sdkActivity)
+```
+
+### cache remove / iteration
+
+```mermaid
+sequenceDiagram
+  participant Host as Host via adapter.cache
+  participant Cache as cache singleton
+
+  Host->>Cache: remove(key)
+  alt key existed
+    Cache-->>Host: true
+  else missing
+    Cache-->>Host: false
+  end
+  Host->>Cache: size()
+  Host->>Cache: keys() / values()
+```
+
 ### logger hook flow
 
 ```mermaid
@@ -170,30 +208,85 @@ sequenceDiagram
   Note over Logger: init level error; console transport if non-production
   Dev->>Window: webexSDKAdapterSetLogLevel('debug')
   Window->>Logger: setLevel('debug')
-  Note over Adapter: subsequent domain logger.debug calls emit
+  Note over Logger: subsequent domain logger.debug calls emit
 ```
 
-### polyfill load and resolveMeetingID (utils group)
+### polyfill load
 
 ```mermaid
 sequenceDiagram
   participant Host as Host bundle import
   participant Index as src/index.js
   participant Poly as polyfills.js
-  participant Control as MeetingsSDKAdapter control
 
   Host->>Index: import WebexSDKAdapter
   Index->>Poly: side-effect import
   alt MediaStream.getTracks missing
     Poly->>Poly: assign getTracks → empty array
+  else already defined
+    Note over Poly: no patch applied
   end
-  Note over Control: later control action
-  Control->>Control: resolveMeetingID(meetingContext)
+```
+
+### utils resolveMeetingID
+
+```mermaid
+sequenceDiagram
+  participant Control as Meeting control action
+  participant Utils as resolveMeetingID
+
+  Control->>Utils: resolveMeetingID(meetingContext)
   alt string meetingID
-    Control-->>Control: meetingContext
-  else context object
-    Control-->>Control: meetingContext.meetingID
+    Utils-->>Control: meetingContext
+  else context object with meetingID
+    Utils-->>Control: meetingContext.meetingID
+  else invalid
+    Utils-->>Control: undefined
   end
+```
+
+### utils resolveDeviceSwitchArgs
+
+```mermaid
+sequenceDiagram
+  participant Control as switch-* control
+  participant Utils as resolveDeviceSwitchArgs
+
+  Control->>Utils: resolveDeviceSwitchArgs(meetingContext, deviceId)
+  alt string meetingID + deviceId
+    Utils-->>Control: {meetingID, deviceId}
+  else PR346 context object
+    Utils-->>Control: normalized meetingID + deviceId
+  end
+```
+
+### utils RxJS helpers (chainWith / combineLatestImmediate)
+
+```mermaid
+sequenceDiagram
+  participant Meetings as MeetingsSDKAdapter
+  participant Utils as chainWith / combineLatestImmediate
+  participant Inner as inner Observable
+
+  Meetings->>Utils: pipe(chainWith(fn))
+  Utils->>Inner: subscribe on outer emission
+  Note over Utils: on outer unsubscribe, inner torn down
+  Meetings->>Utils: combineLatestImmediate(sources)
+  Note over Utils: each source startWith(undefined) for immediate combine
+```
+
+### utils misc (deepMerge, safeJsonStringify, isSpeakerSupported)
+
+```mermaid
+sequenceDiagram
+  participant Adapter as MeetingsSDKAdapter
+  participant Utils as utils.js
+
+  Adapter->>Utils: deepMerge(target, patch)
+  Utils-->>Adapter: merged meeting state object
+  Adapter->>Utils: safeJsonStringify(circularObject)
+  Utils-->>Adapter: JSON string or fallback for cycles
+  Note over Utils: isSpeakerSupported evaluated at module load
 ```
 
 ## Class / Component Relationships
