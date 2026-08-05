@@ -17,47 +17,42 @@
 | Module id | meetings-sdk-adapter |
 | Source path(s) | `src/MeetingsSDKAdapter.js`, `src/MeetingsSDKAdapter/controls/` |
 | Doc kind | Module spec |
-| Coverage score | 92% assessed 2026-08-05 — meetingControls plain object, share-screen control, state machine, media lifecycle, and error paths documented |
+| Coverage score | 92% assessed 2026-08-05 — create/get/join/leave, controls, media lifecycle, disconnect semantics, and inherited surfaces documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / pending PR approval / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
 
-Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` and control test files.
+Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` files.
 
 ## Source Material Register
 
 | Source material | Scope | Decision | Detail location or disposition |
 |---|---|---|---|
-| Implementation | behavior | verified | Requirements, Business Rules, State Machine in this spec |
-| `@webex/component-adapter-interfaces` MeetingsAdapter | contract | reference-only | Public Surface rows |
+| Implementation | behavior | verified | Requirements, State Machine, Error Handling, Sequence Diagram(s) |
+| `@webex/component-adapter-interfaces` MeetingsAdapter | contract | reference-only | Public Surface including inherited unsupported `incomingMeeting` |
 
 ## Overview
 
-`MeetingsSDKAdapter` is the largest domain adapter: WebRTC meeting create/join/leave, in-memory meeting state, media attach/detach, and UI-oriented meeting controls. `meetingControls` is a **plain object** keyed by control id strings (not a `Map`). Control classes live under `MeetingsSDKAdapter/controls/`; `MeetingControl` base is exported from the controls barrel, while `ShareControl` is wired at runtime under key `share-screen` but is **not** re-exported from the barrel index.
+`MeetingsSDKAdapter` implements `MeetingsAdapter`, managing Webex meeting creation, join/leave, in-memory meeting state, media streams, and UI control objects. It registers the SDK meetings plugin on `connect()` and unregisters on `disconnect()` without clearing in-memory maps or stopping media tracks.
 
 ## Purpose / Responsibility
 
-Owns meeting lifecycle observables, local/remote media state, meeting control actions, and SDK meetings plugin connect/disconnect. Does **not** own room messaging or org lookup.
+Owns meeting lifecycle observables, local/remote media attachment, meeting controls, and password/host-key join flows. Does **not** own facade Mercury/device registration or room/people domain data beyond title lookup.
 
 ## Stack
 
-JavaScript, RxJS 6, Webex SDK meetings plugin, browser MediaStream APIs, control classes extending `MeetingControl`.
+JavaScript, RxJS 6, Webex SDK `meetings` plugin, browser MediaStream APIs, `@webex/component-adapter-interfaces` meeting types and controls.
 
 ## Folder / Package Structure
 
 ```
 src/
 ├── MeetingsSDKAdapter.js
-├── MeetingsSDKAdapter.test.js
 ├── MeetingsSDKAdapter/
-│   ├── controls/
-│   │   ├── MeetingControl.js      # Base class (exported)
-│   │   ├── ShareControl.js        # Runtime only (share-screen key)
-│   │   ├── JoinControl.js, AudioControl.js, …
-│   │   └── index.js               # Barrel exports (no ShareControl)
-│   └── testHelper.js
+│   └── controls/          # Join, audio, video, share, exit, roster, settings, switch-*
+├── MeetingsSDKAdapter.test.js
 └── ai-docs/
 ```
 
@@ -65,69 +60,87 @@ src/
 
 | File | Holds |
 |---|---|
-| `src/MeetingsSDKAdapter.js` | Core adapter, meetingControls object, media/state |
-| `src/MeetingsSDKAdapter/controls/index.js` | Exported control classes including `MeetingControl` |
-| `src/MeetingsSDKAdapter/controls/ShareControl.js` | Share screen control (`share-screen` key) |
-| `src/MeetingsSDKAdapter.test.js` | Primary unit tests |
-| `src/MeetingsSDKAdapter/controls/*.test.js` | Per-control tests |
+| `src/MeetingsSDKAdapter.js` | Meeting CRUD, media, controls map, connect/disconnect |
+| `src/MeetingsSDKAdapter/controls/*.js` | Control action/display implementations |
+| `src/MeetingsSDKAdapter.test.js` | Unit tests for meeting flows |
 
 ## Public Surface
 
-| Contract ID | Symbol | Kind | Signature/Type | Stability | Detail link | Defined at |
+| Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| meetings-adapter.class | `MeetingsSDKAdapter` | class | extends `MeetingsAdapter` | stable | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.connect | `connect()` | async method | `() => Promise<void>` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.disconnect | `disconnect()` | async method | `() => Promise<void>` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.createMeeting | `createMeeting(destination)` | method → Observable | `(destination: string) => Observable<Meeting>` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.getMeeting | `getMeeting(ID)` | method → Observable | `(meetingID: string) => Observable<Meeting>` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.supportedControls | `supportedControls()` | method | `() => string[]` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.getLayoutTypes | `getLayoutTypes()` | method | `() => string[]` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.meetingControls | `meetingControls` | property (plain object) | `{ [controlId: string]: MeetingControl }` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.control.share-screen | `meetingControls['share-screen']` | ShareControl instance | runtime key `share-screen` | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.export.MeetingControl | `MeetingControl` | class export | base control class | stable | `src/MeetingsSDKAdapter/controls/index.js` | `src/MeetingsSDKAdapter/controls/index.js` |
-| meetings-adapter.joinMeeting | `joinMeeting(ID, options?)` | async method | password/hostKey flow | stable | this spec | `src/MeetingsSDKAdapter.js` |
-| meetings-adapter.leaveMeeting | `leaveMeeting(ID)` | async method | `() => Promise<void>` | stable | this spec | `src/MeetingsSDKAdapter.js` |
+| meetings-adapter.class | SDK class | `MeetingsSDKAdapter extends MeetingsAdapter` | Domain adapter entry | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.connect | SDK method | `connect(): Promise<void>` | Register meetings plugin + syncMeetings | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.disconnect | SDK method | `disconnect(): Promise<void>` | `meetings.unregister()` only — does not removeMedia or clear caches | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.createMeeting | SDK method | `createMeeting(destination: string): Observable<Meeting>` | Create meeting at destination | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.getMeeting | SDK method | `getMeeting(ID: string): Observable<Meeting>` | Hot meeting state stream until LEFT | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.joinMeeting | SDK method | `joinMeeting(ID: string, options?: { password?, hostKey?, name?, captcha? }): Promise<void>` | Join with optional password/host key/name/captcha | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.leaveMeeting | SDK method | `leaveMeeting(ID: string): Promise<void>` | removeMedia then sdkMeeting.leave | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.incomingMeeting | SDK inherited | `incomingMeeting(destination): Observable<Meeting>` | **Not overridden** — base class unsupported-operation error | stable; inherited from interface | `@webex/component-adapter-interfaces` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.getLayoutTypes | SDK method | `getLayoutTypes(): string[]` | Layout enum keys (Overlay, Grid, …) | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.clearPasswordRequiredFlag | SDK method | `clearPasswordRequiredFlag(ID: string): Promise<void>` | Reset `passwordRequired` UI flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.clearInvalidPasswordFlag | SDK method | `clearInvalidPasswordFlag(ID: string): Promise<void>` | Reset `invalidPassword` flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.clearInvalidHostKeyFlag | SDK method | `clearInvalidHostKeyFlag(ID: string): Promise<void>` | Reset `invalidHostKey` flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.refreshCaptcha | SDK method | `refreshCaptcha(ID: string): Promise<void>` | Refresh captcha on meeting object | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.supportedControls | SDK method | `supportedControls(): string[]` | Runtime control key list | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.meetingControls | SDK property | plain object map | Control instances keyed by runtime string | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.join-meeting | SDK control | `join-meeting` → JoinControl | Join meeting action/display | stable | `src/MeetingsSDKAdapter/controls/JoinControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.mute-audio | SDK control | `mute-audio` → AudioControl | Toggle local audio | stable | `src/MeetingsSDKAdapter/controls/AudioControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.mute-video | SDK control | `mute-video` → VideoControl | Toggle local video | stable | `src/MeetingsSDKAdapter/controls/VideoControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.leave-meeting | SDK control | `leave-meeting` → ExitControl | Leave meeting | stable | `src/MeetingsSDKAdapter/controls/ExitControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.member-roster | SDK control | `member-roster` → RosterControl | Toggle roster panel | stable | `src/MeetingsSDKAdapter/controls/RosterControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.share-screen | SDK control | `share-screen` → ShareControl | Local share toggle | stable | `src/MeetingsSDKAdapter/controls/ShareControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.settings | SDK control | `settings` → SettingsControl | Settings modal toggle | stable | `src/MeetingsSDKAdapter/controls/SettingsControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-camera | SDK control | `switch-camera` → SwitchCameraControl | Switch camera device | stable | `src/MeetingsSDKAdapter/controls/SwitchCameraControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-microphone | SDK control | `switch-microphone` → SwitchMicrophoneControl | Switch microphone device | stable | `src/MeetingsSDKAdapter/controls/SwitchMicrophoneControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-speaker | SDK control | `switch-speaker` → SwitchSpeakerControl | Switch speaker device | stable | `src/MeetingsSDKAdapter/controls/SwitchSpeakerControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
-Control keys in `meetingControls`: `join-meeting`, `mute-audio`, `mute-video`, `share-screen`, `leave-meeting`, `member-roster`, `settings`, `switch-camera`, `switch-speaker`, `switch-microphone`.
+Compatibility notes:
+
+- Control runtime keys match `supportedControls()` exactly: `join-meeting`, `mute-audio`, `mute-video`, `leave-meeting`, `member-roster`, `share-screen`, `settings`, `switch-camera`, `switch-microphone`, `switch-speaker`.
+- `disconnect()` does **not** release MediaStream handles or clear `meetings` / `getMeetingObservables` — callers must `leaveMeeting(ID)` for media cleanup.
 
 ## Requires (dependencies)
 
 | Dependency | Purpose |
 |---|---|
-| Webex SDK `meetings` plugin | create, join, leave, media |
-| Browser `MediaStream` / `mediaDevices` | Local A/V capture |
-| `@webex/component-adapter-interfaces` `MeetingState` | State enum |
-| `./utils` `chainWith`, `deepMerge`, `resolveMeetingID` | RxJS helpers and control arg resolution |
-| Facade `connect()` → `meetings.register/syncMeetings` | Meeting collection sync |
+| `datasource.meetings` plugin | create, register, sync, join, leave, media |
+| `datasource.people` / `rooms` | Meeting title resolution in `fetchMeetingTitle` |
+| Browser `navigator.mediaDevices` | Local stream acquisition |
+| RxJS 6 | Observables for getMeeting/createMeeting |
+| `@webex/component-adapter-interfaces` | MeetingState, control types |
 
 ## Requirements
 
-| ID | WHAT | WHY | Evidence | Test evidence | Gaps | Confidence |
+| ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| MTG-R-001 | `meetingControls` is a plain object literal keyed by control id strings, not a `Map` | Object.keys used by `supportedControls()` | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` supportedControls | none | PRESENT |
-| MTG-R-002 | `share-screen` runtime key maps to `ShareControl` instance; included in `supportedControls()` | Screen share UI control | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` (lists share-screen) | ShareControl barrel export absent by design | PRESENT |
-| MTG-R-003 | `MeetingControl` exported from controls barrel; `ShareControl` imported directly in adapter only | Public extension point vs internal wiring | `src/MeetingsSDKAdapter/controls/index.js`, `src/MeetingsSDKAdapter.js` | none found | Export surface not tested | PRESENT |
-| MTG-R-004 | `connect()` calls `meetings.register()` then `meetings.syncMeetings()` | Plugin registration before meeting ops | `src/MeetingsSDKAdapter.js` | none found | connect untested | PRESENT |
-| MTG-R-005 | `createMeeting` stores meeting in `this.meetings` map and emits `adapter:meeting:updated` | In-memory source for getMeeting | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` createMeeting | none | PRESENT |
-| MTG-R-006 | `getMeeting` uses `publishReplay(1)` + `refCount()` + `takeWhile` until `MeetingState.LEFT` | Multicast meeting updates until left | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` getMeeting sections | none | PRESENT |
-| MTG-R-007 | Joined state triggers async `addMedia` without blocking state emission | UI sees JOINED before media attach completes | `src/MeetingsSDKAdapter.js` | none found | addMedia failure logged only | PRESENT |
-| MTG-R-008 | Local mute/share/settings mutate via `updateMeeting` deep merge and SDK calls | Consistent meeting object updates | `src/MeetingsSDKAdapter.js` | handleLocalAudio/Video tests | none | PRESENT |
-| MTG-R-009 | Missing meeting on `getMeeting` errors synchronously in initial observable | Fail fast for unknown ID | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | none | PRESENT |
+| MTG-R-001 | `connect()` calls `meetings.register()` then `meetings.syncMeetings()` | Plugin must register before meeting operations | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | none | PRESENT |
+| MTG-R-002 | `disconnect()` calls only `meetings.unregister()` — no `removeMedia`, no map clears | Current implementation delegates unregister to SDK | `src/MeetingsSDKAdapter.js` | none found | Disconnect media leak risk documented in Pitfalls | PRESENT |
+| MTG-R-003 | `leaveMeeting(ID)` calls `removeMedia(ID)` before `sdkMeeting.leave()` | Release tracks and reset local media fields on leave | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | none | PRESENT |
+| MTG-R-004 | `getMeeting(ID)` errors when meeting not in `meetings` map | Observable error for unknown meeting ID | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | none | PRESENT |
+| MTG-R-005 | `joinMeeting` verifies password/hostKey when `passwordStatus === 'REQUIRED'` | Gate join until credentials validated | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | Captcha path partially covered | PRESENT |
+| MTG-R-006 | `joinMeeting` on `joinIntentRequired` sets passwordRequired/invalidPassword/invalidHostKey flags | Surface auth UI state without throwing | `src/MeetingsSDKAdapter.js` | none found | none | PRESENT |
+| MTG-R-007 | `getMeeting` stream completes after `MeetingState.LEFT` via `takeWhile` | Stop emitting after terminal leave state | `src/MeetingsSDKAdapter.js` | none found | none | PRESENT |
+| MTG-R-008 | `incomingMeeting` not overridden — inherited unsupported error from base adapter | Callers must not rely on incoming meeting flow in this repo | `src/MeetingsSDKAdapter.js` | none found | Exact base error message not asserted locally | WEAK |
+| MTG-R-009 | `supportedControls()` returns keys matching `meetingControls` map | UI discovers controls by exact runtime strings | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | none | PRESENT |
 
 ## Design Overview
 
-Meetings maintain authoritative in-memory objects in `this.meetings` keyed by meeting ID, synchronized with SDK meeting instances via event listeners (`media:ready`, `members:update`, share events, adapter-emitted updates). Control classes encapsulate display observables and delegate actions back to adapter methods (`handleLocalShare`, `joinMeeting`, etc.). Media permission probing uses a custom Observable with ASKING/DENIED/DISABLED states. **Concurrent media operations are not globally serialized** — callers may invoke controls concurrently; adapter methods use per-meeting state checks (e.g., muting-in-progress guards) rather than a queue.
+Meetings are created via SDK `meetings.create`, enriched with local media permissions, and stored in `this.meetings`. `getMeeting` merges initial snapshot with SDK/adapter events (media ready/stopped, member updates, adapter:meeting:updated). Controls delegate to adapter methods using `resolveMeetingID` / `resolveDeviceSwitchArgs` from `utils.js`. In-memory state is updated through `updateMeeting` + `deepMerge`.
 
 ## Data Flow
 
 ```mermaid
 flowchart TD
-  create["createMeeting"] --> sdkCreate["meetings.create"]
+  create["createMeeting(destination)"] --> sdkCreate["meetings.create"]
   sdkCreate --> localMedia["getLocalMedia"]
-  localMedia --> store["meetings[ID] in-memory"]
-  getMeeting["getMeeting"] --> events["SDK + adapter events"]
-  events --> merge["merge → publishReplay(1)"]
-  controls["meetingControls[id].action"] --> adapterMethods["join/handleLocal*/toggle*"]
+  localMedia --> store["meetings[ID] map"]
+  getM["getMeeting(ID)"] --> events["SDK + adapter events"]
+  events --> emit["Observable Meeting emissions"]
+  join["joinMeeting(ID, options)"] --> verify["verifyPassword if required"]
+  verify --> sdkJoin["sdkMeeting.join"]
+  leave["leaveMeeting(ID)"] --> rm["removeMedia"]
+  rm --> sdkLeave["sdkMeeting.leave"]
+  disc["disconnect()"] --> unreg["meetings.unregister only"]
 ```
 
 ## Sequence Diagram(s)
@@ -136,29 +149,80 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| createMeeting | create → local media → store | alt: create error → throw |
-| joinMeeting | password verify → join | alt: joinIntentRequired → password flags |
-| getMeeting media | JOINED → addMedia async | alt: addMedia error logged |
+| createMeeting / getMeeting | Create + observe meeting stream | alt: create error → throw; missing ID → getMeeting error |
+| joinMeeting | Join with optional password flow | alt: missing password → update flags; joinIntentRequired → UI flags |
+| leaveMeeting | Leave + media cleanup | alt: leave SDK error logged, not rethrown |
+
+### createMeeting / getMeeting
 
 ```mermaid
 sequenceDiagram
-  participant Host
+  participant Caller
   participant Adapter as MeetingsSDKAdapter
-  participant SDK as meetings plugin
+  participant SDK as meetings.create / getMeetingByType
+  participant Events as SDK media/member events
 
-  Host->>Adapter: createMeeting(destination)
+  Caller->>Adapter: createMeeting(destination)
   Adapter->>SDK: create(destination)
-  SDK-->>Adapter: meeting id + info
-  Adapter->>Adapter: getLocalMedia, store meetings[id]
-  Adapter-->>Host: Meeting observable emissions
-
-  Host->>Adapter: joinMeeting(ID)
-  alt password required
-    Adapter->>SDK: verifyPassword
+  alt create fails
+    SDK-->>Adapter: error
+    Adapter-->>Caller: observable error
+  else success
+    SDK-->>Adapter: meeting id
+    Adapter->>Adapter: getLocalMedia, store meetings[ID]
+    Adapter-->>Caller: Meeting observable emission
   end
-  Adapter->>SDK: join()
-  SDK-->>Adapter: members:update → JOINED
-  Adapter->>Adapter: addMedia (async, non-blocking)
+  Caller->>Adapter: getMeeting(ID)
+  alt meeting not in map
+    Adapter-->>Caller: Error Could not find meeting
+  else success
+    Adapter-->>Caller: initial Meeting
+    Events-->>Adapter: media:ready / members:update / adapter:meeting:updated
+    Adapter-->>Caller: updated Meeting until LEFT
+  end
+```
+
+### joinMeeting
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as MeetingsSDKAdapter
+  participant SDK as sdkMeeting
+
+  Caller->>Adapter: joinMeeting(ID, options)
+  alt passwordStatus REQUIRED and no password/hostKey
+    Adapter->>Adapter: updateMeeting passwordRequired true
+  else password required with credentials
+    Adapter->>SDK: verifyPassword(hostKey or password, captcha)
+    alt invalid
+      SDK-->>Adapter: failureReason / captcha
+      Adapter->>Adapter: updateMeeting invalid flags
+    else valid
+      Adapter->>SDK: join({pin, moderator, alias})
+    end
+  else no password gate
+    Adapter->>SDK: join({pin, moderator, alias})
+  end
+  opt joinIntentRequired error
+    Adapter->>Adapter: passwordRequired / invalidPassword / invalidHostKey flags
+  end
+```
+
+### leaveMeeting
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as MeetingsSDKAdapter
+  participant SDK as sdkMeeting
+
+  Caller->>Adapter: leaveMeeting(ID)
+  Adapter->>Adapter: removeMedia(ID) — stop tracks, clear streams
+  Adapter->>SDK: leave()
+  alt leave fails
+    SDK-->>Adapter: error (logged)
+  end
 ```
 
 ## Class / Component Relationships
@@ -166,93 +230,92 @@ sequenceDiagram
 ```mermaid
 classDiagram
   MeetingsAdapter <|-- MeetingsSDKAdapter
-  MeetingControl <|-- JoinControl
-  MeetingControl <|-- ShareControl
-  MeetingControl <|-- AudioControl
-  MeetingsSDKAdapter o-- meetingControls : plain object
-  meetingControls --> ShareControl : key share-screen
+  MeetingsSDKAdapter --> MeetingControl : meetingControls map
+  MeetingsSDKAdapter --> SDKMeetings : datasource.meetings
+  JoinControl --|> MeetingControl
+  AudioControl --|> MeetingControl
+  VideoControl --|> MeetingControl
 ```
 
 ## Use Cases
 
-- **UC-1 Schedule/join:** createMeeting → getMeeting subscribe → join control → media flows. Evidence: `src/MeetingsSDKAdapter.test.js`.
-- **UC-2 Share screen:** `meetingControls['share-screen'].action(meetingID)` → handleLocalShare. Evidence: `src/MeetingsSDKAdapter/controls/ShareControl.js`.
-- **UC-3 Leave:** leaveMeeting removes media and calls SDK leave. Evidence: `src/MeetingsSDKAdapter.test.js`.
+- **UC-1 Schedule/join:** `createMeeting(dest)` → local media prompts → `joinMeeting(ID, {password, name})`. Evidence: `src/MeetingsSDKAdapter.test.js`.
+- **UC-2 Live meeting UI:** `getMeeting(ID)` → subscribe to state/media updates → drive controls. Evidence: `src/MeetingsSDKAdapter.js`.
+- **UC-3 Leave:** `leaveMeeting(ID)` → media released → SDK leave. Evidence: `src/MeetingsSDKAdapter.js`.
 
 ## State Model
 
-In-memory `this.meetings[ID]` holds adapter `Meeting` shape: local/remote streams, permissions, roster visibility, settings preview clones, password/captcha flags, and `state` from `MeetingState`. SDK meeting object referenced via `fetchMeeting(ID)`.
+- `this.meetings[ID]` — in-memory `Meeting` objects with local/remote media handles, settings preview, password/captcha flags.
+- `this.getMeetingObservables[ID]` — refCounted hot observables per meeting ID.
+- `this.meetingControls` — static map of control instances keyed by runtime string.
 
 ## Business Rules & Invariants
 
-- **BR-1:** `handleLocalAudio` / `handleLocalVideo` reject concurrent mute/unmute while `muting` flag set — enforced in `src/MeetingsSDKAdapter.js` via state inspection before SDK calls.
-- **BR-2:** Local SDK mute/unmute (`muteAudio`/`unmuteAudio`) only when remote media indicates active session (`remoteAudio`/`remoteVideo` present) — enforced in handleLocalAudio/Video.
-- **BR-3:** `getMeeting` observable completes after emitting `MeetingState.LEFT` (`takeWhile` inclusive) — enforced in `src/MeetingsSDKAdapter.js`.
-- **BR-4:** Password-required meetings block join until `verifyPassword` succeeds or flags set on `joinIntentRequired` — enforced in `joinMeeting`.
-- **BR-5:** `supportedControls()` returns exactly the keys present on `meetingControls` plain object — enforced via `Object.keys(this.meetingControls)`.
-- **BR-6:** iOS 15.1 skips video local media probe (`permission: ERROR`) — enforced in `getLocalMedia`.
-
-## State Machine
-
-Meeting adapter state derives from SDK member self state:
-
-```mermaid
-stateDiagram-v2
-  [*] --> NOT_JOINED : createMeeting
-  NOT_JOINED --> JOINED : joinMeeting success
-  JOINED --> JOINED : media/share/roster updates
-  JOINED --> LEFT : leaveMeeting / remote end
-  LEFT --> [*] : getMeeting completes
-  NOT_JOINED --> NOT_JOINED : passwordRequired / invalidPassword flags
-```
-
-Invalid transitions: calling mute controls when media disabled throws in updateMeeting guard paths.
+- Meeting must exist in `this.meetings` before `getMeeting` emits — enforced in `getMeeting` initial observer.
+- Password required meetings block `join` until `verifyPassword` succeeds or flags are cleared via clear* methods — enforced in `joinMeeting`.
+- Local audio/video mute toggles throw if already muting/unmuting or media disabled — enforced in `handleLocalAudio` / `handleLocalVideo`.
+- `getMeeting` observable terminates when `state === MeetingState.LEFT` — enforced via `takeWhile`.
 
 ## Concurrency & Reactive Flow
 
-- `getMeeting` per-ID hot observable via `publishReplay(1)` and `refCount()`; shared across subscribers until LEFT.
-- `addMedia` on JOINED is fire-and-forget (promise catch logs only) — does not block state emissions.
-- Multiple control actions may race; audio/video handlers use muting flags rather than global locks.
-- **Not serialized:** parallel control invocations on same meeting are not queued by the adapter.
+- `getMeeting` uses `publishReplay(1)` + `refCount()` per ID; multiple subscribers share event merge pipeline.
+- `addMedia` on JOINED state is fire-and-forget (not awaited in member update handler) — emissions may briefly lag state.
+- `joinMeeting` / `leaveMeeting` are async imperative APIs; meeting updates emit via `updateMeeting` → SDK emit → observable subscribers.
+
+## State Machine
+
+```mermaid
+stateDiagram-v2
+  [*] --> NOT_JOINED: createMeeting
+  NOT_JOINED --> JOINED: joinMeeting success + members update
+  JOINED --> LEFT: leaveMeeting / media stopped paths
+  LEFT --> [*]: getMeeting completes
+```
+
+Meeting `state` derives from `sdkMeeting.joinedWith.state` on `members:update` events, defaulting to `NOT_JOINED`.
 
 ## Error Handling & Failure Modes
 
-| Condition | Signal | Caller recovery |
+| Condition | Signal (error/code/result) | Caller recovery |
 |---|---|---|
-| Unknown meeting ID on getMeeting | Observable error | Create meeting first |
-| createMeeting SDK failure | Observable error rethrown | Retry or show error |
-| joinMeeting failure (non-password) | Logged; meeting flags may update | User retry join |
-| getStream permission denied | permission DENIED/DISABLED/DISMISSED on meeting object | Prompt user to enable devices |
-| handleLocalShare unstable connection | Logged error; stream stopped | Retry share |
-
-## Module Do's / Don'ts
-
-- DO use `meetingControls[controlId]` or control class display observables for UI binding.
-- DO call adapter `connect()` (via facade) before relying on synced meeting collection.
-- DON'T assume `ShareControl` is importable from controls barrel — import path is direct file or use runtime key.
-- DON'T mutate `meetings[ID]` outside `updateMeeting` / event handlers.
-
-## Key Design Trade-off
-
-In-memory meeting objects favor responsive UI updates over strict SDK-state mirroring — adapter emits on `adapter:meeting:updated` and merges partial updates with `deepMerge`, so transient inconsistency with SDK is possible during async media operations.
+| `createMeeting` SDK failure | Observable error (logged, rethrown) | Show create failure; do not assume meeting exists |
+| `getMeeting` unknown ID | `Error: Could not find meeting with ID "…"` on observable | Create meeting first or verify ID |
+| `joinMeeting` missing password when required | Silent return after setting `passwordRequired: true` | Prompt user; call clear* flags after retry |
+| Invalid password/host key | `invalidPassword` / `invalidHostKey` / captcha fields on meeting | Re-prompt credentials; optional `refreshCaptcha` |
+| `joinIntentRequired` | Flags on meeting object, error logged | Re-auth flow in host UI |
+| `leaveMeeting` SDK error | Logged only | Assume leave may be incomplete; check meeting state |
+| `incomingMeeting` on this adapter | Base class unsupported-operation error | Use supported create/join flow instead |
+| `updateMeeting` missing meeting | Thrown `Error: Could not find meeting` | Guard calls with known ID |
 
 ## Pitfalls
 
-- **`meetingControls` is not a Map** — use object key access; `Object.keys` for enumeration.
-- **`ShareControl` not in barrel export** — only `share-screen` key on adapter instance.
-- **Facade connect required** for meetings plugin register/sync before create/join reliability.
-- **MediaStream handles** must be released via `disconnect()` / leave — adapter stops tracks in `removeMedia`.
+- **`disconnect()` only unregisters meetings plugin** — MediaStream tracks may remain active until `leaveMeeting`.
+- **iOS 15.1 video blocked** — `getLocalMedia` returns ERROR permission for video on that UA.
+- **`getMeeting` errors if createMeeting not completed** — map entry required before subscribe.
+
+## Module Do's / Don'ts
+
+- DO call `leaveMeeting(ID)` to stop MediaStream tracks and clear local media fields.
+- DO use exact control keys from `supportedControls()` (`join-meeting`, not `join`).
+- DON'T assume `disconnect()` releases media or clears `meetings` / `getMeetingObservables`.
+- DON'T call `incomingMeeting` — not implemented in this adapter.
+
+## Host Integration & Theming
+
+Host (`@webex/components`) passes authenticated SDK to facade, awaits `connect()`, then uses meeting observables and control display observables. Control actions accept meeting ID string or context object per PR #346 (`resolveMeetingID`, `resolveDeviceSwitchArgs`).
+
+## Key Design Trade-off
+
+In-memory meeting state (`this.meetings`) enables rich adapter-side media and UI flags but survives `disconnect()` until explicitly left or overwritten. This favors fast re-subscription and control responsiveness over automatic teardown on facade disconnect — hosts must orchestrate leave before disconnect when media cleanup matters.
 
 ## Test-Case Strategy (module)
 
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| MTG-R-001, MTG-R-002 | `src/MeetingsSDKAdapter.test.js` supportedControls — positive list includes share-screen | Negative: unknown control key |
-| MTG-R-005 | `src/MeetingsSDKAdapter.test.js` createMeeting positive/negative | none |
-| MTG-R-008 | `src/MeetingsSDKAdapter.test.js` handleLocalAudio/Video suites | Concurrent mute race |
-| MTG-R-006 | `src/MeetingsSDKAdapter.test.js` getMeeting / leave tests | addMedia failure path |
-| ShareControl | `src/MeetingsSDKAdapter/controls/ShareControl.test.js` | none |
-| JoinControl | `src/MeetingsSDKAdapter/controls/JoinControl.test.js` | none |
+| MTG-R-001 | `src/MeetingsSDKAdapter.test.js` connect | none |
+| MTG-R-003, MTG-R-004 | leave/getMeeting tests | disconnect does not clear maps — untested |
+| MTG-R-005, MTG-R-006 | join password flows | Multi-subscriber getMeeting |
+| MTG-R-009 | supportedControls keys | Incoming meeting inherited error |
 
 ## Traceability
 

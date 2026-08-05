@@ -17,9 +17,9 @@
 | Module id | rooms-sdk-adapter |
 | Source path(s) | `src/RoomsSDKAdapter.js` |
 | Doc kind | Module spec |
-| Coverage score | 90% assessed 2026-08-05 — getRoom listen/refCount, realtime Mercury activities, read/create surface, and error paths documented |
+| Coverage score | 91% assessed 2026-08-05 — room stream, pagination with conversation.list pre-step, realtime activities, hasMoreActivities documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / pending PR approval / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -30,20 +30,20 @@ Every requirement cites concrete source evidence as `file path` only. Test evide
 
 | Source material | Scope | Decision | Detail location or disposition |
 |---|---|---|---|
-| Implementation | behavior | verified | Requirements and Error Handling in this spec |
+| Implementation | behavior | verified | Requirements, Data Flow, Sequence Diagram(s), Error Handling |
 | `@webex/component-adapter-interfaces` RoomsAdapter | contract | reference-only | Public Surface rows |
 
 ## Overview
 
-`RoomsSDKAdapter` implements `RoomsAdapter` for **read and create** room operations (not full CRUD — no update/delete adapter methods). Room snapshots stream via SDK `rooms.listen` / `updated` events with `publishReplay(1)`/`refCount`. Past activities paginate through conversation list API; realtime activity IDs arrive on Mercury `event:conversation.activity`.
+`RoomsSDKAdapter` implements `RoomsAdapter`, exposing room metadata streams, room creation, paginated past activity ID chunks, and real-time activity ID notifications. Past activity pagination first calls `internal.conversation.list()` once to pre-cache conversations before `listActivities`.
 
 ## Purpose / Responsibility
 
-Owns room read/create observables, paginated past activity ID streams, and realtime activity ID notifications. Does **not** own single-activity detail fetch (see `ActivitiesSDKAdapter`) or membership lists.
+Owns room observables, activity ID pagination, and Mercury-backed live activity notifications. Does **not** own full activity body fetch (see `ActivitiesSDKAdapter`) or membership rosters.
 
 ## Stack
 
-JavaScript, RxJS 6, Webex SDK `rooms` plugin, `internal.conversation` for activities, Mercury, shared `cache.js`.
+JavaScript, RxJS 6, Webex SDK `rooms` plugin, `internal.conversation`, Mercury, shared `cache`, `fromSDKActivity` mapper.
 
 ## Folder / Package Structure
 
@@ -52,7 +52,6 @@ src/
 ├── RoomsSDKAdapter.js
 ├── RoomsSDKAdapter.test.js
 ├── RoomsSDKAdapter.integration.test.js
-├── ActivitiesSDKAdapter.js   # fromSDKActivity reuse
 └── ai-docs/
 ```
 
@@ -60,60 +59,58 @@ src/
 
 | File | Holds |
 |---|---|
-| `src/RoomsSDKAdapter.js` | getRoom, createRoom, getPastActivities, getActivitiesInRealTime |
+| `src/RoomsSDKAdapter.js` | getRoom, createRoom, getPastActivities, hasMoreActivities, getActivitiesInRealTime |
 | `src/RoomsSDKAdapter.test.js` | Unit tests |
-| `src/cache.js` | Conversation and activity caching for pagination |
 
 ## Public Surface
 
-| Contract ID | Symbol | Kind | Signature/Type | Stability | Detail link | Defined at |
+| Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| rooms-adapter.class | `RoomsSDKAdapter` | class | extends `RoomsAdapter` | stable | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) | `src/RoomsSDKAdapter.js` |
-| rooms-adapter.getRoom | `getRoom(ID)` | method → Observable | `(roomID: string) => Observable<Room>` | stable | this spec | `src/RoomsSDKAdapter.js` |
-| rooms-adapter.createRoom | `createRoom(room)` | method → Observable | `(room: Room) => Observable<Room>` | stable | this spec | `src/RoomsSDKAdapter.js` |
-| rooms-adapter.getPastActivities | `getPastActivities(ID, limit?)` | method → Observable | `(roomID: string, limit?: number) => Observable<string[]>` | stable | this spec | `src/RoomsSDKAdapter.js` |
-| rooms-adapter.hasMoreActivities | `hasMoreActivities(ID)` | method | `(roomID: string) => boolean` | stable | this spec | `src/RoomsSDKAdapter.js` |
-| rooms-adapter.getActivitiesInRealTime | `getActivitiesInRealTime(ID)` | method → Observable | `(roomID: string) => Observable<activityID>` | stable | this spec | `src/RoomsSDKAdapter.js` |
-| rooms-adapter.ROOM_UPDATED_EVENT | `ROOM_UPDATED_EVENT` | constant | `'updated'` | stable | this spec | `src/RoomsSDKAdapter.js` |
+| rooms-adapter.class | SDK class | `RoomsSDKAdapter extends RoomsAdapter` | Domain adapter entry | stable | `src/RoomsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| rooms-adapter.getRoom | SDK method | `getRoom(ID: string): Observable<Room>` | Room metadata + websocket updates | stable | `src/RoomsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| rooms-adapter.createRoom | SDK method | `createRoom(room: Room): Observable<Room>` | Create space | stable | `src/RoomsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| rooms-adapter.getPastActivities | SDK method | `getPastActivities(ID: string, activityLimit?: number): Observable<string[]>` | Paginated activity ID chunks (newest first) | stable; default limit 50 | `src/RoomsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| rooms-adapter.hasMoreActivities | SDK method | `hasMoreActivities(ID: string): boolean` | Pagination cursor; triggers fetch when true | stable | `src/RoomsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| rooms-adapter.getActivitiesInRealTime | SDK method | `getActivitiesInRealTime(ID: string): Observable<string>` | Live activity IDs via Mercury | stable | `src/RoomsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 ## Requires (dependencies)
 
 | Dependency | Purpose |
 |---|---|
-| `datasource.rooms.get`, `create`, `listen`, `stopListening` | Room CRUD subset (read/create + events) |
-| `datasource.internal.conversation.listActivities` | Paginated history |
-| Mercury `event:conversation.activity` | Realtime activity IDs |
-| `cache.js` | Conversation preload and activity cache |
-| Facade `connect()` | Mercury for realtime activities |
+| `datasource.rooms.get` / `create` / `listen` / `stopListening` | Room CRUD and update events |
+| `datasource.internal.conversation.list()` | One-time conversation pre-cache before first activity pagination |
+| `datasource.internal.conversation.listActivities` | Paginated activity fetch per room |
+| `datasource.internal.mercury` `event:conversation.activity` | Real-time activity notifications |
+| `src/cache.js` | Conversation and activity body cache |
+| Facade `connect()` (Mercury) | Required for `getActivitiesInRealTime` |
 
 ## Requirements
 
-| ID | WHAT | WHY | Evidence | Test evidence | Gaps | Confidence |
+| ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| ROM-R-001 | `getRoom` uses SDK `rooms.listen()` on first subscriber (ref-counted) and `rooms` event `updated` (`ROOM_UPDATED_EVENT`), not Mercury, for room metadata updates | Rooms plugin owns room change events | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` (positive: listens on subscribe; stops on unsubscribe) | none | PRESENT |
-| ROM-R-002 | Per-room `getRoom` observable uses `publishReplay(1)` + `refCount()`, not per-room `ReplaySubject` | Multicast with last room snapshot replay | `src/RoomsSDKAdapter.js` | none found | refCount sharing untested | PRESENT |
-| ROM-R-003 | `getActivitiesInRealTime` alone uses unbounded `new ReplaySubject()` per room ID | Realtime ID stream separate from room snapshot pattern | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` (positive: emits activity ID) | none | PRESENT |
-| ROM-R-004 | Realtime activities filter Mercury `event:conversation.activity` where `activity.target.id` matches room UUID | Only emit activities for subscribed room | `src/RoomsSDKAdapter.js` | none found | Mercury handler untested in unit tests | PRESENT |
-| ROM-R-005 | `getRoom` initial `fetchRoom` failure propagates as observable error from `from(fetchRoom)` | Invalid room ID must error the stream | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` (negative: proper error message) | none | PRESENT |
-| ROM-R-006 | `fetchPastActivities` uses bare `subscribe` without error handler — fetch rejection is unhandled | Documented sharp edge for callers/pagination | `src/RoomsSDKAdapter.js` | none found | Unhandled rejection not tested | PRESENT |
-| ROM-R-007 | Public surface is read (`getRoom`) and create (`createRoom`) only — no adapter update/delete room methods | Matches implemented RoomsAdapter subset | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` createRoom positive/negative | Update/delete intentionally absent | PRESENT |
-| ROM-R-008 | Missing room ID on `getPastActivities` / `getActivitiesInRealTime` returns `throwError` synchronously | Fail fast before side effects | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` (negative: no room id) | none | PRESENT |
+| ROM-R-001 | First `fetchActivities` calls `internal.conversation.list()` once, then `cache.cacheConversations` | Pre-cache conversations before listActivities (legacy SDK requirement) | `src/RoomsSDKAdapter.js` | none found | conversation.list failure path untested | PRESENT |
+| ROM-R-002 | `fetchActivities` requests `activityLimit + 1` items to detect more pages | Enables hasMore without extra guesswork | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` | none | PRESENT |
+| ROM-R-003 | Missing room ID on getPastActivities returns throwError | Fail fast on invalid input | `src/RoomsSDKAdapter.js` | none found | none | PRESENT |
+| ROM-R-004 | `getRoom` uses refCounted listen/stopListening with listenerCount | SDK rooms.listen is global — ref-count shared listener | `src/RoomsSDKAdapter.js` | `src/RoomsSDKAdapter.test.js` | Multi-subscriber stopListening edge similar to memberships | WEAK |
+| ROM-R-005 | `hasMoreActivities` triggers `fetchPastActivities` when hasMore true | Pull-based pagination driver | `src/RoomsSDKAdapter.js` | none found | none | PRESENT |
+| ROM-R-006 | Real-time handler filters Mercury events by deconstructed room UUID | Only emit activities for subscribed room | `src/RoomsSDKAdapter.js` | none found | Mercury path untested in unit tests | PRESENT |
 
 ## Design Overview
 
-Room updates ref-count global `rooms.listen()` so the SDK starts listening once and stops when all room observables finalize. Each `getRoom` concatenates initial fetch with `updated` events that trigger refetch (event payload lacks full room). Past activities use a `Subject` per room with imperative `hasMoreActivities` / `fetchPastActivities` pagination. Realtime path registers a Mercury listener once per room into a dedicated `ReplaySubject`.
+Room metadata streams concat initial REST fetch with `rooms` plugin `updated` events. Past activities use a Subject per room ID with side-effecting fetch triggered by `hasMoreActivities`. Module-level `FETCHED_CONVERSATIONS` flag ensures conversation list runs once per page load.
 
 ## Data Flow
 
 ```mermaid
 flowchart TD
-  getRoom --> listen["rooms.listen ref-count"]
-  listen --> fetch["fetchRoom"]
-  fetch --> upd["rooms 'updated' → refetch"]
-  upd --> pr["publishReplay(1) refCount"]
-  realtime["getActivitiesInRealTime"] --> mercury["mercury event:conversation.activity"]
-  mercury --> RS["ReplaySubject per room"]
-  past["getPastActivities"] --> subject["Subject + fetchPastActivities"]
+  getRoom["getRoom(ID)"] --> fetch["rooms.get"]
+  fetch --> listen["rooms.listen + updated events"]
+  past["getPastActivities"] --> subject["Subject per room"]
+  hasMore["hasMoreActivities"] --> fetchPast["fetchPastActivities"]
+  fetchPast --> convList["internal.conversation.list (once)"]
+  convList --> cacheConv["cache.cacheConversations"]
+  cacheConv --> listAct["internal.conversation.listActivities"]
+  realtime["getActivitiesInRealTime"] --> mercury["Mercury event:conversation.activity"]
 ```
 
 ## Sequence Diagram(s)
@@ -122,29 +119,93 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| getRoom | listen + fetch + updated | alt: fetchRoom reject → error |
-| getActivitiesInRealTime | Mercury push | missing ID → throwError |
-| getPastActivities | pagination | fetchPastActivities rejection unhandled |
+| getRoom | Fetch + websocket updates | finalize stops listening when refCount zero |
+| getPastActivities | Pagination with conversation.list pre-step | alt: missing ID → throwError; empty data → complete |
+| getActivitiesInRealTime | Mercury subscription | alt: missing ID → throwError |
+| createRoom | Create space | alt: create error → rethrow |
+
+### getRoom
 
 ```mermaid
 sequenceDiagram
   participant Caller
   participant Adapter as RoomsSDKAdapter
-  participant Rooms as rooms plugin
-  participant Mercury
+  participant Rooms as rooms.get / listen
+  participant WS as rooms updated event
 
   Caller->>Adapter: getRoom(ID)
-  Adapter->>Rooms: listen() if first listener
+  Adapter->>Adapter: startListeningToRoomUpdates (listenerCount++)
   Adapter->>Rooms: get(ID)
   Rooms-->>Adapter: room
-  Adapter-->>Caller: room emission
-  Rooms-->>Adapter: updated (matching id)
+  Adapter-->>Caller: Room
+  WS-->>Adapter: updated (matching ID)
   Adapter->>Rooms: get(ID) refetch
-  Adapter-->>Caller: updated room
+  Adapter-->>Caller: updated Room
+  Note over Adapter: finalize on last unsubscribe decrements listenerCount, may stopListening
+```
+
+### getPastActivities (includes conversation.list pre-step)
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as RoomsSDKAdapter
+  participant ConvList as internal.conversation.list
+  participant Cache as cache
+  participant ListAct as internal.conversation.listActivities
+
+  Caller->>Adapter: getPastActivities(ID, limit)
+  Caller->>Adapter: hasMoreActivities(ID)
+  alt first pagination ever and not FETCHED_CONVERSATIONS
+    Adapter->>ConvList: list()
+    alt conversation.list fails
+      ConvList-->>Adapter: rejected promise
+      Note over Adapter: error propagates to fetchPastActivities subscriber
+    else success
+      ConvList-->>Adapter: conversations[]
+      Adapter->>Cache: cacheConversations
+    end
+  end
+  Adapter->>ListAct: listActivities({conversationId, limit+1, ...})
+  ListAct-->>Adapter: activities[]
+  Adapter->>Adapter: update hasMore, earliestActivityDate
+  Adapter-->>Caller: activity ID chunk (newest first)
+```
+
+### getActivitiesInRealTime
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as RoomsSDKAdapter
+  participant Mercury as mercury event:conversation.activity
 
   Caller->>Adapter: getActivitiesInRealTime(ID)
-  Mercury-->>Adapter: event:conversation.activity
-  Adapter-->>Caller: activity Hydra ID
+  alt missing ID
+    Adapter-->>Caller: throwError
+  else success
+    Mercury-->>Adapter: activity (target matches room UUID)
+    Adapter-->>Caller: activity ID string
+  end
+```
+
+### createRoom
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as RoomsSDKAdapter
+  participant Rooms as rooms.create
+
+  Caller->>Adapter: createRoom(room)
+  Adapter->>Rooms: create(room)
+  alt failure
+    Rooms-->>Adapter: error
+    Adapter-->>Caller: observable error
+  else success
+    Rooms-->>Adapter: sdkRoom
+    Adapter-->>Caller: Room via fromSDKroom
+  end
 ```
 
 ## Class / Component Relationships
@@ -152,49 +213,50 @@ sequenceDiagram
 ```mermaid
 classDiagram
   RoomsAdapter <|-- RoomsSDKAdapter
-  RoomsSDKAdapter --> cache
-  RoomsSDKAdapter ..> fromSDKActivity : activity ID mapping
+  RoomsSDKAdapter --> RoomsPlugin : get/create/listen
+  RoomsSDKAdapter --> ConversationAPI : list / listActivities
+  RoomsSDKAdapter --> Mercury : conversation.activity
+  RoomsSDKAdapter --> Cache : cacheConversations / cachActivities
 ```
 
 ## Use Cases
 
-- **UC-1 Room header:** Subscribe `getRoom(id)` for title/type updates. Evidence: `src/RoomsSDKAdapter.test.js`.
-- **UC-2 Create space:** `createRoom(payload)` one-shot observable. Evidence: `src/RoomsSDKAdapter.test.js`.
-- **UC-3 Message list:** `getPastActivities` + `hasMoreActivities` paginate IDs; host resolves details via Activities adapter. Evidence: `src/RoomsSDKAdapter.js`.
-- **UC-4 Live feed:** `getActivitiesInRealTime` emits new activity IDs. Evidence: `src/RoomsSDKAdapter.test.js`.
-
-## Error Handling & Failure Modes
-
-| Condition | Signal | Caller recovery |
-|---|---|---|
-| Invalid/missing room on getRoom fetch | Observable error | Show error state; verify room ID |
-| Missing ID on past/realtime methods | Synchronous throwError | Validate ID before subscribe |
-| fetchPastActivities promise rejection | Unhandled rejection (no catch) | Host should wrap pagination calls; fix is future work |
-| createRoom SDK failure | Observable error rethrown | Display create failure |
+- **UC-1 Room header:** `getRoom(id)` → initial room + live title/type updates. Evidence: `src/RoomsSDKAdapter.test.js`.
+- **UC-2 Message history:** `getPastActivities` + repeated `hasMoreActivities` → ID chunks. Evidence: `src/RoomsSDKAdapter.js`.
+- **UC-3 Live timeline:** `getActivitiesInRealTime` → new activity IDs. Evidence: `src/RoomsSDKAdapter.js`.
+- **UC-4 Create space:** `createRoom({title})` → single emission. Evidence: `src/RoomsSDKAdapter.test.js`.
 
 ## Concurrency & Reactive Flow
 
-- Global `listenerCount` gates `rooms.listen` / `stopListening`.
-- `getActivitiesInRealTime` Mercury handler registered once per room ID; persists for adapter lifetime.
-- `roomActivities` and `activitiesObservableCache` Maps hold pagination state per room.
+- `getRoom` observables per ID use `publishReplay(1)` + `refCount()`; finalize decrements global `listenerCount` for rooms.listen.
+- `getPastActivities` Subject is shared per room; concurrent `hasMoreActivities` calls may overlap fetches — no explicit in-flight guard.
+- `FETCHED_CONVERSATIONS` module flag is process-wide singleton state.
+
+## Error Handling & Failure Modes
+
+| Condition | Signal (error/code/result) | Caller recovery |
+|---|---|---|
+| Missing ID on `getPastActivities` / `getActivitiesInRealTime` | `throwError` with message containing Must provide room ID | Validate ID before subscribe |
+| Missing ID on `fetchPastActivities` internal | Subject error `fetchPastActivities - Must provide room ID` | Same as above |
+| `createRoom` SDK failure | Observable error (logged, rethrown) | Show create failure to user |
+| `internal.conversation.list()` failure on first pagination | Unhandled rejection in fetchPastActivities subscription | Retry pagination; ensure SDK conversation plugin healthy |
+| `listActivities` returns falsy | Past activities Subject completes | End of history |
+| No more activities (`hasMore` false) | `hasMoreActivities` completes Subject | Stop requesting pages |
 
 ## Pitfalls
 
-- **Room updates use `rooms` plugin `updated`, not Mercury** — do not listen to Mercury for room metadata here.
-- **`fetchPastActivities` lacks error handling** — network failures may surface as unhandled rejections.
-- **Not full CRUD** — only read and create; no adapter methods for room update or delete.
-- **Conversation list pre-cache** — first pagination call triggers `internal.conversation.list()` once globally (`FETCHED_CONVERSATIONS` flag).
+- **Conversation list pre-step is global once per page** — failure blocks all first-time pagination until reload.
+- **`hasMoreActivities` side-effects fetch** — not a pure predicate; calling it drives network I/O.
+- **Real-time cache never removes Mercury listener** — long-lived handler per room ID subscribed.
 
 ## Test-Case Strategy (module)
 
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| ROM-R-001 | `src/RoomsSDKAdapter.test.js` — listens on subscribe; stops on unsubscribe | none |
-| ROM-R-005 | `src/RoomsSDKAdapter.test.js` — negative fetch error | none |
-| ROM-R-007 | `src/RoomsSDKAdapter.test.js` createRoom positive/negative | none |
-| ROM-R-008 | `src/RoomsSDKAdapter.test.js` getPastActivities missing ID | none |
-| ROM-R-003 | `src/RoomsSDKAdapter.test.js` getActivitiesInRealTime positive | Negative Mercury filter mismatch |
-| ROM-R-006 | none found | Simulate fetchActivities rejection |
+| ROM-R-002 | `src/RoomsSDKAdapter.test.js` pagination | conversation.list pre-step ROM-R-001 |
+| ROM-R-004 | getRoom listen tests | Multi-subscriber listenerCount |
+| ROM-R-003 | none found | Missing ID negative tests |
+| ROM-R-006 | none found | Mercury realtime unit test |
 
 ## Traceability
 

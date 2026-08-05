@@ -82,7 +82,7 @@
     {
       "path": "src/",
       "coverage_status": "Partial",
-      "coverage_evidence": "Facade connect/disconnect and sub-adapter wiring documented; field coverage ~92% after Stage 0 generation.",
+      "coverage_evidence": "91% assessed 2026-08-05 — facade connect/disconnect scope and sub-adapter wiring documented.",
       "canonical_spec": "src/ai-docs/webex-sdk-adapter-spec.md",
       "contracts": {
         "provides": ["default export WebexSDKAdapter from dist bundles"],
@@ -114,7 +114,7 @@
     {
       "path": "src/MeetingsSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "Public meeting/control surface documented; largest module ~92% field coverage.",
+      "coverage_evidence": "92% assessed 2026-08-05 — meeting/control surface, disconnect semantics, inherited methods documented.",
       "canonical_spec": "src/ai-docs/meetings-sdk-adapter-spec.md",
       "contracts": {
         "provides": ["MeetingsSDKAdapter class", "meeting observables and control actions"],
@@ -146,7 +146,7 @@
     {
       "path": "src/ActivitiesSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "Activity observables and post flows documented with error paths.",
+      "coverage_evidence": "91% assessed 2026-08-05 — activity fetch/post flows and per-operation sequences documented.",
       "canonical_spec": "src/ai-docs/activities-sdk-adapter-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {
@@ -174,7 +174,7 @@
     {
       "path": "src/PeopleSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "getMe/getPerson/searchPeople observables documented.",
+      "coverage_evidence": "91% assessed 2026-08-05 — getMe/getPerson/searchPeople and error propagation documented.",
       "canonical_spec": "src/ai-docs/people-sdk-adapter-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {
@@ -183,7 +183,7 @@
         "enforces_domain_rules": false,
         "is_concurrent_async": true,
         "owns_persistence": false,
-        "returns_caller_errors": false,
+        "returns_caller_errors": true,
         "has_design_tradeoff": false,
         "stateful_transitions": false,
         "exposes_wire_protocol": false,
@@ -202,7 +202,7 @@
     {
       "path": "src/RoomsSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "Room lifecycle and activity streams documented including ID validation errors.",
+      "coverage_evidence": "91% assessed 2026-08-05 — room lifecycle, conversation.list pre-step, realtime streams documented.",
       "canonical_spec": "src/ai-docs/rooms-sdk-adapter-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {
@@ -230,7 +230,7 @@
     {
       "path": "src/MembershipsSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "Room/meeting membership observables documented.",
+      "coverage_evidence": "91% assessed 2026-08-05 — room/meeting rosters, inherited removeRoomMember, refCount sharp edge documented.",
       "canonical_spec": "src/ai-docs/memberships-sdk-adapter-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {
@@ -258,7 +258,7 @@
     {
       "path": "src/OrganizationsSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "getOrg observable and fetch error path documented.",
+      "coverage_evidence": "91% assessed 2026-08-05 — getOrg eager subscribe and fetch error path documented.",
       "canonical_spec": "src/ai-docs/organizations-sdk-adapter-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {
@@ -286,7 +286,7 @@
     {
       "path": "src/MetricsSDKAdapter.js",
       "coverage_status": "Partial",
-      "coverage_evidence": "submitMetrics observable documented.",
+      "coverage_evidence": "91% assessed 2026-08-05 — submitMetrics pass-through and error swallow documented.",
       "canonical_spec": "src/ai-docs/metrics-sdk-adapter-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {
@@ -314,7 +314,7 @@
     {
       "path": "src/shared-utilities",
       "coverage_status": "Partial",
-      "coverage_evidence": "cache, logger, utils, polyfills documented.",
+      "coverage_evidence": "91% assessed 2026-08-05 — cache, logger subtree, utils, polyfills documented.",
       "canonical_spec": "src/ai-docs/shared-utilities-spec.md",
       "last_assessed": "2026-08-05",
       "section_profile": {

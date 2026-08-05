@@ -17,33 +17,33 @@
 | Module id | people-sdk-adapter |
 | Source path(s) | `src/PeopleSDKAdapter.js` |
 | Doc kind | Module spec |
-| Coverage score | 91% assessed 2026-08-05 — presence via Apheleia subscribe, Mercury updates, publishReplay/refCount, and error propagation documented |
+| Coverage score | 91% assessed 2026-08-05 — getMe/getPerson/searchPeople, presence wiring, error propagation, and per-operation sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / pending PR approval / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
 
-Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` files.
+Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` files. Unverified behavior is recorded under Assumptions / Gaps.
 
 ## Source Material Register
 
 | Source material | Scope | Decision | Detail location or disposition |
 |---|---|---|---|
-| Implementation | behavior | verified | Requirements and Concurrency sections in this spec |
-| `@webex/component-adapter-interfaces` PeopleAdapter | contract | reference-only | Public Surface rows |
+| Implementation | behavior | verified | Requirements, Concurrency, Error Handling, Sequence Diagram(s) |
+| `@webex/component-adapter-interfaces` PeopleAdapter | contract | reference-only | Public Surface rows; no inherited unsupported methods on this adapter |
 
 ## Overview
 
-`PeopleSDKAdapter` implements `PeopleAdapter`, exposing person profiles and presence status as RxJS observables backed by the Webex JS SDK people plugin and internal Apheleia presence service. `getMe` and `getPerson` enrich people records with presence; search returns mapped lists from `people.list`.
+`PeopleSDKAdapter` implements `PeopleAdapter`, exposing person profiles and presence status as RxJS observables backed by the Webex JS SDK `people` plugin and internal Apheleia presence service. `getMe` returns a one-shot enriched profile; `getPerson` multicasts a hot stream with live Mercury-driven presence updates; `searchPeople` maps directory list results.
 
 ## Purpose / Responsibility
 
-Owns person profile observables (`getMe`, `getPerson`) and people search. Does **not** own membership rosters or meeting participant state.
+Owns person profile observables (`getMe`, `getPerson`) and people search. Does **not** own membership rosters, meeting participant state, or organization records.
 
 ## Stack
 
-JavaScript, RxJS 6, Webex SDK `people` and `internal.presence` plugins, Mercury for presence update events, `@webex/common` Hydra helpers.
+JavaScript, RxJS 6, Webex SDK `people` and `internal.presence` plugins, Mercury for `event:apheleia.subscription_update`, `@webex/common` Hydra helpers.
 
 ## Folder / Package Structure
 
@@ -64,39 +64,44 @@ src/
 
 ## Public Surface
 
-| Contract ID | Symbol | Kind | Signature/Type | Stability | Detail link | Defined at |
+| Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| people-adapter.class | `PeopleSDKAdapter` | class | extends `PeopleAdapter` | stable | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) | `src/PeopleSDKAdapter.js` |
-| people-adapter.getMe | `getMe()` | method → Observable | `() => Observable<Person>` | stable | this spec | `src/PeopleSDKAdapter.js` |
-| people-adapter.getPerson | `getPerson(ID)` | method → Observable | `(personID: string) => Observable<Person>` | stable | this spec | `src/PeopleSDKAdapter.js` |
-| people-adapter.searchPeople | `searchPeople(query)` | method → Observable | `(query: string) => Observable<Person[]>` | stable | this spec | `src/PeopleSDKAdapter.js` |
+| people-adapter.class | SDK class | `PeopleSDKAdapter extends PeopleAdapter` | Domain adapter entry | stable; semver via npm bundle | `src/PeopleSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| people-adapter.getMe | SDK method | `getMe(): Observable<Person>` | Current access-token bearer profile + optional status | stable; additive Person fields only | `src/PeopleSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| people-adapter.getPerson | SDK method | `getPerson(ID: string): Observable<Person>` | Profile + live presence for a person ID | stable | `src/PeopleSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| people-adapter.searchPeople | SDK method | `searchPeople(query: string): Observable<Person[]>` | Directory search by display name | stable | `src/PeopleSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+
+Compatibility notes:
+
+- Person shape follows `@webex/component-adapter-interfaces` `Person`; adapter maps `orgId` → `orgID`.
+- Presence `status` uses `PersonStatus` enum keys or `null` when unavailable.
 
 ## Requires (dependencies)
 
 | Dependency | Purpose |
 |---|---|
-| `datasource.people.get` / `list` | Profile data |
-| `datasource.internal.presence.get` | Initial status for getMe (batch get) |
-| `datasource.internal.presence.subscribe` / `unsubscribe` | Apheleia subscription for getPerson |
-| `datasource.internal.mercury` event `event:apheleia.subscription_update` | Live presence updates |
-| Facade `connect()` (Mercury) | Required for live presence updates on getPerson |
+| `datasource.people.get` / `list` | Profile fetch and search |
+| `datasource.internal.presence.get` | One-shot status for `getMe` |
+| `datasource.internal.presence.subscribe` / `unsubscribe` | Apheleia subscription for `getPerson` |
+| `datasource.internal.mercury` event `event:apheleia.subscription_update` | Live presence push updates |
+| Facade `connect()` (Mercury) | Required for live `getPerson` status updates after initial emission |
 
 ## Requirements
 
-| ID | WHAT | WHY | Evidence | Test evidence | Gaps | Confidence |
+| ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| PPL-R-001 | `getPerson` multicasts via `publishReplay(1)` + `refCount()`, not per-person `ReplaySubject` | Share one hot pipeline across subscribers; replay last person snapshot | `src/PeopleSDKAdapter.js` | none found | publishReplay semantics not directly asserted | PRESENT |
-| PPL-R-002 | Initial presence for `getPerson` uses `internal.presence.subscribe(personUUID)` (Apheleia), not `presence.on` | SDK internal API for subscription-based presence | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` (positive emit) | Subscribe API shape not mocked explicitly | PRESENT |
+| PPL-R-001 | `getPerson` multicasts via `publishReplay(1)` + `refCount()` per person ID | Share one hot pipeline; replay last person snapshot to late subscribers | `src/PeopleSDKAdapter.js` | none found | publishReplay semantics not directly asserted | PRESENT |
+| PPL-R-002 | Initial presence for `getPerson` uses `internal.presence.subscribe(personUUID)` | SDK internal Apheleia API for subscription-based presence | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | Subscribe API shape not mocked explicitly | PRESENT |
 | PPL-R-003 | Live presence updates listen to Mercury `event:apheleia.subscription_update` filtered by person UUID | Push updates without polling people API | `src/PeopleSDKAdapter.js` | none found | Mercury event path untested in unit tests | PRESENT |
-| PPL-R-004 | `getMe` uses `internal.presence.get([person.id])` for status, not `presence.on` or subscribe | One-shot status fetch for current user | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` (positive + presence error → null status) | none | PRESENT |
-| PPL-R-005 | Presence subscribe/get failures yield `status: null` without failing the person observable (getMe/getPerson initial) | Profile still usable when presence disabled | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` (negative: presence plug-in error) | none | PRESENT |
-| PPL-R-006 | `getPerson` fetch failure (`people.get` error) propagates as observable error | Caller must handle unknown person | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` (negative: people plug-in error) | none | PRESENT |
-| PPL-R-007 | `searchPeople` SDK list failure propagates via `catchError` rethrow | Search errors must not silently return empty | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` (negative: SDK fetch failure) | none | PRESENT |
-| PPL-R-008 | Finalize on getPerson unsubscribes Apheleia via `presence.unsubscribe`; failure logged as warn only | Cleanup when last subscriber leaves | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` (positive: stops listening on unsubscribe) | Unsubscribe failure path untested | PRESENT |
+| PPL-R-004 | `getMe` uses `internal.presence.get([person.id])` for status | One-shot status fetch for current user | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
+| PPL-R-005 | Presence subscribe/get failures yield `status: null` without failing the person observable on initial enrichment | Profile still usable when presence disabled | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
+| PPL-R-006 | `people.get` failure in `getMe`/`getPerson` propagates as observable error | Caller must handle unknown or inaccessible person | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
+| PPL-R-007 | `people.list` failure in `searchPeople` propagates via `catchError` rethrow | Search errors must not silently return empty | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
+| PPL-R-008 | Finalize on `getPerson` calls `presence.unsubscribe(personUUID)`; failure logged as warn only | Cleanup when refCount reaches zero | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | Unsubscribe failure path untested | PRESENT |
 
 ## Design Overview
 
-`getPerson` builds a pipeline: fetch person once, merge initial Apheleia subscription status, then concat ongoing Mercury-driven status updates mapped back onto the person object. The composed stream is multicasted with `publishReplay(1)` and `refCount()` so duplicate subscriptions share work and receive the latest person snapshot. `getMe` is a cold defer chain that completes after one enriched emission. `searchPeople` maps SDK list pages to adapter people arrays.
+`getPerson` builds a pipeline: fetch person once via `fetchPerson`, merge initial Apheleia subscription status, then concat ongoing Mercury-driven status updates mapped back onto the person object. The composed stream is multicasted. `getMe` is a cold `defer` chain that completes after one enriched emission. `searchPeople` maps SDK list pages through `fromSDKPeople`.
 
 ## Data Flow
 
@@ -117,9 +122,38 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| getPerson | Subscribe + Mercury updates | alt: people.get error → propagate; presence fail → null status |
-| getMe | One-shot profile + presence get | alt: presence error → null status |
-| searchPeople | List query | alt: SDK error → rethrow |
+| getMe | getMe — one-shot profile | alt: `people.get` error → propagate; presence.get error → null status |
+| getPerson | getPerson — subscribe + Mercury | alt: `people.get` error → propagate; presence subscribe error → null status |
+| searchPeople | searchPeople — directory list | alt: `people.list` error → rethrow |
+
+### getMe
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as PeopleSDKAdapter
+  participant People as people.get
+  participant Presence as internal.presence.get
+
+  Caller->>Adapter: getMe()
+  Adapter->>People: get('me')
+  alt people.get fails
+    People-->>Adapter: error
+    Adapter-->>Caller: observable error
+  else success
+    People-->>Adapter: profile
+    Adapter->>Presence: get([person.id])
+    alt presence.get fails
+      Presence-->>Adapter: error (caught)
+      Adapter-->>Caller: Person, status null
+    else success
+      Presence-->>Adapter: status
+      Adapter-->>Caller: Person with status
+    end
+  end
+```
+
+### getPerson
 
 ```mermaid
 sequenceDiagram
@@ -130,13 +164,42 @@ sequenceDiagram
   participant Mercury as mercury event:apheleia.subscription_update
 
   Caller->>Adapter: getPerson(ID)
-  Adapter->>People: fetchPerson
-  People-->>Adapter: profile
-  Adapter->>Apheleia: subscribe(UUID)
-  Apheleia-->>Adapter: initial status
-  Adapter-->>Caller: Person with status
-  Mercury-->>Adapter: subscription_update (matching UUID)
-  Adapter-->>Caller: updated Person status
+  Adapter->>People: get(ID)
+  alt people.get fails
+    People-->>Adapter: error
+    Adapter-->>Caller: observable error
+  else success
+    People-->>Adapter: profile
+    Adapter->>Apheleia: subscribe(personUUID)
+    alt subscribe fails
+      Apheleia-->>Adapter: error (caught)
+      Adapter-->>Caller: Person, status null
+    else success
+      Apheleia-->>Adapter: initial status
+      Adapter-->>Caller: Person with status
+      Mercury-->>Adapter: subscription_update (matching UUID)
+      Adapter-->>Caller: updated Person status
+    end
+  end
+```
+
+### searchPeople
+
+```mermaid
+sequenceDiagram
+  participant Caller
+  participant Adapter as PeopleSDKAdapter
+  participant People as people.list
+
+  Caller->>Adapter: searchPeople(query)
+  Adapter->>People: list({displayName: query})
+  alt people.list fails
+    People-->>Adapter: error
+    Adapter-->>Caller: observable error (rethrown)
+  else success
+    People-->>Adapter: items page
+    Adapter-->>Caller: Person[]
+  end
 ```
 
 ## Class / Component Relationships
@@ -152,14 +215,24 @@ classDiagram
 ## Use Cases
 
 - **UC-1 Current user:** `getMe()` → profile + optional status → completes. Evidence: `src/PeopleSDKAdapter.test.js`.
-- **UC-2 Contact card:** `getPerson(id)` → initial profile + live presence until unsubscribe. Evidence: `src/PeopleSDKAdapter.js`.
-- **UC-3 Typeahead search:** `searchPeople(query)` → array or error. Evidence: `src/PeopleSDKAdapter.test.js`.
+- **UC-2 Contact card:** `getPerson(id)` → initial profile + live presence until unsubscribe. Evidence: `src/PeopleSDKAdapter.js`, `src/PeopleSDKAdapter.test.js`.
+- **UC-3 Typeahead search:** `searchPeople(query)` → array or propagated SDK error. Evidence: `src/PeopleSDKAdapter.test.js`.
 
 ## Concurrency & Reactive Flow
 
 - `getPerson` per-ID cache stores refCounted hot observable; last unsubscribe triggers `finalize` cleanup and deletes cache entry.
 - Mercury events filtered by `event.data.subject === personUUID` — ordering follows SDK event delivery.
 - `getMe` and `searchPeople` are cold per subscription.
+
+## Error Handling & Failure Modes
+
+| Condition | Signal (error/code/result) | Caller recovery |
+|---|---|---|
+| `people.get` fails in `getMe` or `getPerson` | Observable error from underlying SDK rejection | Handle in subscriber `error` callback; do not assume person exists |
+| `people.list` fails in `searchPeople` | Observable error (logged then rethrown) | Surface search failure to user; retry or adjust query |
+| `internal.presence.get` fails in `getMe` | Emits Person with `status: null` | Treat as presence unavailable; profile still valid |
+| `internal.presence.subscribe` fails in `getPerson` initial path | Emits Person with `status: null` then continues Mercury path if connected | Same as above; live updates may still arrive via Mercury |
+| `presence.unsubscribe` fails on finalize | Warn logged; cache entry still deleted | No caller action; may leave orphan Apheleia subscription if presence disabled |
 
 ## Pitfalls
 

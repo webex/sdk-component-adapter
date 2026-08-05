@@ -18,49 +18,74 @@ Strategy: **root-index-module-detail** — this file indexes all public contract
 |---|---|---|---|---|---|---|
 | pkg.default | src/ | `WebexSDKAdapter` | `export default WebexSDKAdapter` | Semver via npm | `src/ai-docs/webex-sdk-adapter-spec.md` | `src/index.js` |
 | pkg.umd | build | UMD global | `UMDWebexSDKComponentAdapter` (Rollup `name`) | Semver | Rollup output | `dist/webexSDKComponentAdapter.umd.js` |
-| pkg.esm | build | default export | `WebexSDKAdapter` (same as source default; file `webexSDKComponentAdapter.esm.js`) | Semver | Rollup output | `dist/webexSDKComponentAdapter.esm.js` |
-
-Package entry points (`package.json`): `main` → UMD file, `module` → ESM file. Source default export is always `WebexSDKAdapter` (`src/index.js`). Rollup ESM `output.name` (`ESMWebexSDKComponentAdapter`) is an internal bundle identifier — not a separate public binding.
+| pkg.esm | build | default export | `WebexSDKAdapter` (same as source default) | Semver | Rollup output | `dist/webexSDKComponentAdapter.esm.js` |
 
 ## Domain adapter contracts (index)
 
-| Contract ID | Module | Symbol / surface | Detail spec |
-|---|---|---|---|
-| webex-sdk-adapter.default | Facade | `WebexSDKAdapter`, `connect`, `disconnect`, sub-adapter properties | `src/ai-docs/webex-sdk-adapter-spec.md` |
-| activities-adapter.* | Activities | `getActivity`, `postActivity`, `postAction`, `fromSDKActivity` | `src/ai-docs/activities-sdk-adapter-spec.md` |
-| people-adapter.* | People | `getMe`, `getPerson`, `searchPeople` | `src/ai-docs/people-sdk-adapter-spec.md` |
-| rooms-adapter.* | Rooms | `getRoom`, `createRoom`, `getPastActivities`, `getActivitiesInRealTime`, `ROOM_UPDATED_EVENT` | `src/ai-docs/rooms-sdk-adapter-spec.md` |
-| memberships-adapter.* | Memberships | `getMembersFromDestination`, `addRoomMember` | `src/ai-docs/memberships-sdk-adapter-spec.md` |
-| orgs-adapter.* | Organizations | `getOrg` | `src/ai-docs/organizations-sdk-adapter-spec.md` |
-| metrics-adapter.* | Metrics | `submitMetrics` | `src/ai-docs/metrics-sdk-adapter-spec.md` |
-| meetings-adapter.* | Meetings | `createMeeting`, `getMeeting`, `joinMeeting`, `leaveMeeting`, `supportedControls`, `meetingControls`, `MeetingControl` export | `src/ai-docs/meetings-sdk-adapter-spec.md` |
-| shared.* | Shared utilities | `cache`, `logger`, `utils`, `polyfills` | `src/ai-docs/shared-utilities-spec.md` |
+| Contract ID | Type | Surface | Purpose | Compatibility | Detail link | Module spec |
+|---|---|---|---|---|---|---|
+| webex-sdk-adapter.default | SDK class | `WebexSDKAdapter` | Facade wiring | stable | `src/index.js` | `src/ai-docs/webex-sdk-adapter-spec.md` |
+| webex-sdk-adapter.connect | SDK method | `connect(): Promise<void>` | Device + Mercury + meetings plugin | stable | `src/WebexSDKAdapter.js` | same |
+| webex-sdk-adapter.disconnect | SDK method | `disconnect(): Promise<void>` | Reverse connect sequence | stable | `src/WebexSDKAdapter.js` | same |
+| activities-adapter.getActivity | SDK method | `getActivity(ID): Observable<Activity>` | Fetch activity by ID | stable | `src/ActivitiesSDKAdapter.js` | `src/ai-docs/activities-sdk-adapter-spec.md` |
+| activities-adapter.postActivity | SDK method | `postActivity(activity): Observable<Activity>` | Post message/card | stable | same | same |
+| activities-adapter.postAction | SDK method | `postAction(activityID, inputs): Observable<Activity>` | Adaptive card action | stable | same | same |
+| activities-adapter.hasAdaptiveCards | SDK method | `hasAdaptiveCards(activity): boolean` | Card presence check | stable | same | same |
+| activities-adapter.getAdaptiveCard | SDK method | `getAdaptiveCard(activity, index)` | Read card payload | stable | same | same |
+| activities-adapter.fromSDKActivity | SDK export | `fromSDKActivity(sdkActivity): Activity` | SDK→adapter mapper | stable | same | same |
+| people-adapter.getMe | SDK method | `getMe(): Observable<Person>` | Current user profile | stable | `src/PeopleSDKAdapter.js` | `src/ai-docs/people-sdk-adapter-spec.md` |
+| people-adapter.getPerson | SDK method | `getPerson(ID): Observable<Person>` | Person + presence | stable | same | same |
+| people-adapter.searchPeople | SDK method | `searchPeople(query): Observable<Person[]>` | Directory search | stable | same | same |
+| rooms-adapter.getRoom | SDK method | `getRoom(ID): Observable<Room>` | Room metadata stream | stable | `src/RoomsSDKAdapter.js` | `src/ai-docs/rooms-sdk-adapter-spec.md` |
+| rooms-adapter.createRoom | SDK method | `createRoom(room): Observable<Room>` | Create space | stable | same | same |
+| rooms-adapter.getPastActivities | SDK method | `getPastActivities(ID, limit?): Observable<string[]>` | Paginated activity IDs | stable | same | same |
+| rooms-adapter.hasMoreActivities | SDK method | `hasMoreActivities(ID): boolean` | Pagination cursor | stable | same | same |
+| rooms-adapter.getActivitiesInRealTime | SDK method | `getActivitiesInRealTime(ID): Observable<string>` | Live activity IDs | stable | same | same |
+| memberships-adapter.getMembersFromDestination | SDK method | `getMembersFromDestination(id, type)` | Room/meeting roster | stable | `src/MembershipsSDKAdapter.js` | `src/ai-docs/memberships-sdk-adapter-spec.md` |
+| memberships-adapter.addRoomMember | SDK method | `addRoomMember(personID, roomID)` | Add member | stable | same | same |
+| memberships-adapter.removeRoomMember | SDK inherited | `removeRoomMember(personID, roomID)` | **Not overridden** — base class unsupported error | stable | `@webex/component-adapter-interfaces` | same |
+| orgs-adapter.getOrg | SDK method | `getOrg(ID): Observable<Organization>` | Org lookup | stable | `src/OrganizationsSDKAdapter.js` | `src/ai-docs/organizations-sdk-adapter-spec.md` |
+| metrics-adapter.submitMetrics | SDK method | `submitMetrics(metric, preLoginID?)` | Client metrics | stable | `src/MetricsSDKAdapter.js` | `src/ai-docs/metrics-sdk-adapter-spec.md` |
+| meetings-adapter.createMeeting | SDK method | `createMeeting(destination): Observable<Meeting>` | Schedule/create | stable | `src/MeetingsSDKAdapter.js` | `src/ai-docs/meetings-sdk-adapter-spec.md` |
+| meetings-adapter.getMeeting | SDK method | `getMeeting(ID): Observable<Meeting>` | Meeting state stream | stable | same | same |
+| meetings-adapter.joinMeeting | SDK method | `joinMeeting(ID, options = {}): Promise<void>` | Join with password/hostKey | stable | same | same |
+| meetings-adapter.leaveMeeting | SDK method | `leaveMeeting(ID): Promise<void>` | Leave + removeMedia | stable | same | same |
+| meetings-adapter.incomingMeeting | SDK inherited | `incomingMeeting(destination): Observable<Meeting>` | **Not overridden** — base unsupported error | stable | `@webex/component-adapter-interfaces` | same |
+| meetings-adapter.getLayoutTypes | SDK method | `getLayoutTypes(): string[]` | Layout enum keys | stable | `src/MeetingsSDKAdapter.js` | same |
+| meetings-adapter.clearPasswordRequiredFlag | SDK method | `clearPasswordRequiredFlag(ID): Promise<void>` | Reset password UI flag | stable | same | same |
+| meetings-adapter.clearInvalidPasswordFlag | SDK method | `clearInvalidPasswordFlag(ID): Promise<void>` | Reset invalid password flag | stable | same | same |
+| meetings-adapter.clearInvalidHostKeyFlag | SDK method | `clearInvalidHostKeyFlag(ID): Promise<void>` | Reset invalid host key flag | stable | same | same |
+| meetings-adapter.supportedControls | SDK method | `supportedControls(): string[]` | Control key list | stable | same | same |
+| meetings-adapter.meetingControls | SDK property | plain object map | Control instances | stable | same | same |
+| meetings-adapter.export.MeetingControl | SDK export | `MeetingControl` class | Control base class | stable | `src/MeetingsSDKAdapter/controls/index.js` | same |
 
 ## Events & realtime identifiers
 
 | Contract ID | Transport | Event / constant | Used by | Detail spec |
 |---|---|---|---|---|
-| rooms.event.updated | SDK rooms plugin | `ROOM_UPDATED_EVENT` (`updated`) | `getRoom` pipeline | `src/ai-docs/rooms-sdk-adapter-spec.md` |
-| mercury.event.conversation.activity | Mercury | `event:conversation.activity` | `getActivitiesInRealTime` | `src/ai-docs/rooms-sdk-adapter-spec.md` |
+| rooms.event.updated | SDK rooms plugin | `ROOM_UPDATED_EVENT` (`updated`) | `getRoom` | `src/ai-docs/rooms-sdk-adapter-spec.md` |
+| mercury.event.conversation.activity | Mercury | `event:conversation.activity` | `getActivitiesInRealTime` | same |
 | mercury.event.apheleia | Mercury | `event:apheleia.subscription_update` | `getPerson` presence | `src/ai-docs/people-sdk-adapter-spec.md` |
-| sdk.event.memberships.created | SDK rooms | `CREATED` | room membership list | `src/ai-docs/memberships-sdk-adapter-spec.md` |
-| sdk.event.memberships.deleted | SDK rooms | `DELETED` | room membership list | `src/ai-docs/memberships-sdk-adapter-spec.md` |
-| sdk.event.meeting.members | SDK meetings | `members:update` (`payload.full`) | meeting roster | `src/ai-docs/memberships-sdk-adapter-spec.md` |
+| sdk.event.memberships.created | SDK rooms | `CREATED` | room membership | `src/ai-docs/memberships-sdk-adapter-spec.md` |
+| sdk.event.memberships.deleted | SDK rooms | `DELETED` | room membership | same |
+| sdk.event.meeting.members | SDK meetings | `members:update` (`payload.full`) | meeting roster | same |
 
 ## Meeting control keys (runtime)
 
-| Control ID | Runtime key in `meetingControls` | Control class | Detail spec |
-|---|---|---|---|
-| meetings-adapter.control.join | `join` | JoinControl | `src/ai-docs/meetings-sdk-adapter-spec.md` |
-| meetings-adapter.control.audio | `audio` | AudioControl | same |
-| meetings-adapter.control.video | `video` | VideoControl | same |
-| meetings-adapter.control.share-screen | `share-screen` | ShareControl | same |
-| meetings-adapter.control.exit | `exit` | ExitControl | same |
-| meetings-adapter.control.roster | `roster` | RosterControl | same |
-| meetings-adapter.control.settings | `settings` | SettingsControl | same |
-| meetings-adapter.control.switch-camera | `switch-camera` | SwitchCameraControl | same |
-| meetings-adapter.control.switch-speaker | `switch-speaker` | SwitchSpeakerControl | same |
-| meetings-adapter.control.switch-microphone | `switch-microphone` | SwitchMicrophoneControl | same |
+All keys match `MeetingsSDKAdapter.js` constants and `supportedControls()`:
+
+| Contract ID | Runtime key | Control class |
+|---|---|---|
+| meetings-adapter.control.join-meeting | `join-meeting` | JoinControl |
+| meetings-adapter.control.mute-audio | `mute-audio` | AudioControl |
+| meetings-adapter.control.mute-video | `mute-video` | VideoControl |
+| meetings-adapter.control.share-screen | `share-screen` | ShareControl |
+| meetings-adapter.control.leave-meeting | `leave-meeting` | ExitControl |
+| meetings-adapter.control.member-roster | `member-roster` | RosterControl |
+| meetings-adapter.control.settings | `settings` | SettingsControl |
+| meetings-adapter.control.switch-camera | `switch-camera` | SwitchCameraControl |
+| meetings-adapter.control.switch-speaker | `switch-speaker` | SwitchSpeakerControl |
+| meetings-adapter.control.switch-microphone | `switch-microphone` | SwitchMicrophoneControl |
 
 ## Requires — what this repo depends on
 

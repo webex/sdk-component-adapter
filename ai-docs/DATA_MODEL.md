@@ -62,7 +62,7 @@ Adapter in-memory (derived, session-scoped)
 | getActivity stream | ReplaySubject per id | Activity Hydra ID | Adapter instance lifetime | New adapter |
 | getPerson/getRoom stream | publishReplay(1) | Entity Hydra ID | Until refCount zero | Unsubscribe all; new call |
 | getOrg stream | ReplaySubject(1) | Organization Hydra ID | Adapter instance lifetime | New adapter |
-| Meeting observables | Plain object map | Meeting id | Until disconnect | `WebexSDKAdapter.disconnect()` |
+| Meeting observables | Plain object map | Meeting id | Until adapter discarded | `disconnect()` unregisters plugin only; maps persist; use `leaveMeeting` for media cleanup |
 
 ## Migration Discipline
 

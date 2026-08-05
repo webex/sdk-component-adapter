@@ -15,116 +15,104 @@
 | Field | Value |
 |---|---|
 | Module id | shared-utilities |
-| Source path(s) | `src/cache.js`, `src/logger.js`, `src/logger/logger.js`, `src/logger/consoleTransport.js`, `src/utils.js`, `src/polyfills.js` |
+| Source path(s) | `src/cache.js`, `src/logger.js`, `src/logger/`, `src/utils.js`, `src/polyfills.js` |
 | Doc kind | Module spec |
-| Coverage score | 87% assessed 2026-08-05 — cache singleton, logger stack, RxJS utils, polyfills, and concurrency documented |
+| Coverage score | 91% assessed 2026-08-05 — cache, logger, RxJS utils, polyfills with operation-group sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / pending PR approval / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
 
-Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` files.
+Every requirement cites concrete source evidence as `file path` only. Test evidence names `src/*.test.js` files where present.
 
 ## Source Material Register
 
 | Source material | Scope | Decision | Detail location or disposition |
 |---|---|---|---|
-| Implementation | behavior | verified | Requirements and module sections in this spec |
-| Consumer adapters | usage | reference-only | cache/logger imported by domain adapters |
+| Implementation | behavior | verified | Requirements, State Model, Sequence Diagram(s) |
+| Not a published package surface | scope | N/A | Internal modules consumed by domain adapters |
 
 ## Overview
 
-Shared utilities provide cross-cutting infrastructure for all domain adapters: an in-memory cache singleton, structured logging with pluggable transports, RxJS helper operators, meeting-control argument resolution, safe JSON stringify, and a minimal MediaStream polyfill. Not published as a separate package — consumed via relative imports from `src/`.
+Shared utilities provide cross-cutting support: in-memory cache singleton for activities/conversations, leveled logger with optional console transport and browser hook, RxJS helper operators and meeting ID resolution helpers, and a MediaStream polyfill. This is **not** a trivial composition module — distinct operation groups (cache, logger) warrant separate sequence diagrams.
 
 ## Purpose / Responsibility
 
-Owns reusable non-domain helpers and process-wide singletons (cache, logger). Does **not** implement Webex domain logic.
+Owns internal helpers and singleton state used by domain adapters. Does **not** expose a public npm API beyond what domain modules import directly.
 
 ## Stack
 
-JavaScript (ES modules), RxJS 6 (utils operators), browser APIs (`MediaStream`, `console`).
+JavaScript, RxJS 6 (utils operators), browser globals for logger hook and polyfills.
 
 ## Folder / Package Structure
 
 ```
 src/
-├── cache.js                      # CacheMeOutside singleton export
-├── cache.test.js
-├── logger.js                     # Facade: createLogger + console transport wiring
+├── cache.js
+├── logger.js
 ├── logger/
-│   ├── logger.js                 # createLogger, format, LEVELS
-│   └── consoleTransport.js       # console[level] transport factory
-├── utils.js                      # chainWith, deepMerge, resolveMeetingID, …
-├── polyfills.js                  # MediaStream.getTracks shim
+│   ├── logger.js
+│   └── consoleTransport.js
+├── utils.js
+├── polyfills.js
 └── ai-docs/
 ```
 
-## Key Files (source of truth)
-
-| File | Holds |
-|---|---|
-| `src/cache.js` | Map-backed singleton cache API |
-| `src/logger.js` | Default logger instance, level, browser hook |
-| `src/logger/logger.js` | Logger factory and log formatting |
-| `src/logger/consoleTransport.js` | Dev console transport |
-| `src/utils.js` | RxJS operators and meeting ID resolution |
-| `src/polyfills.js` | Side-effect polyfill imported from `src/index.js` |
-
 ## Public Surface
 
-| Contract ID | Symbol | Kind | Signature/Type | Stability | Detail link | Defined at |
+Internal Surface — consumed by other modules in this package, not exported from npm entry.
+
+| Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| shared.cache.default | `cache` (default export) | singleton instance | `CacheMeOutside` | internal stable | this spec | `src/cache.js` |
-| shared.logger.default | `logger` (default export) | singleton instance | logger with debug/info/warn/error | internal stable | this spec | `src/logger.js` |
-| shared.logger.createLogger | `createLogger` | function | `() => Logger` | internal stable | this spec | `src/logger/logger.js` |
-| shared.logger.format | `format` | function | log line formatter | internal stable | this spec | `src/logger/logger.js` |
-| shared.logger.consoleTransport | `consoleTransport` | function factory | `(prefix?) => TransportFn` | internal stable | this spec | `src/logger/consoleTransport.js` |
-| shared.utils.chainWith | `chainWith` | RxJS operator | sequential dependent observable | internal stable | this spec | `src/utils.js` |
-| shared.utils.combineLatestImmediate | `combineLatestImmediate` | function | combineLatest with startWith(undefined) | internal stable | this spec | `src/utils.js` |
-| shared.utils.deepMerge | `deepMerge` | function | in-place deep merge | internal stable | this spec | `src/utils.js` |
-| shared.utils.resolveMeetingID | `resolveMeetingID` | function | string or `{meetingID}` → id | internal stable | this spec | `src/utils.js` |
-| shared.utils.resolveDeviceSwitchArgs | `resolveDeviceSwitchArgs` | function | meeting + device id resolution | internal stable | this spec | `src/utils.js` |
-| shared.utils.safeJsonStringify | `safeJsonStringify` | function | circular-safe JSON.stringify | internal stable | this spec | `src/utils.js` |
-| shared.utils.isSpeakerSupported | `isSpeakerSupported` | boolean constant | setSinkId feature detect | internal stable | this spec | `src/utils.js` |
-| shared.polyfills | side-effect import | module | MediaStream.getTracks noop | internal stable | this spec | `src/polyfills.js` |
-| shared.window.setLogLevel | `window.webexSDKAdapterSetLogLevel` | function (browser) | `(level) => void` | internal stable | this spec | `src/logger.js` |
+| shared.cache.singleton | internal module | `default export` CacheMeOutside singleton | Key/value store for SDK objects | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.set | internal method | `set(key, value)` | Store or update entry | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.get | internal method | `get(key)` | Retrieve entry or undefined | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.has | internal method | `has(key): boolean` | Key existence check | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.cacheConversations | internal method | `cacheConversations(conversations[])` | Bulk cache SDK conversations | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.cachActivities | internal method | `cachActivities(activities[])` | Bulk cache SDK activities (typo preserved) | stable internal | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.logger.default | internal module | `default export` logger instance | Domain debug/error logging | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.logger.setLevel | internal method | `setLevel(level)` | Adjust log verbosity | stable internal | `src/logger/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.logger.windowHook | internal global | `window.webexSDKAdapterSetLogLevel(level)` | Browser-only level control | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.chainWith | internal export | RxJS operator | Chain dependent observables | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.deepMerge | internal export | object merge | Meeting state updates | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.resolveMeetingID | internal export | `(meetingContext) => string` | Control action meeting ID resolution | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.resolveDeviceSwitchArgs | internal export | device switch arg resolver | switch-* control compatibility | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.safeJsonStringify | internal export | circular-safe JSON.stringify | Logger transport | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.isSpeakerSupported | internal export | boolean | Feature detect setSinkId | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.polyfills.mediaStream | internal side effect | `MediaStream.prototype.getTracks` shim | Legacy browser guard | stable internal | `src/polyfills.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 ## Requires (dependencies)
 
 | Dependency | Purpose |
 |---|---|
-| RxJS (`utils.js`) | Custom operators |
-| Browser `console` | consoleTransport output |
-| `process.env.NODE_ENV` | Enable console transport in non-production |
+| `process.env.NODE_ENV` | Gate console transport in logger |
+| Browser `window` (optional) | Log level hook |
+| RxJS (utils operators) | chainWith, combineLatestImmediate |
 
 ## Requirements
 
-| ID | WHAT | WHY | Evidence | Test evidence | Gaps | Confidence |
+| ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| SHU-R-001 | `cache.js` exports single `CacheMeOutside` singleton with Map store | Shared activity/conversation memoization | `src/cache.js` | `src/cache.test.js` (positive singleton) | Thread safety N/A in JS single-thread | PRESENT |
-| SHU-R-002 | Cache supports set/get/has/remove/keys/values/size plus `cacheConversations` and `cachActivities` bulk helpers | Domain adapter batch caching | `src/cache.js` | `src/cache.test.js` positive bulk helpers | Typo `cachActivities` preserved | PRESENT |
-| SHU-R-003 | `logger.js` creates logger via `createLogger`, default level `error`, adds `consoleTransport` when not production | Dev visibility without prod noise | `src/logger.js`, `src/logger/logger.js`, `src/logger/consoleTransport.js` | none found | Logger level/transport untested | PRESENT |
-| SHU-R-004 | `format()` stringifies objects with circular reference and MediaStream track summary | Readable debug lines | `src/logger/logger.js` | none found | format() edge cases untested | PRESENT |
-| SHU-R-005 | Browser exposes `window.webexSDKAdapterSetLogLevel` | Runtime log level tuning | `src/logger.js` | none found | Browser hook untested | PRESENT |
-| SHU-R-006 | `chainWith` chains observables on source complete; used by Meetings createMeeting/getLocalMedia | Sequential async media setup | `src/utils.js`, `src/MeetingsSDKAdapter.js` | indirect via Meetings tests | chainWith unit tests absent | PRESENT |
-| SHU-R-007 | `resolveMeetingID` / `resolveDeviceSwitchArgs` accept string or PR #346 context object | @webex/components compatibility | `src/utils.js` | control tests indirect | Dedicated utils unit tests absent | PRESENT |
-| SHU-R-008 | `polyfills.js` adds no-op `getTracks` when missing on MediaStream prototype | Avoid throws on legacy browsers | `src/polyfills.js` | none found | Polyfill untested | PRESENT |
+| SHU-R-001 | Cache is process-wide singleton Map | Share activity/conversation bodies across adapters | `src/cache.js` | none found | Eviction policy none | PRESENT |
+| SHU-R-002 | Logger defaults to level `error`; console transport added when NODE_ENV !== production | Reduce noise in production builds | `src/logger.js` | none found | none | PRESENT |
+| SHU-R-003 | Browser exposes `window.webexSDKAdapterSetLogLevel` when window defined | Runtime debug control in demos | `src/logger.js` | none found | none | PRESENT |
+| SHU-R-004 | `polyfills.js` imported from `src/index.js` — patches missing getTracks to empty array | Prevent throws on legacy browsers | `src/polyfills.js`, `src/index.js` | none found | none | PRESENT |
+| SHU-R-005 | `resolveMeetingID` / `resolveDeviceSwitchArgs` support string ID and PR #346 context objects | Meeting control compatibility | `src/utils.js` | MeetingsSDKAdapter tests indirect | Direct unit tests sparse | PRESENT |
 
 ## Design Overview
 
-Utilities are intentionally small and imperative. Cache and logger are module singletons imported across adapters — no dependency injection container. Logger separates transport registration (`logger.js`) from core logging (`logger/logger.js`) so tests could add transports without console noise. Utils stay free of Webex SDK imports except through consumer adapters.
+Cache and logger are singletons imported directly. Utils exports pure functions and RxJS operators consumed heavily by MeetingsSDKAdapter. Polyfills run once at package load via index side effect.
 
 ## Data Flow
 
 ```mermaid
 flowchart TD
-  Adapters["Domain adapters"] --> cache["cache.js Map"]
-  Adapters --> logger["logger.js"]
-  logger --> core["logger/logger.js"]
-  logger --> transport["logger/consoleTransport.js"]
-  Meetings["MeetingsSDKAdapter"] --> utils["utils.js operators"]
-  index["src/index.js"] --> polyfills["polyfills.js"]
+  Activities["ActivitiesSDKAdapter"] --> Cache
+  Rooms["RoomsSDKAdapter"] --> Cache
+  Domain["*SDKAdapter"] --> Logger
+  Meetings["MeetingsSDKAdapter"] --> Utils
+  Index["src/index.js"] --> Polyfills
 ```
 
 ## Sequence Diagram(s)
@@ -133,9 +121,39 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| Trivial shared utilities | Single module — no cross-actor sequences | N/A |
+| cache get/set | Cache read-through | miss → undefined; set overwrites |
+| logger level hook | Browser setLogLevel | N/A in Node without window |
 
-This module is a pass-through/composition utility layer with no external service calls — one diagram group is sufficient per manifest trivial-module rule.
+### cache get / set
+
+```mermaid
+sequenceDiagram
+  participant Adapter as Domain adapter
+  participant Cache as cache singleton
+
+  Adapter->>Cache: has(key)
+  alt cache hit
+    Adapter->>Cache: get(key)
+    Cache-->>Adapter: value
+  else miss
+    Adapter->>Adapter: network fetch
+    Adapter->>Cache: set(key, body)
+  end
+```
+
+### logger hook flow
+
+```mermaid
+sequenceDiagram
+  participant Dev as Developer / host page
+  participant Window as window
+  participant Logger as logger singleton
+
+  Note over Logger: init level error; console transport if non-production
+  Dev->>Window: webexSDKAdapterSetLogLevel('debug')
+  Window->>Logger: setLevel('debug')
+  Note over Adapter: subsequent domain logger.debug calls emit
+```
 
 ## Class / Component Relationships
 
@@ -143,62 +161,51 @@ This module is a pass-through/composition utility layer with no external service
 classDiagram
   class CacheMeOutside {
     Map store
-    set/get/has/remove
-    cacheConversations()
-    cachActivities()
+    set/get/has
+    cacheConversations
+    cachActivities
   }
-  class Logger {
-    addTransport()
-    setLevel()
-    debug/info/warn/error
-  }
-  logger.js --> Logger : createLogger
-  logger.js --> consoleTransport
+  WebexSDKAdapter --> CacheMeOutside : cache property
+  ActivitiesSDKAdapter --> CacheMeOutside
+  RoomsSDKAdapter --> CacheMeOutside
+  MeetingsSDKAdapter --> utils : deepMerge chainWith
 ```
 
 ## Use Cases
 
-- **UC-1 Activity cache hit:** Activities adapter `fetchActivity` checks cache before HTTP. Evidence: `src/ActivitiesSDKAdapter.js`, `src/cache.js`.
-- **UC-2 Debug trace:** Non-production loads console transport; developer calls `webexSDKAdapterSetLogLevel('debug')`. Evidence: `src/logger.js`.
-- **UC-3 Meeting control args:** ShareControl resolves meeting ID from string or object. Evidence: `src/utils.js`.
+- **UC-1 Activity cache:** Activities fetch stores body by id; subsequent fetch hits cache. Evidence: `src/ActivitiesSDKAdapter.js`.
+- **UC-2 Room pagination cache:** Rooms pre-cache conversations and activity bodies. Evidence: `src/RoomsSDKAdapter.js`.
+- **UC-3 Debug in browser:** Call `window.webexSDKAdapterSetLogLevel('debug')`. Evidence: `src/logger.js`.
 
 ## State Model
 
-- **Cache:** Process-wide `Map` in singleton — keys are SDK ids (activities, conversations). No TTL eviction.
-- **Logger:** Mutable `currentLevel` and `transports[]` on singleton instance.
+- `CacheMeOutside.store` — unbounded in-memory Map keyed by SDK object id strings; no TTL or eviction.
+- Logger holds level and transport list on singleton instance.
 
 ## Concurrency & Reactive Flow
 
-- **Cache Map** is shared across all adapter instances in the same JS realm — concurrent async fetches may read/write same key; last `set` wins; no locking.
-- **Logger** iterates transports synchronously on each log call — transports must not block or re-enter logging.
-- **`chainWith`** unsubscribes prior inner subscription on teardown via returned unsubscribe function — safe for sequential media pipelines.
-- **`combineLatestImmediate`** uses `startWith(undefined)` so combineLatest emits before all sources emit — consumers must handle undefined slots.
-- **Singleton pattern** — importing cache/logger anywhere returns same instance (verified in cache tests).
+- Cache Map mutations are synchronous; no locking — assumes single-threaded JS.
+- `chainWith` operator manages nested subscription teardown on unsubscribe.
 
 ## Module Do's / Don'ts
 
-- DO import default exports from `cache.js` and `logger.js` — do not instantiate second cache.
+- DO import cache singleton — do not instantiate second CacheMeOutside.
 - DO use `resolveMeetingID` in meeting controls for host compatibility.
-- DON'T log secrets or tokens — logger has no redaction filter.
-- DON'T assume cache invalidation — no TTL; stale entries persist until overwritten or `remove`.
+- DON'T rely on cache invalidation — stale entries persist for session lifetime.
 
 ## Pitfalls
 
-- **`cachActivities` typo** is public method name — renaming breaks callers.
-- **Logger default level is error** — debug lines silent until level raised.
-- **Cache never evicts** — long sessions may retain stale activity objects.
-- **`isSpeakerSupported` evaluated at module load** — document feature detect timing.
+- **Unbounded cache growth** during long sessions with many activities.
+- **`cachActivities` typo** is public method name on cache — do not rename without adapter updates.
+- **`isSpeakerSupported` evaluates at module load** — may be wrong if polyfills change later.
 
 ## Test-Case Strategy (module)
 
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| SHU-R-001 | `src/cache.test.js` — positive singleton instance | Negative: N/A |
-| SHU-R-002 | `src/cache.test.js` — set/get/has/remove; bulk cache positive | Negative: remove missing key |
-| SHU-R-003 | none found | Positive: transport added in dev; Negative: production no console |
-| SHU-R-006 | indirect via `src/MeetingsSDKAdapter.test.js` createMeeting | Dedicated chainWith unit test |
-| SHU-R-007 | indirect via control tests | utils.js unit test file |
-| SHU-R-008 | none found | Mock MediaStream without getTracks |
+| SHU-R-005 | indirect via `src/MeetingsSDKAdapter.test.js` | Direct utils unit tests |
+| SHU-R-001 | none found | Cache hit/miss characterization |
+| SHU-R-003 | none found | window hook manual/browser test |
 
 ## Traceability
 

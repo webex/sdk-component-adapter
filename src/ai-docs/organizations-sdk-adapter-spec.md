@@ -17,9 +17,9 @@
 | Module id | organizations-sdk-adapter |
 | Source path(s) | `src/OrganizationsSDKAdapter.js` |
 | Doc kind | Module spec |
-| Coverage score | 88% assessed 2026-08-05 — eager getOrg subscription and ReplaySubject(1) documented |
+| Coverage score | 91% assessed 2026-08-05 — single getOrg operation group, fetch error path, and sequence documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
-| generated_by / approved_by / updated_at | cursor-agent / pending PR approval / 2026-08-05 |
+| generated_by / approved_by / updated_at | cursor-agent / SDLC bootstrap PR #354 review / 2026-08-05 |
 | Validation status | not-run |
 
 ## Evidence Rules
@@ -30,20 +30,20 @@ Every requirement cites concrete source evidence as `file path` only. Test evide
 
 | Source material | Scope | Decision | Detail location or disposition |
 |---|---|---|---|
-| Implementation | behavior | verified | Requirements in this spec |
+| Implementation | behavior | verified | Requirements, Error Handling, Sequence Diagram(s) |
 | `@webex/component-adapter-interfaces` OrganizationsAdapter | contract | reference-only | Public Surface rows |
 
 ## Overview
 
-`OrganizationsSDKAdapter` implements `OrganizationsAdapter`, fetching organization display data via Hydra REST (`datasource.request`) and exposing it as a memoized RxJS observable per organization ID.
+`OrganizationsSDKAdapter` implements `OrganizationsAdapter` with a single public read operation: `getOrg(ID)` fetches organization display data via Hydra REST and exposes it through a per-ID `ReplaySubject`.
 
 ## Purpose / Responsibility
 
-Owns organization lookup by ID. Does **not** require facade `connect()` — uses HTTP request path only.
+Owns organization lookup observables. Does **not** own people, rooms, or admin org mutations.
 
 ## Stack
 
-JavaScript, RxJS 6, Webex SDK HTTP request API (Hydra service).
+JavaScript, RxJS 6, Webex SDK `request` (hydra service).
 
 ## Folder / Package Structure
 
@@ -63,40 +63,39 @@ src/
 
 ## Public Surface
 
-| Contract ID | Symbol | Kind | Signature/Type | Stability | Detail link | Defined at |
+| Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| orgs-adapter.class | `OrganizationsSDKAdapter` | class | extends `OrganizationsAdapter` | stable | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) | `src/OrganizationsSDKAdapter.js` |
-| orgs-adapter.getOrg | `getOrg(ID)` | method → Observable | `(orgID: string) => Observable<Organization>` | stable | this spec | `src/OrganizationsSDKAdapter.js` |
+| orgs-adapter.class | SDK class | `OrganizationsSDKAdapter extends OrganizationsAdapter` | Domain adapter entry | stable | `src/OrganizationsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| orgs-adapter.getOrg | SDK method | `getOrg(ID: string): Observable<Organization>` | Organization display name lookup | stable | `src/OrganizationsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+
+This module exposes **one operation group** (`getOrg`); a single sequence diagram covers the full public surface.
 
 ## Requires (dependencies)
 
 | Dependency | Purpose |
 |---|---|
-| `datasource.request({service: 'hydra', resource: 'organizations/{id}'})` | Organization fetch |
-| Authenticated SDK (no Mercury connect required) | Authorization header on REST |
+| `datasource.request({service: 'hydra', resource: 'organizations/{orgID}'})` | Org profile fetch |
 
 ## Requirements
 
-| ID | WHAT | WHY | Evidence | Test evidence | Gaps | Confidence |
+| ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| ORG-R-001 | First `getOrg(ID)` call eagerly subscribes to internal fetch pipeline even without external subscriber | Same pattern as activities — fetch starts on method call | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` (positive emit on subscribe) | No test for fetch before external subscribe | PRESENT |
-| ORG-R-002 | Per-ID cache uses `new ReplaySubject(1)` | Replay last organization emission to late subscribers | `src/OrganizationsSDKAdapter.js` | none found | Buffer size not asserted | PRESENT |
-| ORG-R-003 | Success maps `{ID: response.id, name: response.displayName}` | Adapter organization shape | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` (positive) | none | PRESENT |
-| ORG-R-004 | Fetch failure calls `subject.error` with message `Could't find organization with ID "{ID}"` | Observable error for invalid org | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` (negative invalid ID) | none | PRESENT |
-| ORG-R-005 | Works without WebexSDKAdapter.connect() | Hydra REST only — no Mercury/device dependency | `src/OrganizationsSDKAdapter.js` | none found | Integration without connect untested | PRESENT |
+| ORG-R-001 | `getOrg` caches `ReplaySubject(1)` per org ID | Avoid duplicate fetch pipelines | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` | none | PRESENT |
+| ORG-R-002 | Successful fetch maps `{ID: response.id, name: response.displayName}` | Adapter Organization shape | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` | none | PRESENT |
+| ORG-R-003 | Fetch failure emits `Error: Could't find organization with ID "…"` | Caller-visible not-found signal (typo preserved from source) | `src/OrganizationsSDKAdapter.js` | `src/OrganizationsSDKAdapter.test.js` | none | PRESENT |
 
 ## Design Overview
 
-`getOrg` memoizes one `ReplaySubject(1)` per organization ID. On first invocation the adapter immediately subscribes to `defer(() => fetchOrganization(ID))`, maps the Hydra body, and pushes to the subject. External subscribers attach to the same subject. There is no live update stream — organization data is fetch-once unless a new adapter instance is created.
+Cold defer fetch on first `getOrg` subscription populates a ReplaySubject; subsequent subscribers to same ID share the cached subject and receive replayed organization or error.
 
 ## Data Flow
 
 ```mermaid
 flowchart LR
-  getOrg --> RS["ReplaySubject(1) per ID"]
-  RS --> defer["defer fetchOrganization"]
-  defer --> hydra["request hydra organizations/{id}"]
-  hydra --> map["map ID + displayName"]
+  getOrg["getOrg(ID)"] --> defer["defer fetchOrganization"]
+  defer --> hydra["request hydra/organizations/{id}"]
+  hydra --> map["map to Organization"]
+  map --> subject["ReplaySubject per ID"]
 ```
 
 ## Sequence Diagram(s)
@@ -105,23 +104,26 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| getOrg | Eager fetch on first call | alt: request error → subject.error |
+| getOrg (sole public operation group) | getOrg fetch | alt: request failure → observable error |
 
 ```mermaid
 sequenceDiagram
   participant Caller
   participant Adapter as OrganizationsSDKAdapter
-  participant Hydra as datasource.request
+  participant Hydra as request hydra/organizations
 
-  Caller->>Adapter: getOrg(ID) first call
-  Adapter->>Adapter: ReplaySubject(1), internal subscribe
-  Adapter->>Hydra: GET organizations/{ID}
-  alt success
-    Hydra-->>Adapter: body
-    Adapter-->>Caller: Organization (on subscribe)
-  else failure
-    Hydra-->>Adapter: error
-    Adapter-->>Caller: Observable error
+  Caller->>Adapter: getOrg(ID)
+  alt first call for ID
+    Adapter->>Hydra: GET organizations/{orgID}
+    alt failure
+      Hydra-->>Adapter: error
+      Adapter-->>Caller: Error Could't find organization
+    else success
+      Hydra-->>Adapter: {id, displayName}
+      Adapter-->>Caller: Organization {ID, name}
+    end
+  else cached ReplaySubject
+    Adapter-->>Caller: replay prior emission or error
   end
 ```
 
@@ -130,40 +132,35 @@ sequenceDiagram
 ```mermaid
 classDiagram
   OrganizationsAdapter <|-- OrganizationsSDKAdapter
-  OrganizationsSDKAdapter --> HydraREST : request service hydra
+  OrganizationsSDKAdapter --> HydraAPI : datasource.request
 ```
 
 ## Use Cases
 
-- **UC-1 Org label:** Host calls `getOrg(orgId)` without facade connect → receives name for UI. Evidence: `src/OrganizationsSDKAdapter.js`.
-
-## Error Handling & Failure Modes
-
-| Condition | Signal | Caller recovery |
-|---|---|---|
-| Invalid org ID / Hydra error | Observable error with quoted ID | Show fallback; verify org ID |
-| Success | Single next on ReplaySubject(1) | Cache in host if needed |
+- **UC-1 Org label:** `getOrg(orgId)` → `{ID, name}` or error. Evidence: `src/OrganizationsSDKAdapter.test.js`.
 
 ## Concurrency & Reactive Flow
 
-- Eager internal subscription on first `getOrg` call per ID.
-- `ReplaySubject(1)` retains last value for subsequent subscribers.
-- No refCount — subject persists for adapter lifetime once created.
+- One ReplaySubject per org ID; internal subscribe runs once on first getter.
+- No live updates — single-shot fetch semantics.
+
+## Error Handling & Failure Modes
+
+| Condition | Signal (error/code/result) | Caller recovery |
+|---|---|---|
+| Hydra request fails | Observable error `Could't find organization with ID "…"` | Treat as unknown org; verify ID format |
+| Success | Single Organization emission | Bind display name in UI |
 
 ## Pitfalls
 
-- **Fetch starts on first `getOrg` call, not on subscribe** — side effect even if return value unused.
-- **Typo preserved in error message** (`Could't`) — changing breaks tests expecting exact string.
-- **No live updates** — org rename requires new fetch/subject (not implemented).
+- **Typo in error message (`Could't`)** is preserved in implementation — matchers should not expect "Couldn't".
+- **No cache invalidation** — org rename requires new page session or manual adapter instance.
 
 ## Test-Case Strategy (module)
 
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| ORG-R-003 | `src/OrganizationsSDKAdapter.test.js` — positive emit on subscribe | none |
-| ORG-R-004 | `src/OrganizationsSDKAdapter.test.js` — negative invalid organization ID | none |
-| ORG-R-001 | none found | Assert fetch invoked before external subscribe |
-| ORG-R-005 | none found | Integration test without facade connect |
+| ORG-R-002, ORG-R-003 | `src/OrganizationsSDKAdapter.test.js` | Second subscriber replay ORG-R-001 |
 
 ## Traceability
 

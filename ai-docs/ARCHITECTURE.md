@@ -58,7 +58,7 @@ Narrative: Host constructs `WebexSDKAdapter(sdk)` with an authenticated SDK. Hos
 2. Host `new WebexSDKAdapter(webex)` — constructs domain adapters.
 3. Host `await adapter.connect()` — device.register → mercury.connect → meetingsAdapter.connect.
 4. Host subscribes to observables (e.g. `roomsAdapter.getRoom(id)`).
-5. Host `await adapter.disconnect()` on teardown.
+5. Host `await adapter.disconnect()` on teardown — meetings plugin unregister, Mercury disconnect, device unregister (does not stop MediaStreams or clear meeting in-memory maps).
 
 Evidence: `src/WebexSDKAdapter.js`, `src/index.js`.
 
@@ -109,7 +109,7 @@ Evidence: `src/WebexSDKAdapter.js`, `src/index.js`.
 | Activities `getActivity` ReplaySubject | In-memory per activity ID | Mapped Activity emissions | Until adapter instance discarded | New adapter instance |
 | People/Rooms `publishReplay(1)` | In-memory per entity ID | Last mapped entity value | refCount teardown when unsubscribed | Resubscribe triggers refetch pipeline |
 | Organizations `getOrg` ReplaySubject(1) | In-memory per org ID | Organization object | Until adapter instance discarded | New adapter instance |
-| Meetings `getMeetingObservables` | In-memory object map | Meeting observables and SDK meeting handles | Until disconnect | `disconnect()` clears meetings plugin state |
+| Meetings `getMeetingObservables` | In-memory object map | Meeting observables and SDK meeting handles | Until adapter discarded | `disconnect()` unregisters plugin only — does not clear maps or stop MediaStreams |
 
 → Full entity and cache ownership: [`DATA_MODEL.md`](DATA_MODEL.md)
 

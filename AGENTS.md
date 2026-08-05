@@ -55,7 +55,7 @@ src/
 
 1. **Code is the source of truth.** Never invent adapter methods or SDK calls — read `src/`.
 2. **Ask before coding.** Present a plan; wait for confirmation before behavior changes.
-3. **Connect/disconnect lifecycle** follows `WebexSDKAdapter.connect()` / `disconnect()` (device register → mercury → meetings; reverse on disconnect) — not `@webex/components` `withAdapter` lifecycle.
+3. **Connect/disconnect lifecycle** follows `WebexSDKAdapter.connect()` / `disconnect()` (device register → mercury → meetings plugin unregister; reverse on disconnect) — not `@webex/components` `withAdapter` lifecycle.
 4. **Peer dependencies** `webex` and `rxjs` must remain external in Rollup — do not bundle them.
 5. **Observable errors** — modules with `returns_caller_errors: true` in manifest must document caller recovery in module specs.
 6. **Spec-currency** — code + spec update in the same merge when changing public behavior.
@@ -76,7 +76,7 @@ src/
 
 - Host must pass an **authenticated** Webex SDK instance to `WebexSDKAdapter` constructor.
 - `connect()` must be awaited before relying on live Mercury/meeting updates.
-- Meetings adapter holds in-memory meeting state and MediaStream handles — callers must `disconnect()` to release.
+- Meetings adapter holds in-memory meeting state and MediaStream handles while joined — call `leaveMeeting(ID)` (which invokes `removeMedia`) to release media; `disconnect()` unregisters the meetings plugin but does not stop tracks or clear in-memory meeting maps.
 - Missing room/meeting/activity IDs surface RxJS errors on observables (see module specs).
 
 ## Pre-Commit Checklist
