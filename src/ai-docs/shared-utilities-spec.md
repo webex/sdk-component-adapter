@@ -20,7 +20,7 @@
 | Coverage score | 91% assessed 2026-08-05 — cache, logger, RxJS utils, polyfills with operation-group sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run |
+| Validation status | pass-with-warnings, validator `codex-agent`, assessed 2026-08-05 — 0 Blocking, 1 Important; unit tests 19/19 suites and 194/194 tests passed |
 
 ## Evidence Rules
 
@@ -76,7 +76,7 @@ src/
 
 | Contract ID | Type | Surface | Purpose | Compatibility / deprecation | Schema / detail link | Root index |
 |---|---|---|---|---|---|---|
-| shared.cache.singleton | facade property + internal | `default export` CacheMeOutside singleton | Key/value store; also assigned to `WebexSDKAdapter.cache` | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.cache.singleton | facade property + internal | cache singleton | Key/value store default export; also on WebexSDKAdapter.cache | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.set | host-reachable method | `set(key, value)` | Store or update entry | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.get | host-reachable method | `get(key)` | Retrieve entry or undefined | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.has | host-reachable method | `has(key): boolean` | Key existence check | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
@@ -87,17 +87,17 @@ src/
 | shared.cache.cacheConversations | host-reachable method | `cacheConversations(conversations[])` | Bulk cache SDK conversations | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.cachActivities | host-reachable method | `cachActivities(activities[])` | Bulk cache SDK activities (typo preserved) | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.cache.cachSDKActivities | host-reachable method | `cachSDKActivities(sdkActivities[])` | Bulk cache SDK activity objects by id | stable via facade | `src/cache.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.logger.default | internal module | `default export` logger instance | Domain debug/error logging | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.logger.default | internal module | logger singleton (default export) | Domain debug/error logging | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.setLevel | internal method | `setLevel(level)` | Adjust log verbosity | stable internal | `src/logger/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.logger.windowHook | internal global | `window.webexSDKAdapterSetLogLevel(level)` | Browser-only level control | stable internal | `src/logger.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.chainWith | internal export | RxJS operator | Chain dependent observables | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.combineLatestImmediate | internal export | RxJS helper | combineLatest with startWith(undefined) per source | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.deepMerge | internal export | object merge | Meeting state updates | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.utils.resolveMeetingID | internal export | `(meetingContext) => string` | Control action meeting ID resolution | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.utils.resolveMeetingID | internal export | resolveMeetingID | (meetingContext) => string | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.resolveDeviceSwitchArgs | internal export | device switch arg resolver | switch-* control compatibility | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.safeJsonStringify | internal export | circular-safe JSON.stringify | Logger transport | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | shared.utils.isSpeakerSupported | internal export | boolean | Feature detect setSinkId | stable internal | `src/utils.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| shared.polyfills.mediaStream | internal side effect | `MediaStream.prototype.getTracks` shim | Legacy browser guard | stable internal | `src/polyfills.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| shared.polyfills.mediaStream | internal side effect | MediaStream getTracks shim | Legacy browser guard | stable internal | `src/polyfills.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 ## Requires (dependencies)
 

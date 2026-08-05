@@ -20,7 +20,7 @@
 | Coverage score | 92% assessed 2026-08-05 — create/get/join/leave, controls, media lifecycle, disconnect semantics, and inherited surfaces documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run |
+| Validation status | pass-with-warnings, validator `codex-agent`, assessed 2026-08-05 — 0 Blocking, 1 Important; unit tests 19/19 suites and 194/194 tests passed |
 
 ## Evidence Rules
 
@@ -90,9 +90,9 @@ src/
 | meetings-adapter.control.member-roster | SDK control | `RosterControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/RosterControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.share-screen | SDK control | `ShareControl` | `action(meetingContext): Promise<void>`; `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/ShareControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.settings | SDK control | `SettingsControl` | `action(meetingContext): void` (calls toggleSettings without await); `display(meetingID): Observable<MeetingControlDisplay>` | stable | `src/MeetingsSDKAdapter/controls/SettingsControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.switch-camera | SDK control | `SwitchCameraControl` | `action(meetingContext, deviceId?): Promise<void>` — cameraId from context or optional 2nd arg; missing ID → warn, return | stable | `src/MeetingsSDKAdapter/controls/SwitchCameraControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.switch-microphone | SDK control | `SwitchMicrophoneControl` | `action(meetingContext, deviceId?): Promise<void>` — microphoneId from context or optional 2nd arg; missing ID → warn, return | stable | `src/MeetingsSDKAdapter/controls/SwitchMicrophoneControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.control.switch-speaker | SDK control | `SwitchSpeakerControl` | `action(meetingContext, deviceId?): Promise<void>` — speakerId from context or optional 2nd arg; missing ID → warn, return | stable | `src/MeetingsSDKAdapter/controls/SwitchSpeakerControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-camera | SDK control | SwitchCameraControl | action(meetingContext, deviceId?): Promise<void>; display(meetingID): Observable | stable | `src/MeetingsSDKAdapter/controls/SwitchCameraControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-microphone | SDK control | SwitchMicrophoneControl | action(meetingContext, deviceId?): Promise<void>; display(meetingID): Observable | stable | `src/MeetingsSDKAdapter/controls/SwitchMicrophoneControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.control.switch-speaker | SDK control | SwitchSpeakerControl | action(meetingContext, deviceId?): Promise<void>; display(meetingID): Observable | stable | `src/MeetingsSDKAdapter/controls/SwitchSpeakerControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.controls-barrel.MeetingControl | barrel export | `MeetingControl` | `export {default as MeetingControl} from './MeetingControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.controls-barrel.JoinControl | barrel export | `JoinControl` | `export {default as JoinControl} from './JoinControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.controls-barrel.AudioControl | barrel export | `AudioControl` | `export {default as AudioControl} from './AudioControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
@@ -168,7 +168,7 @@ Sequence coverage:
 | local sync helpers | Layout, flag clear, supportedControls | local/no-network async via updateMeeting |
 | refreshCaptcha | Captcha refresh | unawaited sdkMeeting.refreshCaptcha; read current requiredCaptcha |
 | meeting controls — standard | Join/Audio/Video/Exit/Roster/Settings/Share | action(meetingContext); display(meetingID) |
-| meeting controls — device switch | switch-camera/microphone/speaker | action(meetingContext, deviceId); display(meetingID) |
+| meeting controls — device switch | switch-camera/microphone/speaker | action(meetingContext, deviceId?); display(meetingID) |
 
 ### connect / disconnect
 

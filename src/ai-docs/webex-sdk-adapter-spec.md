@@ -20,7 +20,7 @@
 | Coverage score | 91% assessed 2026-08-05 — facade connect/disconnect sequence, sub-adapter wiring, single operation group documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run |
+| Validation status | pass-with-warnings, validator `codex-agent`, assessed 2026-08-05 — 0 Blocking, 1 Important; unit tests 19/19 suites and 194/194 tests passed |
 
 ## Evidence Rules
 
@@ -72,13 +72,13 @@ src/
 | webex-sdk-adapter.default | SDK class | `WebexSDKAdapter extends WebexAdapter` | Facade wiring sub-adapters | stable | `src/WebexSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | webex-sdk-adapter.connect | SDK method | `connect(): Promise<void>` | device.register → mercury.connect → meetingsAdapter.connect | stable | `src/WebexSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | webex-sdk-adapter.disconnect | SDK method | `disconnect(): Promise<void>` | meetingsAdapter.disconnect → mercury.disconnect → device.unregister | stable | `src/WebexSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.activitiesAdapter | SDK property | `ActivitiesSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/activities-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.peopleAdapter | SDK property | `PeopleSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/people-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.roomsAdapter | SDK property | `RoomsSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/rooms-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.meetingsAdapter | SDK property | `MeetingsSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/meetings-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.membershipsAdapter | SDK property | `MembershipsSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/memberships-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.organizationsAdapter | SDK property | `OrganizationsSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/organizations-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.metricsAdapter | SDK property | `MetricsSDKAdapter` instance | Domain delegate | stable | `src/ai-docs/metrics-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.activitiesAdapter | SDK property | ActivitiesSDKAdapter instance | Domain delegate | stable | `src/ai-docs/activities-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.peopleAdapter | SDK property | PeopleSDKAdapter instance | Domain delegate | stable | `src/ai-docs/people-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.roomsAdapter | SDK property | RoomsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/rooms-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.meetingsAdapter | SDK property | MeetingsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/meetings-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.membershipsAdapter | SDK property | MembershipsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/memberships-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.organizationsAdapter | SDK property | OrganizationsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/organizations-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.metricsAdapter | SDK property | MetricsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/metrics-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | webex-sdk-adapter.cache | SDK property | shared cache singleton | Cross-adapter activity/conversation cache | stable | `src/ai-docs/shared-utilities-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 This facade exposes **one connect/disconnect operation group** for lifecycle; domain methods live on sub-adapters. A single sequence diagram covers connect and disconnect.
