@@ -551,10 +551,15 @@
   "validation": {
     "generator_runtime": "cursor-agent",
     "generator_runtime_source": "host-metadata",
+    "validator_runtime": "codex-agent",
+    "validator_runtime_source": "human-provided",
     "minimum_independence": "different-runtime",
+    "runtime_fallback_tier": "different-runtime",
     "blocking_severities": [
       "Blocking"
-    ]
+    ],
+    "source_commit": "5926e8ee9a2532ea9b6c99ba53ba819cf8f28de2",
+    "head_ref": "SDLC_SKILLS_FOR_SDK_COMPONENT_ADAPTER"
   },
   "layout": {
     "sdd_root": ".sdd",
