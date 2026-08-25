@@ -54,8 +54,24 @@ npx npm-install-peers
 - **Cypress failures:** Ensure `.env` has valid Webex test credentials; run `npx cypress install`.
 - **Build externals:** Peers `webex` and `rxjs` must resolve in host app — not bundled in dist.
 
+## SDD bootstrap evidence (local)
+
+SDD Stage 0 gate reports live under `.generated/sdd/` and are **gitignored**. Reviewers can reproduce them after installing SDD bootstrap skills locally (`.cursor/`, `.agents/`, or `.claude/` — not committed to this repo).
+
+Committed summary: [`SDD_BOOTSTRAP_EVIDENCE.md`](SDD_BOOTSTRAP_EVIDENCE.md).
+
+| Step | Skill / action | Expected output |
+|---|---|---|
+| 1 | `brownfield-questionnaire` (rigorous mode) | `.generated/sdd/bootstrap-questionnaire.md` — all CRITICAL fields verified, nine-module map confirmed |
+| 2 | `generated-doc-conformance` on bootstrap doc set | `.generated/sdd/conformance/bootstrap-*-cursor.md` — **0 Blocking** findings |
+| 3 | `coverage-review` | `.generated/sdd/coverage/bootstrap-*-cursor.md` — ≥90% aggregate field score recorded |
+| 4 | `spec-validator` from a runtime **different** from `cursor-agent` | `.generated/sdd/validation/*-codex-*/validation-report.md` — 0 Blocking at HEAD SHA |
+
+Prerequisites: read `.sdd/manifest.json`, `AGENTS.md`, `ai-docs/`, and `src/ai-docs/` before judging. Run `npm run test:unit -- --runInBand` as part of validation.
+
 ## Where to Go Next
 
 - Agent entry: [`AGENTS.md`](../AGENTS.md) · System shape: [`ARCHITECTURE.md`](ARCHITECTURE.md) · Routing: [`SPEC_INDEX.md`](SPEC_INDEX.md)
 - Public contracts: [`CONTRACTS.md`](CONTRACTS.md) · Conventions: [`patterns/`](patterns/) and [`RULES.md`](RULES.md)
 - Module behavior: `src/ai-docs/<module>-spec.md` per [`SPEC_INDEX.md`](SPEC_INDEX.md)
+- Bootstrap evidence summary: [`SDD_BOOTSTRAP_EVIDENCE.md`](SDD_BOOTSTRAP_EVIDENCE.md)

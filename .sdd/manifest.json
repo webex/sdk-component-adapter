@@ -186,16 +186,9 @@
           "meetings-adapter.control.switch-camera",
           "meetings-adapter.control.switch-microphone",
           "meetings-adapter.control.switch-speaker",
-          "meetings-adapter.controls-barrel.MeetingControl",
-          "meetings-adapter.controls-barrel.JoinControl",
-          "meetings-adapter.controls-barrel.AudioControl",
-          "meetings-adapter.controls-barrel.VideoControl",
-          "meetings-adapter.controls-barrel.ExitControl",
-          "meetings-adapter.controls-barrel.RosterControl",
-          "meetings-adapter.controls-barrel.SettingsControl",
-          "meetings-adapter.controls-barrel.SwitchCameraControl",
-          "meetings-adapter.controls-barrel.SwitchMicrophoneControl",
-          "meetings-adapter.controls-barrel.SwitchSpeakerControl"
+          "meetings-adapter.changeLayout",
+          "meetings-adapter.ignoreVideoAccessPrompt",
+          "meetings-adapter.ignoreAudioAccessPrompt"
         ],
         "requires": [
           "webex.meetings plugin",

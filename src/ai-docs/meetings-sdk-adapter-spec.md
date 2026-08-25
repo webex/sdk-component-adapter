@@ -20,7 +20,7 @@
 | Coverage score | 92% assessed 2026-08-05 — create/get/join/leave, controls, media lifecycle, disconnect semantics, and inherited surfaces documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | pass-with-warnings, validator `codex-agent`, assessed 2026-08-05 — 0 Blocking, 1 Important; unit tests 19/19 suites and 194/194 tests passed |
+| Validation status | Pass, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed |
 
 ## Evidence Rules
 
@@ -62,7 +62,12 @@ src/
 |---|---|
 | `src/MeetingsSDKAdapter.js` | Meeting CRUD, media, controls map, connect/disconnect |
 | `src/MeetingsSDKAdapter/controls/*.js` | Control action/display implementations |
+| `src/MeetingsSDKAdapter/controls/index.js` | Internal barrel re-export for adapter wiring only — **not** npm package surface |
 | `src/MeetingsSDKAdapter.test.js` | Unit tests for meeting flows |
+
+## Internal implementation (not npm Public Surface)
+
+`src/MeetingsSDKAdapter/controls/index.js` re-exports control class constructors for adapter-internal wiring. The published bundle (`src/index.js` → default `WebexSDKAdapter` only) does **not** export these constructors. Hosts consume meeting controls via the runtime `meetingControls` record and `supportedControls()` keys documented below.
 
 ## Public Surface
 
@@ -77,6 +82,9 @@ src/
 | meetings-adapter.leaveMeeting | SDK method | `leaveMeeting(ID: string): Promise<void>` | removeMedia then sdkMeeting.leave | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.incomingMeeting | SDK inherited | `incomingMeeting(destination: string): Observable<Meeting>` | **Not overridden** — base class unsupported-operation error | stable; inherited from interface | `@webex/component-adapter-interfaces` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.getLayoutTypes | SDK method | `getLayoutTypes(): string[]` | Layout enum keys (Overlay, Grid, …) | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.changeLayout | SDK method | `changeLayout(ID: string, layoutType: string): Promise<void>` | Apply video layout via SDK `changeVideoLayout` | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.ignoreVideoAccessPrompt | SDK method | `ignoreVideoAccessPrompt(ID: string): void` | Proceed without camera when SDK exposes ignore hook | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| meetings-adapter.ignoreAudioAccessPrompt | SDK method | `ignoreAudioAccessPrompt(ID: string): void` | Proceed without microphone when SDK exposes ignore hook | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.clearPasswordRequiredFlag | SDK method | `clearPasswordRequiredFlag(ID: string): Promise<void>` | Reset `passwordRequired` UI flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.clearInvalidPasswordFlag | SDK method | `clearInvalidPasswordFlag(ID: string): Promise<void>` | Reset `invalidPassword` flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.clearInvalidHostKeyFlag | SDK method | `clearInvalidHostKeyFlag(ID: string): Promise<void>` | Reset `invalidHostKey` flag | stable | `src/MeetingsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
@@ -93,16 +101,6 @@ src/
 | meetings-adapter.control.switch-camera | SDK control | SwitchCameraControl | action(meetingContext, deviceId?): Promise<void>; display(meetingID): Observable | stable | `src/MeetingsSDKAdapter/controls/SwitchCameraControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.switch-microphone | SDK control | SwitchMicrophoneControl | action(meetingContext, deviceId?): Promise<void>; display(meetingID): Observable | stable | `src/MeetingsSDKAdapter/controls/SwitchMicrophoneControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | meetings-adapter.control.switch-speaker | SDK control | SwitchSpeakerControl | action(meetingContext, deviceId?): Promise<void>; display(meetingID): Observable | stable | `src/MeetingsSDKAdapter/controls/SwitchSpeakerControl.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.MeetingControl | barrel export | `MeetingControl` | `export {default as MeetingControl} from './MeetingControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.JoinControl | barrel export | `JoinControl` | `export {default as JoinControl} from './JoinControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.AudioControl | barrel export | `AudioControl` | `export {default as AudioControl} from './AudioControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.VideoControl | barrel export | `VideoControl` | `export {default as VideoControl} from './VideoControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.ExitControl | barrel export | `ExitControl` | `export {default as ExitControl} from './ExitControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.RosterControl | barrel export | `RosterControl` | `export {default as RosterControl} from './RosterControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SettingsControl | barrel export | `SettingsControl` | `export {default as SettingsControl} from './SettingsControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SwitchCameraControl | barrel export | `SwitchCameraControl` | `export {default as SwitchCameraControl} from './SwitchCameraControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SwitchMicrophoneControl | barrel export | `SwitchMicrophoneControl` | `export {default as SwitchMicrophoneControl} from './SwitchMicrophoneControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| meetings-adapter.controls-barrel.SwitchSpeakerControl | barrel export | `SwitchSpeakerControl` | `export {default as SwitchSpeakerControl} from './SwitchSpeakerControl'` | stable | `src/MeetingsSDKAdapter/controls/index.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 Note: `ShareControl` is wired on the adapter at runtime (`share-screen` key) but is **not** exported from the controls barrel (`src/MeetingsSDKAdapter/controls/index.js`).
 
@@ -134,6 +132,9 @@ Compatibility notes:
 | MTG-R-007 | `getMeeting` stream completes after `MeetingState.LEFT` via `takeWhile` | Stop emitting after terminal leave state | `src/MeetingsSDKAdapter.js` | none found | none | PRESENT |
 | MTG-R-008 | `incomingMeeting` not overridden — inherited unsupported error from base adapter | Callers must not rely on incoming meeting flow in this repo | `src/MeetingsSDKAdapter.js` | none found | Exact base error message not asserted locally | WEAK |
 | MTG-R-009 | `supportedControls()` returns keys matching `meetingControls` map | UI discovers controls by exact runtime strings | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | none | PRESENT |
+| MTG-R-010 | `changeLayout(ID, layoutType)` maps layout key through `LAYOUT_TYPES_MAP` and awaits `sdkMeeting.changeVideoLayout` | Host-driven video layout switching | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | Invalid layoutType behavior depends on SDK map | PRESENT |
+| MTG-R-011 | `ignoreVideoAccessPrompt(ID)` calls `meeting.localVideo.ignoreMediaAccessPrompt()` when defined; otherwise logs error | Allow join without camera permission prompt | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | No-op path when hook missing logs error only | PRESENT |
+| MTG-R-012 | `ignoreAudioAccessPrompt(ID)` calls `meeting.localAudio.ignoreMediaAccessPrompt()` when defined; otherwise logs error | Allow join without microphone permission prompt | `src/MeetingsSDKAdapter.js` | `src/MeetingsSDKAdapter.test.js` | No-op path when hook missing logs error only | PRESENT |
 
 ## Design Overview
 
@@ -166,6 +167,8 @@ Sequence coverage:
 | joinMeeting | Join with optional password flow | alt: missing password → early return; invalid verifyPassword → flags then join still attempted |
 | leaveMeeting | Leave + media cleanup | alt: leave SDK error logged, not rethrown |
 | local sync helpers | Layout, flag clear, supportedControls | local/no-network async via updateMeeting |
+| changeLayout | Video layout switch | maps layoutType via LAYOUT_TYPES_MAP |
+| ignore media prompts | ignoreVideoAccessPrompt / ignoreAudioAccessPrompt | alt: hook missing → error log only |
 | refreshCaptcha | Captcha refresh | unawaited sdkMeeting.refreshCaptcha; read current requiredCaptcha |
 | meeting controls — standard | Join/Audio/Video/Exit/Roster/Settings/Share | action(meetingContext); display(meetingID) |
 | meeting controls — device switch | switch-camera/microphone/speaker | action(meetingContext, deviceId?); display(meetingID) |
@@ -410,6 +413,8 @@ Meeting `state` is assigned from `sdkMeeting.joinedWith.state` on `members:updat
 | `leaveMeeting` SDK error | Logged only | Assume leave may be incomplete; check meeting state |
 | `incomingMeeting` on this adapter | Base class unsupported-operation error | Use supported create/join flow instead |
 | `updateMeeting` missing meeting | Thrown `Error: Could not find meeting` | Guard calls with known ID |
+| `changeLayout` SDK failure | Promise rejection from `changeVideoLayout` | Verify layoutType via `getLayoutTypes()` |
+| `ignoreVideoAccessPrompt` / `ignoreAudioAccessPrompt` when hook missing | Error logged; no throw | Host should only call when permission prompt active |
 
 ## Pitfalls
 
@@ -441,6 +446,7 @@ In-memory meeting state (`this.meetings`) enables rich adapter-side media and UI
 | MTG-R-003, MTG-R-004 | leave/getMeeting tests | disconnect does not clear maps — untested |
 | MTG-R-005, MTG-R-006 | join password flows | Multi-subscriber getMeeting |
 | MTG-R-009 | supportedControls keys | Incoming meeting inherited error |
+| MTG-R-010, MTG-R-011, MTG-R-012 | changeLayout, ignoreVideo/AudioAccessPrompt tests | Invalid layoutType edge |
 
 ## Traceability
 

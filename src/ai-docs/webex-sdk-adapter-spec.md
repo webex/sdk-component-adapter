@@ -20,7 +20,7 @@
 | Coverage score | 91% assessed 2026-08-05 — facade connect/disconnect sequence, sub-adapter wiring, single operation group documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | pass-with-warnings, validator `codex-agent`, assessed 2026-08-05 — 0 Blocking, 1 Important; unit tests 19/19 suites and 194/194 tests passed |
+| Validation status | Pass, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed |
 
 ## Evidence Rules
 

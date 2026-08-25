@@ -54,4 +54,4 @@
 | Getting started | `ai-docs/GETTING_STARTED.md` | Build/test loop |
 | Review catalog | `ai-docs/REVIEW_CHECKLIST.md` | Review checks |
 
-Validation status: **not-run** (Session B spec-validator required).
+Validation status: **Pass**, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed.

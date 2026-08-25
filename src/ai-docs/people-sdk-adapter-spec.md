@@ -20,7 +20,7 @@
 | Coverage score | 91% assessed 2026-08-05 — getMe/getPerson/searchPeople, presence wiring, error propagation, and per-operation sequences documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run |
+| Validation status | Pass, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed |
 
 ## Evidence Rules
 
@@ -93,7 +93,7 @@ Compatibility notes:
 | PPL-R-001 | `getPerson` multicasts via `publishReplay(1)` + `refCount()` per person ID | Share one hot pipeline; replay last person snapshot to late subscribers | `src/PeopleSDKAdapter.js` | none found | publishReplay semantics not directly asserted | PRESENT |
 | PPL-R-002 | Initial presence for `getPerson` uses `internal.presence.subscribe(personUUID)` | SDK internal Apheleia API for subscription-based presence | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | Subscribe API shape not mocked explicitly | PRESENT |
 | PPL-R-003 | Live presence updates listen to Mercury `event:apheleia.subscription_update` filtered by person UUID | Push updates without polling people API | `src/PeopleSDKAdapter.js` | none found | Mercury event path untested in unit tests | PRESENT |
-| PPL-R-004 | `getMe` uses `internal.presence.get([person.id])` for status | One-shot status fetch for current user | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
+| PPL-R-004 | `getMe` calls `internal.presence.get([person.id])` but `fetchPerson` returns `{ ID, … }` (no lowercase `id`) — effective argument is `[undefined]` | Implementation/spec mismatch; status path depends on catch/null fallback | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | Unit mock ignores presence.get argument | PRESENT |
 | PPL-R-005 | Presence subscribe/get failures yield `status: null` without failing the person observable on initial enrichment | Profile still usable when presence disabled | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
 | PPL-R-006 | `people.get` failure in `getMe`/`getPerson` propagates as observable error | Caller must handle unknown or inaccessible person | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
 | PPL-R-007 | `people.list` failure in `searchPeople` propagates via `catchError` rethrow | Search errors must not silently return empty | `src/PeopleSDKAdapter.js` | `src/PeopleSDKAdapter.test.js` | none | PRESENT |
@@ -115,7 +115,7 @@ flowchart TD
   fetch2 --> mercury["Mercury apheleia updates"]
   mercury --> pr["publishReplay(1) + refCount"]
   getMe["getMe()"] --> meFetch["fetchPerson('me')"]
-  meFetch --> presGet["internal.presence.get"]
+  meFetch --> presGet["presence.get([undefined]) — person.id missing"]
   search["searchPeople"] --> list["people.list"]
 ```
 
@@ -125,7 +125,7 @@ Sequence coverage:
 
 | Operation group | Diagram | Failure / recovery coverage |
 |---|---|---|
-| getMe | getMe — one-shot profile | alt: `people.get` error → propagate; presence.get error → null status |
+| getMe | getMe — one-shot profile | alt: people.get error; presence.get with undefined ID → catch → null status |
 | getPerson | getPerson — subscribe + Mercury | alt: `people.get` error → propagate; presence subscribe error → null status |
 | searchPeople | searchPeople — directory list | alt: `people.list` error → rethrow |
 
@@ -144,9 +144,10 @@ sequenceDiagram
     People-->>Adapter: error
     Adapter-->>Caller: observable error
   else success
-    People-->>Adapter: profile
-    Adapter->>Presence: get([person.id])
-    alt presence.get fails
+    People-->>Adapter: profile with ID field
+    Note over Adapter: code reads person.id (undefined); calls presence.get([undefined])
+    Adapter->>Presence: get([undefined])
+    alt presence.get fails or returns empty
       Presence-->>Adapter: error (caught)
       Adapter-->>Caller: Person, status null
     else success
@@ -244,6 +245,7 @@ classDiagram
 | `people.get` fails in `getMe` or `getPerson` | Observable error from underlying SDK rejection | Handle in subscriber `error` callback; do not assume person exists |
 | `people.list` fails in `searchPeople` | Observable error (logged then rethrown) | Surface search failure to user; retry or adjust query |
 | `internal.presence.get` fails in `getMe` | Emits Person with `status: null` | Treat as presence unavailable; profile still valid |
+| `getMe` passes undefined to `presence.get` | Effective `[undefined]` because `fetchPerson` sets `ID` not `id` | Do not assume valid presence lookup; status may be null even when presence works for other paths |
 | `internal.presence.subscribe` fails in `getPerson` initial path | Emits Person with `status: null` then continues Mercury path if connected | Same as above; live updates may still arrive via Mercury |
 | `presence.unsubscribe` fails on finalize | Warn logged; cache entry still deleted | No caller action; may leave orphan Apheleia subscription if presence disabled |
 
@@ -255,6 +257,7 @@ Host application is `@webex/components`. Pass an **authenticated** Webex JS SDK 
 
 - **Mercury must be connected** (facade `connect()`) for live `getPerson` status updates after initial emission.
 - **`getPerson` performs two `people.get` calls** on a normal subscription — duplicate fetch is current behavior, not a single-shot cache.
+- **`getMe` uses `person.id` but adapter Person uses `ID`** — presence lookup receives `undefined` unless SDK/mock masks it; likely bug vs intended `person.ID`.
 - **`getMe` uses `presence.get`, not subscribe** — status will not live-update for current user via this method.
 - **Presence unsubscribe failures are swallowed** when user has presence disabled — cache entry still deleted on finalize.
 
@@ -262,7 +265,7 @@ Host application is `@webex/components`. Pass an **authenticated** Webex JS SDK 
 
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| PPL-R-004, PPL-R-005 | `src/PeopleSDKAdapter.test.js` getMe — positive emit; negative presence error → null status | Mercury live update path |
+| PPL-R-004, PPL-R-005 | `src/PeopleSDKAdapter.test.js` getMe — positive emit; negative presence error → null status | Assert actual argument to presence.get (should be person ID, not undefined) |
 | PPL-R-006 | `src/PeopleSDKAdapter.test.js` getPerson — negative people plug-in error | none |
 | PPL-R-007 | `src/PeopleSDKAdapter.test.js` searchPeople — negative SDK failure | none |
 | PPL-R-008 | `src/PeopleSDKAdapter.test.js` — stops listening on unsubscribe | Negative unsubscribe failure |

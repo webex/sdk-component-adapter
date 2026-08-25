@@ -20,7 +20,7 @@
 | Coverage score | 91% assessed 2026-08-05 — room/meeting rosters, addRoomMember, inherited removeRoomMember, refCount sharp edge documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.1` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run |
+| Validation status | Pass, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed |
 
 ## Evidence Rules
 
@@ -67,8 +67,13 @@ src/
 |---|---|---|---|---|---|---|
 | memberships-adapter.class | SDK class | `MembershipsSDKAdapter extends MembershipsAdapter` | Domain adapter entry | stable | `src/MembershipsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | memberships-adapter.getMembersFromDestination | SDK method | `getMembersFromDestination(destinationID: string, destinationType: DestinationType): Observable<Member[]>` | Room or meeting roster stream | stable | `src/MembershipsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| memberships-adapter.addRoomMember | SDK method | `addRoomMember(personID: string, roomID: string): Observable<Member>` | Create membership | stable | `src/MembershipsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| memberships-adapter.removeRoomMember | SDK inherited | `removeRoomMember(personID: string, roomID: string): Observable<Member>` | **Not overridden** — base class unsupported-operation error | stable; inherited from interface | `@webex/component-adapter-interfaces` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| memberships-adapter.addRoomMember | SDK method | `addRoomMember(personID: string, roomID: string): Observable<Membership>` | Create room membership; emits `fromSDKMembership` record (roomID, personID, personOrgID, …) | stable | `src/MembershipsSDKAdapter.js` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| memberships-adapter.removeRoomMember | SDK inherited | `removeRoomMember(personID: string, roomID: string): Observable<Membership>` (interface) | **Not overridden** — base class unsupported-operation error (no observable emission) | stable; inherited from interface | `@webex/component-adapter-interfaces` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+
+Compatibility notes:
+
+- **`Member`** (roster entries from `getMembersFromDestination`) differs from **`Membership`** (room membership record from `addRoomMember` / `fromSDKMembership`).
+- Roster `Member` shape: person display fields for UI lists. Membership record: `ID`, `roomID`, `personID`, `personOrgID`, moderator/monitor flags, etc.
 
 ## Requires (dependencies)
 
@@ -86,7 +91,7 @@ src/
 | MEM-R-001 | ROOM path lists memberships with max 1000 and sorts current user first | Predictable roster ordering for UI | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` | none | PRESENT |
 | MEM-R-002 | MEETING path uses BehaviorSubject + `members:update` with `payload.full` | Replay last roster to new subscribers | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` meeting roster + missing meeting error | members:update live path untested | PRESENT |
 | MEM-R-003 | Unknown `destinationType` returns throwError | Explicit unsupported destination guard | `src/MembershipsSDKAdapter.js` | none found | none | PRESENT |
-| MEM-R-004 | `addRoomMember` maps SDK membership via `fromSDKMembership`; errors rethrown | Caller sees create failures | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` addRoomMember success and rejected create | none | PRESENT |
+| MEM-R-004 | `addRoomMember` maps SDK membership via `fromSDKMembership` into a **Membership** record (not roster **Member**); errors rethrown | Caller receives created membership fields (roomID, personID, personOrgID, …) | `src/MembershipsSDKAdapter.js` | `src/MembershipsSDKAdapter.test.js` addRoomMember success and rejected create | none | PRESENT |
 | MEM-R-005 | `removeRoomMember` not overridden — base unsupported error | Document effective callable surface | `src/MembershipsSDKAdapter.js` | none found | Exact base error message not asserted | WEAK |
 | MEM-R-006 | Room path `finalize` runs per subscription after refCount — first unsubscribe may call stopListening while others remain | **Sharp edge:** not last-subscriber guarantee | `src/MembershipsSDKAdapter.js` | none found | Two-subscriber negative test missing | PRESENT |
 
