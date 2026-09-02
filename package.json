@@ -12,6 +12,7 @@
     "start": "nodemon -r dotenv/config scripts/start.js",
     "serve": "parcel scripts/index.html",
     "jest": "jest",
+    "test": "jest",
     "cypress": "cypress open",
     "test:integration": "cypress run --browser chrome",
     "test:integration:ci": "npm run test:integration -- --reporter junit --reporter-options \"mochaFile=test_results/cypress/results-[hash].xml,toConsole=true\"",

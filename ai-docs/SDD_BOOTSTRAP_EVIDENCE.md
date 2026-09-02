@@ -24,6 +24,7 @@ Nine modules: facade (`src/`), meetings, activities, people, rooms, memberships,
 |---|---|---|
 | Brownfield questionnaire | Pass | All CRITICAL repo/module fields answered with code evidence |
 | Generated-doc-conformance | Pass, 0 Blocking | 0.2.2 headers, Description, Parent spec, TEST_INDEX routed |
+| Manifest schema | Pass | Validates against repo-pinned [`.sdd/config/sdd-manifest.schema.json`](../.sdd/config/sdd-manifest.schema.json) (0.2.2 extensions: `test_index_path`, `template_library_*`, `has_submodules`) |
 | Coverage review | Pass ≥90% threshold | Field coverage maintained post-0.2.2 upgrade; modules remain Partial |
 | Spec-validator (Axis A + B) | **not-run** | Pending codex-agent Session B at committed HEAD; cursor preflight 2026-09-02: 0 content Blocking |
 | Unit tests | Pass | 19/19 suites, 194/194 tests |
@@ -37,6 +38,14 @@ Nine modules: facade (`src/`), meetings, activities, people, rooms, memberships,
 | RULES logging accuracy | Documented brownfield debug/warn leakage of activity/person/card payloads |
 | Template 0.2.2 upgrade | TEST_INDEX, Parent spec metadata, Description headers, `.sdd/templates/` reseed |
 | Membership diagram type | `addRoomMember` result label → Membership via fromSDKMembership |
+
+## Codex blocker remediation (2026-09-02)
+
+| Blocker | Fix |
+|---|---|
+| BLK-01 manifest schema | Committed `.sdd/config/sdd-manifest.schema.json` (0.2.2 extensions); manifest retains `test_index_path` and template library pin |
+| BLK-02 npm test | Added `"test": "jest"` alias in `package.json` (equivalent to `test:unit`) |
+| IMP-01 has_submodules | `has_submodules: false` on all nine module `section_profile` entries |
 
 ## Reproducing locally
 

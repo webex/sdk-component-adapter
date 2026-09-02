@@ -144,7 +144,8 @@
         "embedded_in_host": true,
         "holds_client_state": false,
         "resolved_by": "cursor-agent (bootstrap questionnaire)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -215,7 +216,8 @@
         "embedded_in_host": true,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -246,7 +248,8 @@
         "embedded_in_host": true,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -288,7 +291,8 @@
         "embedded_in_host": true,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -327,7 +331,8 @@
         "embedded_in_host": true,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -368,7 +373,8 @@
         "embedded_in_host": true,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -407,7 +413,8 @@
         "embedded_in_host": true,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire repair4)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -444,7 +451,8 @@
         "embedded_in_host": true,
         "holds_client_state": false,
         "resolved_by": "cursor-agent (bootstrap questionnaire)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
@@ -481,7 +489,8 @@
         "embedded_in_host": false,
         "holds_client_state": true,
         "resolved_by": "cursor-agent (bootstrap questionnaire)",
-        "resolved_at": "2026-08-05T00:00:00Z"
+        "resolved_at": "2026-08-05T00:00:00Z",
+        "has_submodules": false
       },
       "source_policy": {
         "mode": "keep-separate",
