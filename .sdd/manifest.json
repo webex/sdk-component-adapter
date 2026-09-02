@@ -551,7 +551,7 @@
     "blocking_severities": [
       "Blocking"
     ],
-    "source_commit": "90f540ec03fda1c891685965fc113e75e1dd2d4e",
+    "source_commit": "f7dd31902338176312789af0cfdb2e9d4fc86daa",
     "head_ref": "SDLC_SKILLS_FOR_SDK_COMPONENT_ADAPTER"
   },
   "layout": {

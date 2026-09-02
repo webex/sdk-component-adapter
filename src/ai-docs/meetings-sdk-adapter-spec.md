@@ -22,7 +22,7 @@
 | Coverage score | 92% assessed 2026-08-05 — create/get/join/leave, controls, media lifecycle, disconnect semantics, and inherited surfaces documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.2` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run — pending codex-agent Session B at 90f540e (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed) |
+| Validation status | not-run — pending codex-agent Session B at f7dd319 (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed) |
 
 ## Evidence Rules
 
