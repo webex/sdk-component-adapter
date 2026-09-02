@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Review-Check Catalog
   Template-ID:  review-checklist
+  Description:  Pre-merge review gates for humans and validators.
   Generates:    ai-docs/REVIEW_CHECKLIST.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 

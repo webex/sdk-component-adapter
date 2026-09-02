@@ -560,6 +560,7 @@
     "agent_entry_path": "AGENTS.md",
     "standing_docs_root": "ai-docs",
     "spec_index_path": "ai-docs/SPEC_INDEX.md",
+    "test_index_path": "ai-docs/TEST_INDEX.md",
     "module_docs_strategy": "source-local",
     "module_docs_folder_name": "ai-docs",
     "template_roots": {
@@ -579,7 +580,9 @@
       "installed_at": "2026-08-05T00:00:00Z",
       "plugins": [
         "sdd-bootstrap@0.4.3"
-      ]
+      ],
+      "template_library_version": "0.2.2",
+      "template_library_ref": "0aa65d93f019e5313ec2ddfac9b0c7352a2882cc"
     }
   },
   "coverage_ratchet": {

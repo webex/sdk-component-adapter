@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Module Spec
   Template-ID:  module-spec
+  Description:  Per-module canonical spec — orientation plus requirements, design, invariants, flows, pitfalls, and tests.
   Generates:    src/ai-docs/memberships-sdk-adapter-spec.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -16,11 +17,12 @@
 |---|---|
 | Module id | memberships-sdk-adapter |
 | Source path(s) | `src/MembershipsSDKAdapter.js` |
+| Parent spec | `src/ai-docs/webex-sdk-adapter-spec.md` |
 | Doc kind | Module spec |
 | Coverage score | 91% assessed 2026-08-05 — room/meeting rosters, addRoomMember, inherited removeRoomMember, refCount sharp edge documented |
-| Generated from | `module-spec` @ SDLC template library `0.2.1` |
+| Generated from | `module-spec` @ SDLC template library `0.2.2` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | Pass, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed |
+| Validation status | not-run — pending codex-agent Session B at committed HEAD (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed) |
 
 ## Evidence Rules
 
@@ -205,7 +207,7 @@ sequenceDiagram
     Adapter-->>Caller: observable error
   else success
     Mem-->>Adapter: membership
-    Adapter-->>Caller: Member via fromSDKMembership
+    Adapter-->>Caller: Membership via fromSDKMembership
   end
 ```
 

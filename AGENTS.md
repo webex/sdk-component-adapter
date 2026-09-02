@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     AGENTS.md
   Template-ID:  agents
+  Description:  Agent entry contract — first file every AI agent reads (commands, rules, boundaries, routing).
   Generates:    AGENTS.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -112,6 +113,7 @@ src/
 | Public npm contracts | `ai-docs/CONTRACTS.md` |
 | Module behavior | `src/ai-docs/<module>-spec.md` |
 | Conventions | `ai-docs/patterns/` |
+| Tests | `ai-docs/TEST_INDEX.md` |
 | Review gates | `ai-docs/REVIEW_CHECKLIST.md` |
 
 Machine contract: `.sdd/manifest.json`

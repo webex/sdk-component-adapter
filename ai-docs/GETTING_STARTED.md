@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Getting Started
   Template-ID:  getting-started
+  Description:  Developer and agent onboarding — install, build, test, and SDD gate rerun.
   Generates:    ai-docs/GETTING_STARTED.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 

@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Pattern
   Template-ID:  pattern-rxjs-entity-cache
+  Description:  RxJS per-entity observable cache pattern used by domain adapters.
   Generates:    ai-docs/patterns/rxjs-entity-observable-cache.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 

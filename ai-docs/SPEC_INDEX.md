@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Spec Index
   Template-ID:  spec-index
+  Description:  Router — which docs to load for which task and the canonical module registry.
   Generates:    ai-docs/SPEC_INDEX.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -33,6 +34,7 @@
 | Meetings/media/controls | `src/ai-docs/meetings-sdk-adapter-spec.md` |
 | Rooms or activities | `src/ai-docs/rooms-sdk-adapter-spec.md`, `src/ai-docs/activities-sdk-adapter-spec.md` |
 | npm/peer contract change | `CONTRACTS.md` + affected module spec |
+| Running or changing tests | `TEST_INDEX.md` + affected module spec |
 | Updating docs after code change | affected `src/ai-docs/*-spec.md` + `SPEC_INDEX.md` |
 
 ## Incident History
@@ -51,7 +53,8 @@
 | Data model | `ai-docs/DATA_MODEL.md` | In-memory entities and caches |
 | Security | `ai-docs/SECURITY.md` | Trust boundaries |
 | Contracts | `ai-docs/CONTRACTS.md` | npm public surface index |
+| Test index | `ai-docs/TEST_INDEX.md` | Repo-wide test tiers and routing |
 | Getting started | `ai-docs/GETTING_STARTED.md` | Build/test loop |
 | Review catalog | `ai-docs/REVIEW_CHECKLIST.md` | Review checks |
 
-Validation status: **Pass**, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed.
+Validation status: **not-run** — pending codex-agent Session B at committed HEAD (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed).

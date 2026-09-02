@@ -6,26 +6,37 @@
 
 | Field | Value |
 |---|---|
-| Run date | 2026-08-05 |
+| Run date | 2026-08-05 (0.2.2 upgrade + bhabalan review fixes: 2026-09-02) |
 | Mode | SDD Stage 0 rigorous, keep-separate policy |
+| Template library | **0.2.2** (`0aa65d9`) |
 | Generator runtime | cursor-agent |
-| Validator runtime | codex-agent (Session B, different-runtime) |
-| Validated source commit | `5926e8ee9a2532ea9b6c99ba53ba819cf8f28de2` |
+| Validator runtime | codex-agent (Session B, different-runtime) — **pending at committed HEAD** |
+| Last validated source commit | `5926e8ee9a2532ea9b6c99ba53ba819cf8f28de2` (superseded by doc changes; Session B required) |
 | Branch | `SDLC_SKILLS_FOR_SDK_COMPONENT_ADAPTER` |
 
 ## Module map (human-confirmed)
 
-Nine modules: facade (`src/`), meetings, activities, people, rooms, memberships, organizations, metrics, shared utilities. Canonical specs under `src/ai-docs/`; standing docs under `ai-docs/`.
+Nine modules: facade (`src/`), meetings, activities, people, rooms, memberships, organizations, metrics, shared utilities. Canonical specs under `src/ai-docs/`; standing docs under `ai-docs/`. Repo-wide test router: [TEST_INDEX.md](TEST_INDEX.md).
 
 ## Gate outcomes
 
 | Gate | Verdict | Notes |
 |---|---|---|
 | Brownfield questionnaire | Pass | All CRITICAL repo/module fields answered with code evidence |
-| Generated-doc-conformance | Pass, 0 Blocking | All generated standing docs and nine module specs |
-| Coverage review | Pass ≥90% threshold | 91.1% average field score; drift ~6%; modules remain Partial |
-| Spec-validator (Axis A + B) | Pass | 0 Blocking, 0 Important, 0 Medium, 0 Minor at `5926e8e` |
+| Generated-doc-conformance | Pass, 0 Blocking | 0.2.2 headers, Description, Parent spec, TEST_INDEX routed |
+| Coverage review | Pass ≥90% threshold | Field coverage maintained post-0.2.2 upgrade; modules remain Partial |
+| Spec-validator (Axis A + B) | **not-run** | Pending codex-agent Session B at committed HEAD; cursor preflight 2026-09-02: 0 content Blocking |
 | Unit tests | Pass | 19/19 suites, 194/194 tests |
+
+## bhabalan PR #354 doc fixes (2026-09-02)
+
+| Thread | Fix |
+|---|---|
+| Stale validation SHA | Removed Pass@5926e8e claims; reset to not-run pending Session B |
+| Meetings sequence diagrams | Added `changeLayout` and ignore-media-prompt mermaid diagrams with failure paths |
+| RULES logging accuracy | Documented brownfield debug/warn leakage of activity/person/card payloads |
+| Template 0.2.2 upgrade | TEST_INDEX, Parent spec metadata, Description headers, `.sdd/templates/` reseed |
+| Membership diagram type | `addRoomMember` result label → Membership via fromSDKMembership |
 
 ## Reproducing locally
 
@@ -40,4 +51,4 @@ After rerun, inspect:
 
 ## Contract inventory
 
-Public Surface contract IDs are indexed in [CONTRACTS.md](CONTRACTS.md) and `.sdd/manifest.json` `contracts.provides` per module. Count must match module Public Surface tables exactly.
+Public Surface contract IDs are indexed in [CONTRACTS.md](CONTRACTS.md) and `.sdd/manifest.json` `contracts.provides` per module. Count must match module Public Surface tables exactly (**87** IDs).

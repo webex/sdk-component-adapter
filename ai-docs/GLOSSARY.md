@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Glossary
   Template-ID:  glossary
+  Description:  Domain terms and abbreviations used across specs.
   Generates:    ai-docs/GLOSSARY.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 

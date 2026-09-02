@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Data Model
   Template-ID:  data-model
+  Description:  In-memory and adapter-shaped entities referenced across modules.
   Generates:    ai-docs/DATA_MODEL.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 

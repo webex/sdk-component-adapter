@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     RULES
   Template-ID:  rules
+  Description:  Enforceable coding and documentation conventions for this repo.
   Generates:    ai-docs/RULES.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -30,7 +31,9 @@
 ## Logging
 
 - Use `src/logger.js` — do not `console.log` in library code.
-- Never log credentials, tokens, or full adaptive card payloads with PII.
+- **Must not log:** credentials, tokens, or refresh tokens.
+- **Current brownfield behavior (accepted gap):** debug/error paths may log full activity or person objects and malformed adaptive-card payloads at `warn`/`debug`/`error` (see `src/ActivitiesSDKAdapter.js`, `src/PeopleSDKAdapter.js`). Treat production log level accordingly; redaction hardening is a future improvement — not enforced by lint today.
+- See [`patterns/structured-adapter-logging.md`](patterns/structured-adapter-logging.md) for intended structured logging shape.
 
 ## Errors
 

@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Module Spec
   Template-ID:  module-spec
+  Description:  Per-module canonical spec — orientation plus requirements, design, invariants, flows, pitfalls, and tests.
   Generates:    src/ai-docs/meetings-sdk-adapter-spec.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -16,11 +17,12 @@
 |---|---|
 | Module id | meetings-sdk-adapter |
 | Source path(s) | `src/MeetingsSDKAdapter.js`, `src/MeetingsSDKAdapter/controls/` |
+| Parent spec | `src/ai-docs/webex-sdk-adapter-spec.md` |
 | Doc kind | Module spec |
 | Coverage score | 92% assessed 2026-08-05 — create/get/join/leave, controls, media lifecycle, disconnect semantics, and inherited surfaces documented |
-| Generated from | `module-spec` @ SDLC template library `0.2.1` |
+| Generated from | `module-spec` @ SDLC template library `0.2.2` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | Pass, validator `codex-agent`, assessed 2026-08-05 at 5926e8e — 0 Blocking, 0 Important, 0 Medium, 0 Minor; unit tests 19/19 suites, 194/194 passed |
+| Validation status | not-run — pending codex-agent Session B at committed HEAD (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed) |
 
 ## Evidence Rules
 
@@ -167,8 +169,8 @@ Sequence coverage:
 | joinMeeting | Join with optional password flow | alt: missing password → early return; invalid verifyPassword → flags then join still attempted |
 | leaveMeeting | Leave + media cleanup | alt: leave SDK error logged, not rethrown |
 | local sync helpers | Layout, flag clear, supportedControls | local/no-network async via updateMeeting |
-| changeLayout | Video layout switch | maps layoutType via LAYOUT_TYPES_MAP |
-| ignore media prompts | ignoreVideoAccessPrompt / ignoreAudioAccessPrompt | alt: hook missing → error log only |
+| changeLayout | [changeLayout](#changelayout) | alt: fetchMeeting/changeVideoLayout rejection |
+| ignore media prompts | [ignore media access prompts](#ignore-media-access-prompts) | alt: hook missing → error log; missing meeting → runtime throw |
 | refreshCaptcha | Captcha refresh | unawaited sdkMeeting.refreshCaptcha; read current requiredCaptcha |
 | meeting controls — standard | Join/Audio/Video/Exit/Roster/Settings/Share | action(meetingContext); display(meetingID) |
 | meeting controls — device switch | switch-camera/microphone/speaker | action(meetingContext, deviceId?); display(meetingID) |
@@ -267,6 +269,52 @@ sequenceDiagram
   Adapter->>Adapter: await updateMeeting clears invalidPassword
   Host->>Adapter: clearInvalidHostKeyFlag(ID)
   Adapter->>Adapter: await updateMeeting clears invalidHostKey
+```
+
+### changeLayout
+
+```mermaid
+sequenceDiagram
+  participant Host as @webex/components
+  participant Adapter as MeetingsSDKAdapter
+  participant SDK as sdkMeeting.changeVideoLayout
+
+  Host->>Adapter: changeLayout(ID, layoutType)
+  Adapter->>Adapter: fetchMeeting(ID)
+  alt meeting not found in SDK collection
+    Adapter-->>Host: Promise rejection
+  else success
+    Adapter->>SDK: changeVideoLayout(LAYOUT_TYPES_MAP[layoutType])
+    alt changeVideoLayout rejects
+      SDK-->>Adapter: error
+      Adapter-->>Host: Promise rejection
+    else success
+      SDK-->>Adapter: resolved
+      Adapter-->>Host: Promise resolved
+    end
+  end
+  Note over Adapter: unmapped layoutType passes undefined to SDK — behavior depends on SDK/map
+```
+
+### ignore media access prompts
+
+```mermaid
+sequenceDiagram
+  participant Host as @webex/components
+  participant Adapter as MeetingsSDKAdapter
+
+  Host->>Adapter: ignoreVideoAccessPrompt(ID) or ignoreAudioAccessPrompt(ID)
+  alt meeting missing from this.meetings[ID]
+    Note over Adapter: runtime TypeError — no guard (code gap)
+  else meeting present
+    alt ignoreMediaAccessPrompt hook defined on localVideo/localAudio
+      Adapter->>Adapter: call ignoreMediaAccessPrompt()
+      Adapter-->>Host: void (success path)
+    else hook missing
+      Adapter->>Adapter: logger.error with permission state
+      Adapter-->>Host: void (no throw)
+    end
+  end
 ```
 
 ### refreshCaptcha

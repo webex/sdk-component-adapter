@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Security Baseline
   Template-ID:  security
+  Description:  Standing security posture and review expectations.
   Generates:    ai-docs/SECURITY.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -39,7 +40,7 @@
 | Data class | Examples | Storage rule | Logging rule | In transit |
 |---|---|---|---|---|
 | Credentials | Access tokens, refresh tokens | Host/SDK memory only | Never log | TLS via Webex SDK |
-| PII | Activity text, display names, emails in people search | Not persisted by adapter | Debug logs may include IDs — avoid full message bodies in production | TLS via SDK |
+| PII | Activity text, display names, emails in people search | Not persisted by adapter | Debug/error may log full activity/person objects — brownfield gap; use warn/error in production (see `RULES.md`) | TLS via SDK |
 | Encryption keys | Conversation encryption key URLs | SDK-managed | Never log key material | TLS via SDK |
 | Client metrics | App telemetry payloads | Not stored locally | Error paths only | TLS via SDK metrics API |
 

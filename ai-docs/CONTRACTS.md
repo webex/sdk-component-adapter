@@ -1,9 +1,10 @@
 <!-- ───────────────────────────────
   Template:     Contracts Catalog
   Template-ID:  contracts
+  Description:  Compact index of every public contract ID; detail in module specs.
   Generates:    ai-docs/CONTRACTS.md
-  Library ver:  0.2.1
-  Last updated: 2026-08-05
+  Library ver:  0.2.2
+  Last updated: 2026-09-02
 ─────────────────────────────── -->
 
 # Contracts Catalog — @webex/sdk-component-adapter

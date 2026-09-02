@@ -1,8 +1,9 @@
 <!-- ───────────────────────────────
   Template:     Pattern
   Template-ID:  pattern-structured-logger
+  Description:  Structured logger usage with domain tags and entity IDs.
   Generates:    ai-docs/patterns/structured-adapter-logging.md
-  Library ver:  0.2.1
+  Library ver:  0.2.2
   Last updated: 2026-08-05
 ─────────────────────────────── -->
 
@@ -12,7 +13,7 @@ Observed in: `src/WebexSDKAdapter.js`, `src/MeetingsSDKAdapter.js`, `src/RoomsSD
 
 ## Intent
 
-Consistent debug/error logs with domain tag and entity ID for support without logging secrets.
+Consistent debug/error logs with domain tag and entity ID. **Target:** avoid secrets and minimize PII in logs. **Current code:** some adapters still pass full `{activity}` / `{person}` objects at debug/error — documented as accepted brownfield gap in [`RULES.md`](../RULES.md).
 
 ## Correct
 
