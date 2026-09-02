@@ -22,7 +22,7 @@
 | Coverage score | 91% assessed 2026-08-05 — single getOrg operation group, fetch error path, and sequence documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.2` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run — pending codex-agent Session B at committed HEAD (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed) |
+| Validation status | not-run — pending codex-agent Session B at 90f540e (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed) |
 
 ## Evidence Rules
 

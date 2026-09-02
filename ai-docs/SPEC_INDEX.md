@@ -57,4 +57,4 @@
 | Getting started | `ai-docs/GETTING_STARTED.md` | Build/test loop |
 | Review catalog | `ai-docs/REVIEW_CHECKLIST.md` | Review checks |
 
-Validation status: **not-run** — pending codex-agent Session B at committed HEAD (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed).
+Validation status: **not-run** — pending codex-agent Session B at `90f540e` (cursor preflight 2026-09-02: 0 content Blocking; unit 19/19 suites, 194/194 passed).
