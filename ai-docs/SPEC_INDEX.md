@@ -57,4 +57,4 @@
 | Getting started | `ai-docs/GETTING_STARTED.md` | Build/test loop |
 | Review catalog | `ai-docs/REVIEW_CHECKLIST.md` | Review checks |
 
-Validation status: **not-run** — pending codex-agent Session B at `ff62a76` (BLK-01/02 fixed; npm test 19/19 suites, 194/194 passed).
+Validation status: **not-run** — pending codex-agent Session B at `717a6ec` (BLK-01/02 fixed; npm test 19/19 suites, 194/194 passed).

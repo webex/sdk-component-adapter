@@ -10,8 +10,8 @@
 | Mode | SDD Stage 0 rigorous, keep-separate policy |
 | Template library | **0.2.2** (`0aa65d9`) |
 | Generator runtime | cursor-agent |
-| Validator runtime | codex-agent (Session B, different-runtime) — **pending at `ff62a76`** |
-| Pending validation target | `ff62a76` (BLK-01/02 remediated; Session B re-run required for Pass) |
+| Validator runtime | codex-agent (Session B, different-runtime) — **pending at `717a6ec`** |
+| Pending validation target | `717a6ec` (BLK-01/02 remediated; Session B re-run required for Pass) |
 | Branch | `SDLC_SKILLS_FOR_SDK_COMPONENT_ADAPTER` |
 
 ## Module map (human-confirmed)
