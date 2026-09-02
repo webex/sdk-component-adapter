@@ -22,7 +22,7 @@
 | Coverage score | 91% assessed 2026-08-05 — single submitMetrics operation group documented |
 | Generated from | `module-spec` @ SDLC template library `0.2.2` |
 | generated_by / approved_by / updated_at | cursor-agent / Akula Uday / 2026-08-05 |
-| Validation status | not-run — pending codex-agent Session B at 717a6ec (BLK-01/02 fixed; npm test 19/19 suites, 194/194 passed) |
+| Validation status | pass — independent codex-agent Session B (different-runtime), validated 2026-09-02 at 0b7bd84c0ec53004f8640093eb04519930ae31b4; Axis A+B: 0 Blocking, 0 Important, 0 Medium, 0 Minor |
 
 ## Evidence Rules
 

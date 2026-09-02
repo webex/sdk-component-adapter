@@ -57,4 +57,4 @@
 | Getting started | `ai-docs/GETTING_STARTED.md` | Build/test loop |
 | Review catalog | `ai-docs/REVIEW_CHECKLIST.md` | Review checks |
 
-Validation status: **not-run** — pending codex-agent Session B at `717a6ec` (BLK-01/02 fixed; npm test 19/19 suites, 194/194 passed).
+Validation status: **pass** — independent codex-agent Session B (different-runtime), validated 2026-09-02 at `0b7bd84c0ec53004f8640093eb04519930ae31b4`; Axis A+B: 0 Blocking, 0 Important, 0 Medium, 0 Minor.

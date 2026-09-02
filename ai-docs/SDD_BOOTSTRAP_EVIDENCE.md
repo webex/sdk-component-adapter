@@ -10,8 +10,8 @@
 | Mode | SDD Stage 0 rigorous, keep-separate policy |
 | Template library | **0.2.2** (`0aa65d9`) |
 | Generator runtime | cursor-agent |
-| Validator runtime | codex-agent (Session B, different-runtime) — **pending at `717a6ec`** |
-| Pending validation target | `717a6ec` (BLK-01/02 remediated; Session B re-run required for Pass) |
+| Validator runtime | codex-agent (Session B, different-runtime) — **Pass at `0b7bd84c0ec53004f8640093eb04519930ae31b4`** |
+| Validated source commit | `0b7bd84c0ec53004f8640093eb04519930ae31b4` |
 | Branch | `SDLC_SKILLS_FOR_SDK_COMPONENT_ADAPTER` |
 
 ## Module map (human-confirmed)
@@ -26,7 +26,7 @@ Nine modules: facade (`src/`), meetings, activities, people, rooms, memberships,
 | Generated-doc-conformance | Pass, 0 Blocking | 0.2.2 headers, Description, Parent spec, TEST_INDEX routed |
 | Manifest schema | Pass | Validates against repo-pinned [`.sdd/config/sdd-manifest.schema.json`](../.sdd/config/sdd-manifest.schema.json) (0.2.2 extensions: `test_index_path`, `template_library_*`, `has_submodules`) |
 | Coverage review | Pass ≥90% threshold | Field coverage maintained post-0.2.2 upgrade; modules remain Partial |
-| Spec-validator (Axis A + B) | **not-run** | Pending codex-agent Session B at committed HEAD; cursor preflight 2026-09-02: 0 content Blocking |
+| Spec-validator (Axis A + B) | **Pass** | Independent codex-agent Session B at committed HEAD; 0 Blocking, 0 Important, 0 Medium, 0 Minor |
 | Unit tests | Pass | 19/19 suites, 194/194 tests |
 
 ## bhabalan PR #354 doc fixes (2026-09-02)
