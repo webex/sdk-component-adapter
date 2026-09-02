@@ -10,8 +10,8 @@
 | Mode | SDD Stage 0 rigorous, keep-separate policy |
 | Template library | **0.2.2** (`0aa65d9`) |
 | Generator runtime | cursor-agent |
-| Validator runtime | codex-agent (Session B, different-runtime) — **pending at committed HEAD** |
-| Last validated source commit | `5926e8ee9a2532ea9b6c99ba53ba819cf8f28de2` (superseded by doc changes; Session B required) |
+| Validator runtime | codex-agent (Session B, different-runtime) — **pending at `ff62a76`** |
+| Pending validation target | `ff62a76` (BLK-01/02 remediated; Session B re-run required for Pass) |
 | Branch | `SDLC_SKILLS_FOR_SDK_COMPONENT_ADAPTER` |
 
 ## Module map (human-confirmed)
