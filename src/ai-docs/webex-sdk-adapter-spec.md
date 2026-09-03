@@ -81,7 +81,7 @@ src/
 | webex-sdk-adapter.membershipsAdapter | SDK property | MembershipsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/memberships-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | webex-sdk-adapter.organizationsAdapter | SDK property | OrganizationsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/organizations-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 | webex-sdk-adapter.metricsAdapter | SDK property | MetricsSDKAdapter instance | Domain delegate | stable | `src/ai-docs/metrics-sdk-adapter-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
-| webex-sdk-adapter.cache | SDK property | shared cache singleton | Cross-adapter activity/conversation cache | stable | `src/ai-docs/shared-utilities-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
+| webex-sdk-adapter.cache | SDK property | shared cache singleton | Cross-adapter activity/conversation cache; also exposes `scope(namespace: string)` returning a namespace-isolated `{set, get, has, remove}` view over the same store so per-token/per-instance callers cannot read each other's entries, with bare-key methods unchanged | stable | `src/ai-docs/shared-utilities-spec.md` | [`CONTRACTS.md`](../../ai-docs/CONTRACTS.md) |
 
 This facade exposes **one connect/disconnect operation group** for lifecycle; domain methods live on sub-adapters. A single sequence diagram covers connect and disconnect.
 
@@ -100,7 +100,7 @@ This facade exposes **one connect/disconnect operation group** for lifecycle; do
 | FAC-R-001 | Constructor instantiates all seven domain adapters with same SDK datasource | Single SDK session shared across domains | `src/WebexSDKAdapter.js` | `src/WebexSDKAdapter.test.js` | none | PRESENT |
 | FAC-R-002 | `connect()` order: device.register → mercury.connect → meetingsAdapter.connect | Documented bootstrap sequence for live data | `src/WebexSDKAdapter.js` | `src/WebexSDKAdapter.test.js` | none | PRESENT |
 | FAC-R-003 | `disconnect()` order: meetingsAdapter.disconnect → mercury.disconnect → device.unregister | Reverse connect; meetings disconnect only unregisters plugin | `src/WebexSDKAdapter.js` | `src/WebexSDKAdapter.test.js` | Does not stop meeting media — see meetings spec | PRESENT |
-| FAC-R-004 | `cache` exposed on facade instance | Host/debug access to shared cache module | `src/WebexSDKAdapter.js` | none found | none | PRESENT |
+| FAC-R-004 | `cache` exposed on facade instance; shared cache module offers `scope(namespace)` for namespace-isolated views over one store | Host/debug access to shared cache module; per-token/per-instance isolation so cached data is not shared across tenants | `src/WebexSDKAdapter.js`, `src/cache.js` | none found | none | PRESENT |
 
 ## Design Overview
 

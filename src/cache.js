@@ -117,6 +117,27 @@ class CacheMeOutside {
 
     sdkActivities.map((o) => this.set(o.id, o));
   }
+
+  /**
+   * Returns a namespaced view of this cache that isolates entries by
+   * (namespace, id) while reusing the same underlying store. Callers that need
+   * per-token/per-instance isolation (e.g. so one tenant's cached data can
+   * never be read by another) should use a scoped view instead of the bare
+   * `set`/`get`/`has`/`remove` methods; existing bare-key usage is unaffected.
+   *
+   * @param {string} namespace Unique namespace identifying the scope (e.g. a token/instance discriminator)
+   * @returns {{set: Function, get: Function, has: Function, remove: Function}} Scoped cache view
+   */
+  scope(namespace) {
+    const scopedKey = (key) => `${namespace}::${key}`;
+
+    return {
+      set: (key, value) => this.set(scopedKey(key), value),
+      get: (key) => this.get(scopedKey(key)),
+      has: (key) => this.has(scopedKey(key)),
+      remove: (key) => this.remove(scopedKey(key)),
+    };
+  }
 }
 
 const singleton = new CacheMeOutside();

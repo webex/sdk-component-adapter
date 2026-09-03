@@ -23,6 +23,109 @@ import cache from './cache';
  * @see {@link https://github.com/webex/component-adapter-interfaces/blob/master/src/ActivitiesAdapter.js#L6}
  */
 
+// Webex KMS host suffixes trusted to receive encryption key URLs. Seeded from
+// repo evidence (`src/mockSdk.js` KMS fixtures use `*.wbx2.com`).
+const ALLOWED_KMS_HOST_SUFFIXES = ['wbx2.com'];
+
+/**
+ * Validates that a server/Mercury-sourced encryption key URL uses the `kms://`
+ * scheme and an allow-listed Webex KMS host before it is trusted as input to
+ * encryption calls. Key URLs are SDK-managed and must never be logged.
+ *
+ * @private
+ * @param {string} encryptionKeyUrl  Server-supplied encryption key URL
+ * @throws {Error} If the URL is missing, malformed, or not an allow-listed KMS host
+ */
+function assertValidEncryptionKeyUrl(encryptionKeyUrl) {
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(encryptionKeyUrl);
+  } catch (err) {
+    throw new Error('Invalid or untrusted encryption key URL');
+  }
+
+  const isAllowedHost = parsedUrl.protocol === 'kms:' && ALLOWED_KMS_HOST_SUFFIXES.some(
+    (suffix) => parsedUrl.hostname === suffix || parsedUrl.hostname.endsWith(`.${suffix}`),
+  );
+
+  if (!isAllowedHost) {
+    throw new Error('Invalid or untrusted encryption key URL');
+  }
+}
+
+// Card schema currently rendered by the host (`@webex/components`), evidenced
+// by `src/mockSdk.js` fixtures and `src/ActivitiesSDKAdapter.test.js`. Cards
+// are untrusted, server/Mercury-sourced content (`ai-docs/SECURITY.md:50`).
+const ALLOWED_CARD_TYPES = ['AdaptiveCard'];
+const ALLOWED_CARD_VERSIONS = ['1.0', '1.2'];
+const ALLOWED_CARD_ACTION_TYPES = ['Action.OpenUrl', 'Action.Submit', 'Action.ShowCard'];
+const UNSAFE_OBJECT_KEYS = ['__proto__', 'constructor', 'prototype'];
+
+/**
+ * Recursively strips prototype-polluting keys from parsed, untrusted card JSON.
+ *
+ * @private
+ * @param {*} value  Parsed (untrusted) value to sanitize
+ * @returns {*} Sanitized value with `__proto__`/`constructor`/`prototype` keys removed
+ */
+function sanitizeCardValue(value) {
+  if (Array.isArray(value)) {
+    return value.map(sanitizeCardValue);
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.keys(value).reduce((safeValue, key) => (
+      UNSAFE_OBJECT_KEYS.includes(key)
+        ? safeValue
+        : {...safeValue, [key]: sanitizeCardValue(value[key])}
+    ), {});
+  }
+
+  return value;
+}
+
+/**
+ * Checks whether a sanitized card matches the currently-supported adaptive
+ * card schema (type, version, and action allow-lists).
+ *
+ * @private
+ * @param {object} card  Sanitized card object
+ * @returns {boolean} True if the card matches the supported schema
+ */
+function isSupportedCard(card) {
+  if (!card || typeof card !== 'object') {
+    return false;
+  }
+
+  const hasAllowedActions = !card.actions || (
+    Array.isArray(card.actions)
+      && card.actions.every((action) => action && ALLOWED_CARD_ACTION_TYPES.includes(action.type))
+  );
+
+  return ALLOWED_CARD_TYPES.includes(card.type)
+    && ALLOWED_CARD_VERSIONS.includes(card.version)
+    && hasAllowedActions;
+}
+
+/**
+ * Builds the safe fallback card used when server-sourced card JSON cannot be
+ * parsed or does not match the supported card schema.
+ *
+ * @private
+ * @returns {object} Safe fallback TextBlock card
+ */
+function buildFallbackCard() {
+  return {
+    type: 'AdaptiveCard',
+    version: '1.0',
+    body: [{
+      type: 'TextBlock',
+      text: 'This card could not be parsed.',
+    }],
+  };
+}
+
 /**
  * Extracts JSON cards from server activity.
  *
@@ -38,18 +141,17 @@ function parseSDKCards(sdkActivity) {
       let card;
 
       try {
-        card = JSON.parse(c);
+        card = sanitizeCardValue(JSON.parse(c));
       } catch (err) {
         logger.warn('ACTIVITY', sdkActivity.id, 'parseSDKCards()', ['Unable parse card', c], err);
 
-        card = {
-          type: 'AdaptiveCard',
-          version: '1.0',
-          body: [{
-            type: 'TextBlock',
-            text: 'This card could not be parsed.',
-          }],
-        };
+        return buildFallbackCard();
+      }
+
+      if (!isSupportedCard(card)) {
+        logger.warn('ACTIVITY', sdkActivity.id, 'parseSDKCards()', ['Unsupported card schema, using fallback']);
+
+        return buildFallbackCard();
       }
 
       return card;
@@ -80,6 +182,10 @@ export function fromSDKActivity(sdkActivity) {
   };
 }
 
+// Monotonic counter used to derive a unique per-instance cache namespace
+// (`this.activityCache`) when no per-token discriminator is available.
+let instanceSequence = 0;
+
 /**
  * The `ActivitiesSDKAdapter` is an implementation of the `ActivitiesAdapter` interface.
  * This implementation utilizes the Webex JS SDK as its source of activity data.
@@ -93,6 +199,10 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     super(datasource);
 
     this.activityObservables = {};
+    // Per-instance cache scope so a cross-tenant/cross-token adapter instance
+    // can never read another instance's cached activity bodies (SPARK-843495 / UF-001).
+    instanceSequence += 1;
+    this.activityCache = cache.scope(`activities-sdk-adapter:${instanceSequence}`);
   }
 
   /**
@@ -110,13 +220,13 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     const service = 'conversation';
     const resource = `activities/${encodeURIComponent(id)}`;
 
-    if (cache.has(id)) {
-      return cache.get(id);
+    if (this.activityCache.has(id)) {
+      return this.activityCache.get(id);
     }
 
     const {body} = await this.datasource.request({service, resource});
 
-    cache.set(id, body);
+    this.activityCache.set(id, body);
 
     return body;
   }
@@ -181,6 +291,8 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
 
     return from(this.fetchActivity(activityID)).pipe(
       concatMap(async (parentActivity) => {
+        assertValidEncryptionKeyUrl(parentActivity.encryptionKeyUrl);
+
         const encryptedInputs = await this.datasource.internal.encryption
           .encryptText(parentActivity.encryptionKeyUrl, JSON.stringify(inputs));
 
@@ -212,6 +324,8 @@ export default class ActivitiesSDKAdapter extends ActivitiesAdapter {
     logger.debug('ACTIVITY', activity.ID, 'encryptCards()', ['called with', {activity}]);
 
     const conversation = await this.fetchConversation(activity.roomID);
+
+    assertValidEncryptionKeyUrl(conversation.encryptionKeyUrl);
 
     return Promise.all(activity.cards.map((card) => (
       this.datasource.internal.encryption.encryptText(

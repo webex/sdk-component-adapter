@@ -43,4 +43,29 @@ describe('CacheMeOutside', () => {
       expect(cache.get(mockSDKRoom.id)).toBeTruthy();
     });
   });
+
+  describe('scope()', () => {
+    it('cross-tenant cache isolation', () => {
+      const tenantAScope = cache.scope('tenant-a');
+      const tenantBScope = cache.scope('tenant-b');
+
+      tenantAScope.set('shared-id', 'tenant-a-value');
+      tenantBScope.set('shared-id', 'tenant-b-value');
+
+      expect(tenantAScope.get('shared-id')).toEqual('tenant-a-value');
+      expect(tenantBScope.get('shared-id')).toEqual('tenant-b-value');
+      expect(tenantAScope.get('shared-id')).not.toEqual(tenantBScope.get('shared-id'));
+    });
+
+    it('facade cache methods unchanged', () => {
+      expect(cache.set('facade-key', 'facade-value')).toBeTruthy();
+      expect(cache.get('facade-key')).toEqual('facade-value');
+      expect(cache.has('facade-key')).toBeTruthy();
+      expect([...cache.keys()]).toContain('facade-key');
+      expect([...cache.values()]).toContain('facade-value');
+      expect(cache.size()).toEqual([...cache.keys()].length);
+      expect(cache.remove('facade-key')).toBeTruthy();
+      expect(cache.has('facade-key')).toBeFalsy();
+    });
+  });
 });
