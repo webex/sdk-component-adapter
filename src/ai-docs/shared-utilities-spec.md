@@ -113,7 +113,7 @@ src/
 
 | ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
-| SHU-R-001 | Cache is process-wide singleton Map | Share activity/conversation bodies across adapters | `src/cache.js` | `src/cache.test.js` set/get/has/remove/keys/values/size; cacheConversations/cachActivities | singleton identity across imports; WebexSDKAdapter.cache same reference; cachSDKActivities; empty bulk | PRESENT |
+| SHU-R-001 | Cache is a process-wide singleton Map; bare `set/get/has/remove/keys/values/size` and bulk helpers remain unscoped, but `scope(namespace)` returns a namespaced view keying entries by `(namespace, id)` so per-token/per-instance callers (e.g. `ActivitiesSDKAdapter.fetchActivity`) isolate their cached data from other tokens/instances without changing any existing signature or the default singleton export | Share activity/conversation bodies across adapters while allowing callers that hold different tokens/instances to avoid reading each other's cached data (SPARK-843495 / UF-001) | `src/cache.js` | `src/cache.test.js` set/get/has/remove/keys/values/size; cacheConversations/cachActivities; `scope()` cross-tenant isolation and facade-unchanged coverage | singleton identity across imports; WebexSDKAdapter.cache same reference; cachSDKActivities; empty bulk; scoping is additive/opt-in — existing bare-key callers are unaffected | PRESENT |
 | SHU-R-002 | Logger defaults to level `error`; console transport added when NODE_ENV !== production | Reduce noise in production builds | `src/logger.js` | none found | none | PRESENT |
 | SHU-R-003 | Browser exposes `window.webexSDKAdapterSetLogLevel` when window defined | Runtime debug control in demos | `src/logger.js` | none found | none | PRESENT |
 | SHU-R-004 | `polyfills.js` imported from `src/index.js` — patches missing getTracks to empty array | Prevent throws on legacy browsers | `src/polyfills.js`, `src/index.js` | none found | none | PRESENT |
@@ -326,6 +326,7 @@ classDiagram
 ## Module Do's / Don'ts
 
 - DO import cache singleton — do not instantiate second CacheMeOutside.
+- DO use `cache.scope(namespace)` for any per-token/per-instance cached data (e.g. fetched activity bodies) instead of bare `set/get/has/remove` when cross-tenant isolation matters.
 - DO use `resolveMeetingID` in meeting controls for host compatibility.
 - DON'T rely on cache invalidation — stale entries persist for session lifetime.
 
@@ -340,7 +341,7 @@ classDiagram
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
 | SHU-R-005 | indirect via `src/MeetingsSDKAdapter.test.js` | Direct utils unit tests |
-| SHU-R-001 | `src/cache.test.js` method/bulk coverage | singleton identity; facade.cache reference; cachSDKActivities |
+| SHU-R-001 | `src/cache.test.js` method/bulk coverage; `scope()` cross-tenant isolation and facade-unchanged coverage | singleton identity; facade.cache reference; cachSDKActivities |
 | SHU-R-003 | none found | window hook manual/browser test |
 
 ## Traceability
