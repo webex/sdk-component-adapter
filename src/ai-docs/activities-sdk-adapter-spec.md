@@ -82,18 +82,18 @@ src/
 | `datasource.request` | GET activity by conversation service |
 | `datasource.internal.conversation.post` / `cardAction` | Post message and card actions |
 | `datasource.internal.encryption.encryptText` | Encrypt cards and action inputs |
-| `src/cache.js` | Activity fetch cache by raw id |
+| `src/cache.js` | Activity fetch cache, scoped per adapter instance via `cache.scope(...)` (`this.activityCache`) |
 
 ## Requirements
 
 | ID | WHAT | WHY | Source Evidence | Test / Example Evidence | Assumptions / Gaps | Confidence |
 |---|---|---|---|---|---|---|
 | ACT-R-001 | `getActivity` caches observables per ID in `ReplaySubject` | Avoid duplicate fetch pipelines for same activity | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` | none | PRESENT |
-| ACT-R-002 | `fetchActivity` uses cache hit before network request | Reduce duplicate REST calls | `src/ActivitiesSDKAdapter.js` | none found | Cache hit path untested | WEAK |
+| ACT-R-002 | `fetchActivity` uses a cache hit before making a network request, scoped per adapter instance (`this.activityCache = cache.scope(...)` created in the constructor) so a different adapter instance/token can never read another instance's cached activity body and bypass its own authorization on `datasource.request` (SPARK-843495 / UF-001) | Reduce duplicate REST calls within one token/instance while preventing cross-tenant cache bypass | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` `fetchActivity()` same-token reuse and cross-instance isolation cases | none | PRESENT |
 | ACT-R-003 | Fetch failure maps to `Error: Could not find activity with ID "…"` | Consistent caller-facing not-found signal | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` | none | PRESENT |
-| ACT-R-004 | `postActivity` encrypts cards when `hasAdaptiveCards(activity)` | Conversation encryption requirement for cards | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` | none | PRESENT |
-| ACT-R-005 | Malformed card JSON in fetch maps to fallback AdaptiveCard body | UI still renders parse failure message | `src/ActivitiesSDKAdapter.js` | none found | Fallback card untested | WEAK |
-| ACT-R-006 | `postAction` encrypts inputs with parent activity encryption key | Secure card action submission | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` | none | PRESENT |
+| ACT-R-004 | `postActivity` encrypts cards when `hasAdaptiveCards(activity)`; `encryptCards` validates `conversation.encryptionKeyUrl` with the shared `assertValidEncryptionKeyUrl` validator (ACT-R-006) before encrypting any card, rejecting when the URL is not an allow-listed `kms://` Webex KMS host (SPARK-843495 / UF-003) | Conversation encryption requirement for cards; never trust a server/Mercury-sourced key URL verbatim | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` `postActivity()` `encryptCards` allow-list accept/reject cases | Allow-list currently seeded with `wbx2.com`; external validation required to confirm it covers every genuine Webex KMS host | PRESENT |
+| ACT-R-005 | Malformed card JSON in fetch maps to fallback AdaptiveCard body; parsed card JSON is recursively sanitized to strip `__proto__`/`constructor`/`prototype` keys, then validated against an accepted type (`AdaptiveCard`) / version (`1.0`, `1.2`) / action-type (`Action.OpenUrl`, `Action.Submit`, `Action.ShowCard`) allow-list before being forwarded — a card that fails validation is replaced with the same safe fallback used for parse failures rather than forwarded verbatim (SPARK-843495 / UF-004) | UI still renders parse failure message; server/Mercury-sourced card JSON is untrusted content and must not reach the host renderer unsanitized/unvalidated (`ai-docs/SECURITY.md:50`) | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` `getActivity()` prototype-pollution sanitization, disallowed type/version rejection, and valid-card-passthrough cases | Accepted type/version/action list seeded from currently-supported fixtures; external validation required to confirm it admits every currently-supported host card shape | PRESENT |
+| ACT-R-006 | `postAction` validates `parentActivity.encryptionKeyUrl` against a shared `kms://` + allow-listed Webex KMS host validator (`assertValidEncryptionKeyUrl`, seeded from `wbx2.com` host evidence) before encrypting inputs with it; a non-conforming URL throws and is mapped to an observable error via the existing `catchError` (SPARK-843495 / UF-002) | Secure card action submission; never trust a server/Mercury-sourced key URL verbatim | `src/ActivitiesSDKAdapter.js` | `src/ActivitiesSDKAdapter.test.js` `postAction()` allow-list accept/reject cases | Allow-list currently seeded with `wbx2.com`; external validation required to confirm it covers every genuine Webex KMS host | PRESENT |
 | ACT-R-007 | `hasAdaptiveCards` returns true iff `activity.cards.length > 0` | Gate encryption path | `src/ActivitiesSDKAdapter.js` | none found | Trivial helper | PRESENT |
 | ACT-R-008 | `postAction` uses `from(this.fetchActivity(activityID))` — parent fetch starts when constructing the observable on method call, not on subscribe | Eager parent-activity load before external subscription | `src/ActivitiesSDKAdapter.js` | none found | Unsubscribed return value may still trigger fetch | PRESENT |
 
@@ -267,9 +267,9 @@ classDiagram
 | State | Shape | Create / update trigger | Retention / teardown | Error behavior |
 |---|---|---|---|---|
 | `activityObservables` | activity Hydra ID → `ReplaySubject` pipeline | First `getActivity(ID)` creates pipeline and internal subscribe | Entry persists for adapter instance; never completes | Fetch failure → observable error on subject |
-| Shared `cache` (via `fetchActivity`) | deconstructed activity id → SDK body | `cache.set` after successful GET; `cache.get` on hit before network | Process-wide singleton; no TTL | Cache miss proceeds to network; 404 maps to not-found error |
+| Instance-scoped `activityCache` (via `fetchActivity`) | deconstructed activity id → SDK body, namespaced per adapter instance via `cache.scope(...)` | `activityCache.set` after successful GET; `activityCache.get` on hit before network | Backed by the process-wide `cache.js` singleton, but keys are namespaced per adapter instance so no TTL and no cross-instance/cross-token visibility (SPARK-843495 / UF-001) | Cache miss proceeds to network; 404 maps to not-found error |
 
-- `fetchActivity` reads/writes shared `cache.js` keyed by deconstructed activity id (`src/ActivitiesSDKAdapter.js`, `src/cache.js`).
+- `fetchActivity` reads/writes a per-instance scoped view of shared `cache.js` (`this.activityCache = cache.scope(...)`), keyed by deconstructed activity id (`src/ActivitiesSDKAdapter.js`, `src/cache.js`).
 - ReplaySubject entries are not removed when external subscribers unsubscribe.
 
 ## Concurrency & Reactive Flow
@@ -302,9 +302,11 @@ Host application is `@webex/components`. Construct `WebexSDKAdapter` with an **a
 
 | Behavior / Requirement | Existing test evidence | Gap |
 |---|---|---|
-| ACT-R-001, ACT-R-003 | `src/ActivitiesSDKAdapter.test.js` getActivity | Cache hit ACT-R-002 |
-| ACT-R-004 | postActivity with cards | Malformed card parse ACT-R-005 |
-| ACT-R-006 | postAction | none |
+| ACT-R-001, ACT-R-003 | `src/ActivitiesSDKAdapter.test.js` getActivity | none |
+| ACT-R-002 | `src/ActivitiesSDKAdapter.test.js` `fetchActivity()` same-token reuse and cross-instance isolation | none |
+| ACT-R-004 | postActivity with cards; `encryptCards` allow-list accept/reject cases | none |
+| ACT-R-005 | Malformed card parse; sanitization/schema-allow-list cases in `getActivity()` | none |
+| ACT-R-006 | postAction; `postAction()` allow-list accept/reject cases | none |
 | ACT-R-007 | none found | hasAdaptiveCards edge cases |
 
 ## Traceability

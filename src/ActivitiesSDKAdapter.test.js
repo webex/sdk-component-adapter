@@ -1,7 +1,8 @@
 import {isObservable} from 'rxjs';
 import {last} from 'rxjs/operators';
+import {constructHydraId} from '@webex/common';
 
-import ActivitiesSDKAdapter from './ActivitiesSDKAdapter';
+import ActivitiesSDKAdapter, {fromSDKActivity} from './ActivitiesSDKAdapter';
 import createMockSDK, {
   created,
   sdkActivity,
@@ -107,6 +108,95 @@ describe('Activities SDK Adapter', () => {
         },
       );
     });
+
+    it('card with prototype-polluting keys is sanitized', () => {
+      // Built as a raw JSON string (not an object literal) because `__proto__`
+      // in object-literal syntax sets the prototype instead of creating an own
+      // property, which JSON.stringify would then silently drop.
+      const maliciousCard = '{'
+        + '"type":"AdaptiveCard",'
+        + '"version":"1.2",'
+        + '"__proto__":{"polluted":true},'
+        + '"body":[{"type":"TextBlock","text":"hi","constructor":{"prototype":{"polluted":true}}}],'
+        + '"actions":[{"type":"Action.OpenUrl","url":"http://adaptivecards.io","title":"Learn More"}]'
+        + '}';
+
+      const activity = fromSDKActivity({
+        ...sdkActivity,
+        object: {...sdkActivity.object, cards: [maliciousCard]},
+      });
+
+      expect(({}).polluted).toBeUndefined();
+      expect(Object.prototype.hasOwnProperty.call(activity.cards[0], '__proto__')).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(activity.cards[0].body[0], 'constructor')).toBe(false);
+      expect(activity.cards[0]).toMatchObject({
+        type: 'AdaptiveCard',
+        version: '1.2',
+        actions: [{type: 'Action.OpenUrl', url: 'http://adaptivecards.io', title: 'Learn More'}],
+      });
+    });
+
+    it('disallowed card type/version rejected', () => {
+      const disallowedCard = JSON.stringify({
+        type: 'AdaptiveCard',
+        version: '3.0',
+        actions: [{type: 'Action.Execute', verb: 'doAdminThing'}],
+      });
+
+      const activity = fromSDKActivity({
+        ...sdkActivity,
+        object: {...sdkActivity.object, cards: [disallowedCard]},
+      });
+
+      expect(activity.cards[0]).toEqual({
+        type: 'AdaptiveCard',
+        version: '1.0',
+        body: [{
+          type: 'TextBlock',
+          text: 'This card could not be parsed.',
+        }],
+      });
+    });
+
+    it('valid adaptive card passes through', () => {
+      const activity = fromSDKActivity(sdkActivity);
+
+      expect(activity.cards[0]).toMatchObject({
+        $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+        type: 'AdaptiveCard',
+        version: '1.2',
+        body: [{type: 'TextBlock', text: 'Adaptive Cards', size: 'large'}],
+        actions: [{type: 'Action.OpenUrl', url: 'http://adaptivecards.io', title: 'Learn More'}],
+      });
+    });
+  });
+
+  describe('fetchActivity()', () => {
+    it('same-token cache reuse preserved', async () => {
+      const uniqueID = constructHydraId('message', 'fetch-activity-reuse');
+      const request = jest.fn(() => Promise.resolve({body: sdkActivity}));
+      const scopedMockSDK = createMockSDK({request});
+      const scopedAdapter = new ActivitiesSDKAdapter(scopedMockSDK);
+
+      await scopedAdapter.fetchActivity(uniqueID);
+      await scopedAdapter.fetchActivity(uniqueID);
+
+      expect(request).toHaveBeenCalledTimes(1);
+    });
+
+    it('cross-instance cache isolation prevents a cached hit from bypassing datasource.request()', async () => {
+      const uniqueID = constructHydraId('message', 'fetch-activity-isolation');
+      const requestA = jest.fn(() => Promise.resolve({body: sdkActivity}));
+      const requestB = jest.fn(() => Promise.resolve({body: sdkActivity}));
+      const adapterA = new ActivitiesSDKAdapter(createMockSDK({request: requestA}));
+      const adapterB = new ActivitiesSDKAdapter(createMockSDK({request: requestB}));
+
+      await adapterA.fetchActivity(uniqueID);
+      await adapterB.fetchActivity(uniqueID);
+
+      expect(requestA).toHaveBeenCalledTimes(1);
+      expect(requestB).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('postActivity()', () => {
@@ -209,12 +299,80 @@ describe('Activities SDK Adapter', () => {
         },
       );
     });
+
+    it('encryptCards rejects non-allowlisted key URL', (done) => {
+      const {encryptText} = activitiesSDKAdapter.datasource.internal.encryption;
+
+      activitiesSDKAdapter.fetchConversation = jest.fn(
+        () => Promise.resolve({...sdkConversation, encryptionKeyUrl: 'https://evil.example.com/keys/abc'}),
+      );
+
+      const activityData = {
+        roomID,
+        personID,
+        text: 'text',
+        cards: [{
+          type: 'AdaptiveCard',
+          version: '1.2',
+          body: [],
+          actions: [],
+        }],
+        attachments: [],
+      };
+
+      activitiesSDKAdapter.postActivity(activityData).subscribe(
+        () => {
+          done.fail('Posted an activity instead of returning error');
+        },
+        (error) => {
+          expect(error).toBeInstanceOf(Error);
+          expect(encryptText).not.toHaveBeenCalled();
+          done();
+        },
+      );
+    });
+
+    it('encryptCards accepts allow-listed KMS key URL', (done) => {
+      const {encryptText} = activitiesSDKAdapter.datasource.internal.encryption;
+      const activityData = {
+        roomID,
+        personID,
+        text: 'text',
+        cards: [{
+          type: 'AdaptiveCard',
+          version: '1.2',
+          body: [],
+          actions: [],
+        }],
+        attachments: [],
+      };
+
+      activitiesSDKAdapter.datasource.internal.conversation.post = jest.fn(
+        () => Promise.resolve({
+          ID,
+          actor: {id: actorID},
+          object: {displayName: 'text', cards: [JSON.stringify(activityData.cards[0])]},
+          target: {id: targetID},
+          published: created,
+        }),
+      );
+
+      activitiesSDKAdapter.postActivity(activityData).pipe(last()).subscribe(() => {
+        expect(encryptText).toHaveBeenCalledWith(
+          sdkConversation.encryptionKeyUrl,
+          expect.any(String),
+        );
+        done();
+      });
+    });
   });
 
   describe('postAction()', () => {
+    const allowListedEncryptionKeyUrl = 'kms://kms-cisco.wbx2.com/keys/abc-123';
+
     beforeEach(() => {
       activitiesSDKAdapter.fetchActivity = jest.fn(
-        () => Promise.resolve(sdkActivity),
+        () => Promise.resolve({...sdkActivity, encryptionKeyUrl: allowListedEncryptionKeyUrl}),
       );
     });
     it('emits the posted action object', (done) => {
@@ -267,6 +425,54 @@ describe('Activities SDK Adapter', () => {
           done();
         },
       );
+    });
+
+    it('postAction rejects non-allowlisted key URL', (done) => {
+      const {encryptText} = activitiesSDKAdapter.datasource.internal.encryption;
+
+      activitiesSDKAdapter.fetchActivity = jest.fn(
+        () => Promise.resolve({...sdkActivity, encryptionKeyUrl: 'https://evil.example.com/keys/abc'}),
+      );
+
+      activitiesSDKAdapter.postAction(activityID, {x: 1, y: 2}).subscribe(
+        () => {
+          done.fail('Posted an action instead of returning error');
+        },
+        (error) => {
+          expect(error).toBeInstanceOf(Error);
+          expect(encryptText).not.toHaveBeenCalled();
+          done();
+        },
+      );
+    });
+
+    it('postAction accepts allow-listed KMS key URL', (done) => {
+      const {encryptText} = activitiesSDKAdapter.datasource.internal.encryption;
+
+      activitiesSDKAdapter.datasource.internal.conversation.cardAction = jest.fn(
+        () => Promise.resolve({
+          ID,
+          actor: {
+            id: actorID,
+          },
+          object: {
+            displayName: 'text',
+          },
+          target: {
+            id: targetID,
+          },
+          published: created,
+        }),
+      );
+
+      activitiesSDKAdapter.postAction(activityID, {x: 1, y: 2}).subscribe((action) => {
+        expect(encryptText).toHaveBeenCalledWith(
+          allowListedEncryptionKeyUrl,
+          expect.any(String),
+        );
+        expect(action).toMatchObject({ID, roomID, personID});
+        done();
+      });
     });
   });
 
